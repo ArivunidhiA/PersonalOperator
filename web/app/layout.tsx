@@ -22,27 +22,21 @@ export const metadata: Metadata = {
   },
 };
 
-const clerkKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
-
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const inner = (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <FaviconAnimator />
-        {children}
-      </body>
-    </html>
+  return (
+    <ClerkProvider>
+      <html lang="en">
+        <body
+          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        >
+          <FaviconAnimator />
+          {children}
+        </body>
+      </html>
+    </ClerkProvider>
   );
-
-  if (clerkKey) {
-    return <ClerkProvider>{inner}</ClerkProvider>;
-  }
-
-  return inner;
 }
