@@ -20,10 +20,15 @@ export const REALTIME_TOOLS = [
     type: "function",
     name: "schedule_meeting",
     description:
-      "Generate a personalized scheduling link for the caller to book a meeting with Ariv. Call this after checking availability and confirming a time preference.",
+      "Actually book a meeting with Ariv on his calendar. This creates a real calendar event. Call this after checking availability and confirming the time with the caller. You must provide the exact start_time from the available slots.",
     parameters: {
       type: "object",
       properties: {
+        start_time: {
+          type: "string",
+          description:
+            "The exact start time in ISO 8601 UTC format from the available slots, e.g. '2026-02-25T15:00:00Z'. Must be one of the slots returned by check_availability.",
+        },
         name: {
           type: "string",
           description: "The caller's full name.",
@@ -38,7 +43,7 @@ export const REALTIME_TOOLS = [
             "Any notes about what they want to discuss with Ariv.",
         },
       },
-      required: ["name", "email"],
+      required: ["start_time", "name", "email"],
     },
   },
   {

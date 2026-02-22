@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { VoicePoweredOrb } from "@/components/ui/voice-powered-orb";
 import { Mic, MicOff } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useUser } from "@clerk/nextjs";
 import { AuthHeader } from "./AuthHeader";
 
 type Role = "user" | "assistant";
@@ -36,6 +37,10 @@ function SkeletonLine({ className = "" }: { className?: string }) {
 }
 
 export default function RealtimeVoice() {
+  const { user } = useUser();
+  const callerName = user ? `${user.firstName || ""} ${user.lastName || ""}`.trim() : "";
+  const callerEmail = user?.primaryEmailAddress?.emailAddress || "";
+
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const dcRef = useRef<RTCDataChannel | null>(null);
@@ -352,7 +357,13 @@ export default function RealtimeVoice() {
           body: JSON.stringify(args),
         });
         const data = await res.json();
-        result = data.message || "Scheduling link generated.";
+        if (data.success) {
+          result = `Meeting confirmed! ${data.message}`;
+          if (data.cancel_url) result += ` Cancel link: ${data.cancel_url}`;
+          if (data.reschedule_url) result += ` Reschedule link: ${data.reschedule_url}`;
+        } else {
+          result = `Booking failed: ${data.error || "unknown error"}. Let the caller know and offer to try a different time.`;
+        }
       } else if (name === "send_confirmation_email") {
         const res = await fetch("/api/tools/send-email", {
           method: "POST",
@@ -467,6 +478,11 @@ export default function RealtimeVoice() {
       try {
         const tokenRes = await fetch("/api/realtime/token", {
           method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            caller_name: callerName || undefined,
+            caller_email: callerEmail || undefined,
+          }),
         });
 
         if (!tokenRes.ok) {

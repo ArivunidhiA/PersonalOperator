@@ -6,7 +6,7 @@ import { REALTIME_TOOLS } from "@/lib/realtime-tools";
 
 const clerkEnabled = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
-export async function POST() {
+export async function POST(req: Request) {
   let userId: string | null = null;
 
   if (clerkEnabled) {
@@ -16,6 +16,10 @@ export async function POST() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
   }
+
+  const body = await req.json().catch(() => null);
+  const callerName = body?.caller_name || "";
+  const callerEmail = body?.caller_email || "";
 
   const rateLimiter = getRateLimiter();
   if (rateLimiter) {
@@ -44,13 +48,22 @@ export async function POST() {
     );
   }
 
+  // Inject caller info into the system prompt if available
+  let instructions = SYSTEM_PROMPT;
+  if (callerName || callerEmail) {
+    instructions += `\n\nCALLER INFO (from their login, already verified):\n`;
+    if (callerName) instructions += `Name: ${callerName}\n`;
+    if (callerEmail) instructions += `Email: ${callerEmail}\n`;
+    instructions += `You already know who this person is. Do NOT ask for their name or email again. When booking a meeting, just confirm: "I have your email as ${callerEmail}, should I use that?" and proceed. Use their name naturally in conversation.`;
+  }
+
   const sessionConfig = {
     expires_after: { anchor: "created_at", seconds: 600 },
     session: {
       type: "realtime",
       model: "gpt-realtime",
       output_modalities: ["audio"],
-      instructions: SYSTEM_PROMPT,
+      instructions,
       tools: REALTIME_TOOLS,
       tool_choice: "auto",
       audio: {
