@@ -9,6 +9,7 @@ const isProtectedRoute = createRouteMatcher([
   "/api/realtime/(.*)",
 ]);
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function noopMiddleware(_req: NextRequest) {
   return NextResponse.next();
 }

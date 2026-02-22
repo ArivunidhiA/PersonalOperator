@@ -55,6 +55,9 @@ export default function RealtimeVoice() {
   const tokenExpiresAtRef = useRef<number>(0);
   const tokenTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const sessionIdRef = useRef<string>("");
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const [status, setStatus] = useState<
     "disconnected" | "connecting" | "connected" | "error" | "reconnecting"
   >("disconnected");
@@ -90,6 +93,19 @@ export default function RealtimeVoice() {
     []
   );
 
+  const saveConversation = useCallback((msgs: TranscriptMessage[]) => {
+    const sid = sessionIdRef.current;
+    if (!sid) return;
+    const finalized = msgs.filter((m) => m.final);
+    if (finalized.length === 0) return;
+
+    void fetch("/api/conversations", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ session_id: sid, messages: finalized }),
+    }).catch(() => null);
+  }, []);
+
   const clearTimers = useCallback(() => {
     if (reconnectTimerRef.current) {
       clearTimeout(reconnectTimerRef.current);
@@ -98,6 +114,10 @@ export default function RealtimeVoice() {
     if (tokenTimerRef.current) {
       clearTimeout(tokenTimerRef.current);
       tokenTimerRef.current = null;
+    }
+    if (saveTimerRef.current) {
+      clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = null;
     }
   }, []);
 
@@ -131,9 +151,13 @@ export default function RealtimeVoice() {
   const disconnect = useCallback(() => {
     intentionalDisconnectRef.current = true;
     reconnectAttemptRef.current = 0;
+    setMessages((prev) => {
+      saveConversation(prev);
+      return prev;
+    });
     teardownConnection();
     setStatus("disconnected");
-  }, [teardownConnection]);
+  }, [teardownConnection, saveConversation]);
 
   const setupDataChannel = useCallback(
     (dc: RTCDataChannel) => {
@@ -220,6 +244,10 @@ export default function RealtimeVoice() {
         intentionalDisconnectRef.current = false;
         reconnectAttemptRef.current = 0;
         setMessages([]);
+      }
+
+      if (!isReconnect) {
+        sessionIdRef.current = `session_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
       }
 
       setStatus(isReconnect ? "reconnecting" : "connecting");
@@ -402,6 +430,20 @@ export default function RealtimeVoice() {
 
     return { userMessages: user, assistantMessages: assistant };
   }, [messages]);
+
+  useEffect(() => {
+    const finalized = messages.filter((m) => m.final);
+    if (finalized.length === 0) return;
+
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => {
+      saveConversation(messages);
+    }, 3000);
+
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    };
+  }, [messages, saveConversation]);
 
   const orbHue = useMemo(() => {
     if (status === "connecting" || status === "reconnecting") return 280;
