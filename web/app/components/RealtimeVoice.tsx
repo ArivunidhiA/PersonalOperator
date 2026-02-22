@@ -188,7 +188,12 @@ export default function RealtimeVoice() {
       void fetch("/api/tools/post-call", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ session_id: sid, messages: finalized }),
+        body: JSON.stringify({
+          session_id: sid,
+          messages: finalized,
+          caller_name: callerNameRef.current || undefined,
+          caller_email: callerEmailRef.current || undefined,
+        }),
       }).catch(() => null);
     },
     []

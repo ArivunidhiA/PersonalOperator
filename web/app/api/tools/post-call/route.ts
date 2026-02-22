@@ -30,6 +30,10 @@ export async function POST(req: Request) {
     );
   }
 
+  // Caller info from Clerk login (primary source)
+  const knownCallerName: string | null = body.caller_name || null;
+  const knownCallerEmail: string | null = body.caller_email || null;
+
   const messages: TranscriptMessage[] = body.messages.filter(
     (m: TranscriptMessage) => m.final && m.text.trim()
   );
@@ -95,13 +99,17 @@ Return ONLY valid JSON, no markdown.`,
     }
   }
 
+  // Use Clerk login info as primary, GPT extraction as fallback
+  const finalCallerName = knownCallerName || analysis.caller_name;
+  const finalCallerEmail = knownCallerEmail || analysis.caller_email;
+
   // Save call summary
   const { error: summaryError } = await supabase
     .from("call_summaries")
     .insert({
       session_id: body.session_id,
-      caller_name: analysis.caller_name,
-      caller_email: analysis.caller_email,
+      caller_name: finalCallerName,
+      caller_email: finalCallerEmail,
       intent: analysis.intent,
       summary: analysis.summary,
       topics: analysis.topics,
@@ -114,18 +122,18 @@ Return ONLY valid JSON, no markdown.`,
   }
 
   // Update caller memory if we have an email
-  if (analysis.caller_email) {
+  if (finalCallerEmail) {
     const { data: existingCaller } = await supabase
       .from("callers")
       .select("id, call_count")
-      .eq("email", analysis.caller_email)
+      .eq("email", finalCallerEmail)
       .single();
 
     if (existingCaller) {
       await supabase
         .from("callers")
         .update({
-          name: analysis.caller_name || undefined,
+          name: finalCallerName || undefined,
           company: analysis.company || undefined,
           call_count: (existingCaller.call_count || 1) + 1,
           last_topics: analysis.topics,
@@ -135,8 +143,8 @@ Return ONLY valid JSON, no markdown.`,
         .eq("id", existingCaller.id);
     } else {
       await supabase.from("callers").insert({
-        email: analysis.caller_email,
-        name: analysis.caller_name,
+        email: finalCallerEmail,
+        name: finalCallerName,
         company: analysis.company,
         interests: analysis.topics,
         last_topics: analysis.topics,
@@ -148,8 +156,8 @@ Return ONLY valid JSON, no markdown.`,
   // Email summary to Ariv
   if (RESEND_API_KEY) {
     const resend = new Resend(RESEND_API_KEY);
-    const callerInfo = analysis.caller_name
-      ? `${analysis.caller_name}${analysis.company ? ` (${analysis.company})` : ""}`
+    const callerInfo = finalCallerName
+      ? `${finalCallerName}${analysis.company ? ` (${analysis.company})` : ""}`
       : "Unknown caller";
 
     await resend.emails
@@ -161,7 +169,7 @@ Return ONLY valid JSON, no markdown.`,
         <div style="font-family: sans-serif; line-height: 1.6; max-width: 600px;">
           <h2 style="color: #333;">Call Summary</h2>
           <p><strong>Caller:</strong> ${callerInfo}</p>
-          ${analysis.caller_email ? `<p><strong>Email:</strong> ${analysis.caller_email}</p>` : ""}
+          ${finalCallerEmail ? `<p><strong>Email:</strong> ${finalCallerEmail}</p>` : ""}
           <p><strong>Intent:</strong> ${analysis.intent}</p>
           <p><strong>Outcome:</strong> ${analysis.outcome}</p>
           <p><strong>Topics:</strong> ${analysis.topics.join(", ") || "N/A"}</p>
