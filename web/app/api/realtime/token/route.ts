@@ -71,6 +71,7 @@ export async function POST(req: Request) {
           transcription: {
             model: "gpt-4o-mini-transcribe",
             language: "en",
+            prompt: "This is a conversation in English. The speaker is speaking American English.",
           },
           turn_detection: {
             type: "server_vad",

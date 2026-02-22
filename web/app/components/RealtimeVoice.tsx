@@ -41,6 +41,11 @@ export default function RealtimeVoice() {
   const callerName = user ? `${user.firstName || ""} ${user.lastName || ""}`.trim() : "";
   const callerEmail = user?.primaryEmailAddress?.emailAddress || "";
 
+  const callerNameRef = useRef(callerName);
+  const callerEmailRef = useRef(callerEmail);
+  callerNameRef.current = callerName;
+  callerEmailRef.current = callerEmail;
+
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const dcRef = useRef<RTCDataChannel | null>(null);
@@ -480,8 +485,8 @@ export default function RealtimeVoice() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            caller_name: callerName || undefined,
-            caller_email: callerEmail || undefined,
+            caller_name: callerNameRef.current || undefined,
+            caller_email: callerEmailRef.current || undefined,
           }),
         });
 
@@ -671,8 +676,13 @@ export default function RealtimeVoice() {
     };
   }, [messages, saveConversation]);
 
-  const cleanText = (text: string) =>
-    text.replace(/\u2014/g, ", ").replace(/\u2013/g, ", ").replace(/, ,/g, ",");
+  const cleanText = (text: string) => {
+    // Strip em/en dashes
+    let cleaned = text.replace(/\u2014/g, ", ").replace(/\u2013/g, ", ").replace(/, ,/g, ",");
+    // Strip non-Latin characters (CJK, Korean, etc.) that appear from transcription hallucinations
+    cleaned = cleaned.replace(/[\u3000-\u9FFF\uAC00-\uD7AF\uF900-\uFAFF]/g, "").trim();
+    return cleaned || text;
+  };
 
   const orbHue = useMemo(() => {
     if (status === "connecting" || status === "reconnecting") return 280;
