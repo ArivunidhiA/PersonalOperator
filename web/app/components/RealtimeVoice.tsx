@@ -244,10 +244,112 @@ export default function RealtimeVoice() {
             transcript
           );
         }
+
+        if (evt.type === "response.function_call_arguments.done") {
+          const { call_id, name, arguments: argsStr } = evt;
+          if (
+            typeof call_id !== "string" ||
+            typeof name !== "string" ||
+            typeof argsStr !== "string"
+          )
+            return;
+
+          void handleFunctionCall(dc, call_id, name, argsStr);
+        }
       });
     },
     [upsertDelta, finalize]
   );
+
+  const handleFunctionCall = async (
+    dc: RTCDataChannel,
+    callId: string,
+    name: string,
+    argsStr: string
+  ) => {
+    let args: Record<string, unknown> = {};
+    try {
+      args = JSON.parse(argsStr);
+    } catch {
+      args = {};
+    }
+
+    let result: string;
+
+    try {
+      if (name === "check_availability") {
+        const res = await fetch("/api/tools/availability", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ start_date: args.start_date }),
+        });
+        const data = await res.json();
+        if (data.slots && data.slots.length > 0) {
+          const formatted = data.slots
+            .map((s: string) =>
+              new Date(s).toLocaleString("en-US", {
+                weekday: "short",
+                month: "short",
+                day: "numeric",
+                hour: "numeric",
+                minute: "2-digit",
+                timeZoneName: "short",
+              })
+            )
+            .join(", ");
+          result = `Available slots in the next 7 days: ${formatted}`;
+        } else {
+          result =
+            "No available slots found in the next 7 days. Suggest they email Ariv at annaarivan.a@northeastern.edu to coordinate.";
+        }
+      } else if (name === "schedule_meeting") {
+        const res = await fetch("/api/tools/schedule", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(args),
+        });
+        const data = await res.json();
+        result = data.message || "Scheduling link generated.";
+      } else if (name === "send_confirmation_email") {
+        const res = await fetch("/api/tools/send-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            to: args.to,
+            subject: args.subject,
+            html: `<div style="font-family: sans-serif; line-height: 1.6;">${String(args.body || "").replace(/\n/g, "<br>")}</div>`,
+          }),
+        });
+        const data = await res.json();
+        result = data.success
+          ? "Email sent successfully."
+          : `Failed to send email: ${data.error || "unknown error"}`;
+      } else {
+        result = `Unknown function: ${name}`;
+      }
+    } catch (err) {
+      result = `Error executing ${name}: ${err instanceof Error ? err.message : "unknown error"}`;
+    }
+
+    if (dc.readyState === "open") {
+      dc.send(
+        JSON.stringify({
+          type: "conversation.item.create",
+          item: {
+            type: "function_call_output",
+            call_id: callId,
+            output: result,
+          },
+        })
+      );
+
+      dc.send(
+        JSON.stringify({
+          type: "response.create",
+        })
+      );
+    }
+  };
 
   const connect = useCallback(
     async (isReconnect = false) => {

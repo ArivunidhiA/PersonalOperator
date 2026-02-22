@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { getRateLimiter } from "@/lib/rate-limit";
 import { SYSTEM_PROMPT } from "@/lib/system-prompt";
+import { REALTIME_TOOLS } from "@/lib/realtime-tools";
 
 const clerkEnabled = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
@@ -50,6 +51,8 @@ export async function POST() {
       model: "gpt-realtime",
       output_modalities: ["audio"],
       instructions: SYSTEM_PROMPT,
+      tools: REALTIME_TOOLS,
+      tool_choice: "auto",
       audio: {
         input: {
           transcription: {
