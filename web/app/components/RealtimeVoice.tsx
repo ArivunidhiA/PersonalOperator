@@ -52,6 +52,14 @@ export default function RealtimeVoice() {
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const voiceQuietTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  interface SystemActivity {
+    id: string;
+    intent: string;
+    action: string;
+    status: "running" | "done" | "error";
+    timestamp: number;
+  }
+
   const [status, setStatus] = useState<
     "disconnected" | "connecting" | "connected" | "error" | "reconnecting"
   >("disconnected");
@@ -59,6 +67,7 @@ export default function RealtimeVoice() {
   const [messages, setMessages] = useState<TranscriptMessage[]>([]);
   const [voiceDetected, setVoiceDetected] = useState(false);
   const [sessionWarning, setSessionWarning] = useState<string | null>(null);
+  const [activities, setActivities] = useState<SystemActivity[]>([]);
 
   const handleVoiceDetected = useCallback((detected: boolean) => {
     if (detected) {
@@ -184,6 +193,7 @@ export default function RealtimeVoice() {
       return prev;
     });
     teardownConnection();
+    setActivities([]);
     setStatus("disconnected");
   }, [teardownConnection, saveConversation, triggerPostCall]);
 
@@ -278,6 +288,14 @@ export default function RealtimeVoice() {
     [upsertDelta, finalize]
   );
 
+  const toolLabels: Record<string, { intent: string; action: string }> = {
+    check_availability: { intent: "Scheduling", action: "Checking calendar" },
+    schedule_meeting: { intent: "Scheduling", action: "Booking meeting" },
+    send_confirmation_email: { intent: "Email", action: "Sending confirmation" },
+    retrieve_knowledge: { intent: "Knowledge", action: "Searching knowledge base" },
+    lookup_caller: { intent: "Memory", action: "Looking up caller" },
+  };
+
   const handleFunctionCall = async (
     dc: RTCDataChannel,
     callId: string,
@@ -290,6 +308,14 @@ export default function RealtimeVoice() {
     } catch {
       args = {};
     }
+
+    const activityId = `${name}_${Date.now()}`;
+    const labels = toolLabels[name] || { intent: "Processing", action: name };
+
+    setActivities((prev) => [
+      ...prev.slice(-4),
+      { id: activityId, intent: labels.intent, action: labels.action, status: "running", timestamp: Date.now() },
+    ]);
 
     let result: string;
 
@@ -389,6 +415,9 @@ export default function RealtimeVoice() {
       }
     } catch (err) {
       result = `Error executing ${name}: ${err instanceof Error ? err.message : "unknown error"}`;
+      setActivities((prev) =>
+        prev.map((a) => (a.id === activityId ? { ...a, status: "error" as const } : a))
+      );
     }
 
     if (dc.readyState === "open") {
@@ -409,6 +438,14 @@ export default function RealtimeVoice() {
         })
       );
     }
+
+    setActivities((prev) =>
+      prev.map((a) =>
+        a.id === activityId && a.status === "running"
+          ? { ...a, status: "done" as const, action: labels.action.replace("ing ", "ed ").replace("Checking", "Checked").replace("Searching", "Searched").replace("Looking up", "Found").replace("Sending", "Sent").replace("Booking", "Booked") }
+          : a
+      )
+    );
   };
 
   const connect = useCallback(
@@ -728,6 +765,29 @@ export default function RealtimeVoice() {
                   ? "Connecting..."
                   : ""}
             </div>
+
+            {activities.length > 0 && (
+              <div className="mt-4 w-full max-w-xs rounded-lg border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-sm">
+                <div className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-white/30">
+                  System
+                </div>
+                <div className="space-y-1.5">
+                  {activities.slice(-3).map((a) => (
+                    <div key={a.id} className="flex items-center gap-2 text-xs">
+                      {a.status === "running" ? (
+                        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-blue-400" />
+                      ) : a.status === "done" ? (
+                        <span className="h-1.5 w-1.5 rounded-full bg-green-400" />
+                      ) : (
+                        <span className="h-1.5 w-1.5 rounded-full bg-red-400" />
+                      )}
+                      <span className="font-medium text-white/50">{a.intent}</span>
+                      <span className="text-white/30">{a.action}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Right: Assistant responses — plain text, no boxes */}
