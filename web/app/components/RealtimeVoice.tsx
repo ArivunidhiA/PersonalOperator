@@ -59,6 +59,7 @@ export default function RealtimeVoice() {
   const tokenTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const sessionIdRef = useRef<string>("");
+  const postCallFiredRef = useRef(false);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const voiceQuietTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -192,6 +193,8 @@ export default function RealtimeVoice() {
     (msgs: TranscriptMessage[]) => {
       const sid = sessionIdRef.current;
       if (!sid) return;
+      if (postCallFiredRef.current) return;
+      postCallFiredRef.current = true;
       const finalized = msgs.filter((m) => m.final && m.text.trim());
       if (finalized.length === 0) return;
 
@@ -516,6 +519,7 @@ export default function RealtimeVoice() {
       if (!isReconnect) {
         intentionalDisconnectRef.current = false;
         reconnectAttemptRef.current = 0;
+        postCallFiredRef.current = false;
         setMessages([]);
       }
 

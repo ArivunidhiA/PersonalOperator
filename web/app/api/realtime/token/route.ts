@@ -54,7 +54,7 @@ export async function POST(req: Request) {
     instructions += `\n\nCALLER INFO (from their login, already verified):\n`;
     if (callerName) instructions += `Name: ${callerName}\n`;
     if (callerEmail) instructions += `Email: ${callerEmail}\n`;
-    instructions += `You already know who this person is. Do NOT ask for their name or email again. When booking a meeting, just confirm: "I have your email as ${callerEmail}, should I use that?" and proceed. Use their name naturally in conversation.\nIMPORTANT: As soon as the conversation starts, call lookup_caller with email "${callerEmail}" to check if they've called before. Use that context in your greeting.`;
+    instructions += `You already know who this person is. Do NOT ask for their name or email again. When booking a meeting, just confirm: "I have your email as ${callerEmail}, should I use that?" and proceed.\nUse their first name naturally but only AFTER they speak first. Do NOT call any tools until the caller has spoken. When they mention scheduling or you want to personalize, THEN call lookup_caller with email "${callerEmail}".`;
   }
 
   const sessionConfig = {
@@ -76,9 +76,9 @@ export async function POST(req: Request) {
             type: "server_vad",
             create_response: true,
             interrupt_response: true,
-            silence_duration_ms: 1500,
-            threshold: 0.7,
-            prefix_padding_ms: 500,
+            silence_duration_ms: 2000,
+            threshold: 0.8,
+            prefix_padding_ms: 600,
           },
         },
         output: {
