@@ -78,6 +78,9 @@ export default function RealtimeVoice() {
   const [voiceDetected, setVoiceDetected] = useState(false);
   const [sessionWarning, setSessionWarning] = useState<string | null>(null);
   const [activities, setActivities] = useState<SystemActivity[]>([]);
+  const [connectionQuality, setConnectionQuality] = useState<"good" | "fair" | "poor" | "">("")
+  const latencyRef = useRef<number[]>([]);
+  const pingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const handleVoiceDetected = useCallback((detected: boolean) => {
     if (detected) {
@@ -174,8 +177,15 @@ export default function RealtimeVoice() {
       audioRef.current.srcObject = null;
     }
 
+    if (pingIntervalRef.current) {
+      clearInterval(pingIntervalRef.current);
+      pingIntervalRef.current = null;
+    }
+    latencyRef.current = [];
+
     setVoiceDetected(false);
     setSessionWarning(null);
+    setConnectionQuality("");
   }, [clearTimers]);
 
   const triggerPostCall = useCallback(
@@ -515,13 +525,44 @@ export default function RealtimeVoice() {
           if (state === "connected") {
             reconnectAttemptRef.current = 0;
             setStatus("connected");
+            setConnectionQuality("good");
           }
           if (state === "failed" || state === "disconnected") {
+            setConnectionQuality("");
             if (!intentionalDisconnectRef.current) {
               scheduleReconnect();
             }
           }
         });
+
+        pc.addEventListener("iceconnectionstatechange", () => {
+          const iceState = pc.iceConnectionState;
+          if (iceState === "checking") setConnectionQuality("fair");
+          if (iceState === "connected" || iceState === "completed") setConnectionQuality("good");
+          if (iceState === "disconnected") setConnectionQuality("poor");
+          if (iceState === "failed") setConnectionQuality("poor");
+        });
+
+        // Monitor connection stats for quality
+        const statsInterval = setInterval(async () => {
+          if (pc.connectionState !== "connected") return;
+          try {
+            const stats = await pc.getStats();
+            stats.forEach((report) => {
+              if (report.type === "candidate-pair" && report.state === "succeeded") {
+                const rtt = report.currentRoundTripTime;
+                if (typeof rtt === "number") {
+                  latencyRef.current = [...latencyRef.current.slice(-9), rtt * 1000];
+                  const avgLatency = latencyRef.current.reduce((a, b) => a + b, 0) / latencyRef.current.length;
+                  if (avgLatency < 150) setConnectionQuality("good");
+                  else if (avgLatency < 400) setConnectionQuality("fair");
+                  else setConnectionQuality("poor");
+                }
+              }
+            });
+          } catch {}
+        }, 3000);
+        pingIntervalRef.current = statsInterval;
 
         pc.ontrack = (e) => {
           const el = audioRef.current;
@@ -787,14 +828,36 @@ export default function RealtimeVoice() {
               </div>
             </div>
 
-            <div className="mt-3 text-center text-xs text-white/40 sm:mt-4">
-              {isActive
-                ? voiceDetected
-                  ? "Listening..."
-                  : "Ready"
-                : isLoading
-                  ? "Connecting..."
-                  : ""}
+            <div className="mt-3 flex items-center justify-center gap-2 text-xs text-white/40 sm:mt-4">
+              <span>
+                {isActive
+                  ? voiceDetected
+                    ? "Listening..."
+                    : "Ready"
+                  : isLoading
+                    ? "Connecting..."
+                    : ""}
+              </span>
+              {isActive && connectionQuality && (
+                <span className="flex items-center gap-1">
+                  <span
+                    className={`h-1.5 w-1.5 rounded-full ${
+                      connectionQuality === "good"
+                        ? "bg-green-400"
+                        : connectionQuality === "fair"
+                          ? "bg-yellow-400"
+                          : "bg-red-400 animate-pulse"
+                    }`}
+                  />
+                  <span className="text-[10px] text-white/25">
+                    {connectionQuality === "good"
+                      ? "Strong"
+                      : connectionQuality === "fair"
+                        ? "Fair"
+                        : "Weak"}
+                  </span>
+                </span>
+              )}
             </div>
 
             {activities.length > 0 && (

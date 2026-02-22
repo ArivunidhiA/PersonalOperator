@@ -70,8 +70,7 @@ export async function POST(req: Request) {
         input: {
           transcription: {
             model: "gpt-4o-mini-transcribe",
-            language: "en",
-            prompt: "This is a conversation in English. The speaker is speaking American English.",
+            prompt: "The speaker is most likely speaking English, but may switch to other languages.",
           },
           turn_detection: {
             type: "server_vad",
