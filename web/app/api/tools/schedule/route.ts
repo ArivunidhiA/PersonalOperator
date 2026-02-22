@@ -58,10 +58,25 @@ export async function POST(req: Request) {
 
   if (!res.ok) {
     console.error("Calendly booking error:", res.status, JSON.stringify(data));
+    const errorMsg = data?.message || data?.title || "Failed to book meeting";
+    const isSlotTaken = errorMsg.toLowerCase().includes("no longer available") || errorMsg.toLowerCase().includes("conflict") || res.status === 409;
+    const isInvalidTime = errorMsg.toLowerCase().includes("start_time") || errorMsg.toLowerCase().includes("must be in the future");
+    const isInvalidEmail = errorMsg.toLowerCase().includes("email") || errorMsg.toLowerCase().includes("invitee");
+
+    let recovery = "Try offering a different time slot.";
+    if (isSlotTaken) {
+      recovery = "That time slot was just taken. Call check_availability again to get fresh slots and offer new options.";
+    } else if (isInvalidTime) {
+      recovery = "The time was invalid or in the past. Call check_availability to get current valid slots.";
+    } else if (isInvalidEmail) {
+      recovery = "The email address may be invalid. Ask the caller to confirm their email and try again.";
+    }
+
     return NextResponse.json({
       success: false,
-      error: data?.message || data?.title || "Failed to book meeting",
-      details: data,
+      error: errorMsg,
+      recovery,
+      scheduling_url: "https://calendly.com/annaarivan-a-northeastern/15-min-coffee-chat",
     });
   }
 

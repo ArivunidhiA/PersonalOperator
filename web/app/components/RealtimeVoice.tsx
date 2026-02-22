@@ -383,7 +383,8 @@ export default function RealtimeVoice() {
           if (data.cancel_url) result += ` Cancel link: ${data.cancel_url}`;
           if (data.reschedule_url) result += ` Reschedule link: ${data.reschedule_url}`;
         } else {
-          result = `Booking failed: ${data.error || "unknown error"}. Let the caller know and offer to try a different time.`;
+          result = `Booking failed: ${data.error || "unknown error"}. ${data.recovery || "Try a different time."}`;
+          if (data.scheduling_url) result += ` Fallback booking link: ${data.scheduling_url}`;
         }
       } else if (name === "send_confirmation_email") {
         const res = await fetch("/api/tools/send-email", {

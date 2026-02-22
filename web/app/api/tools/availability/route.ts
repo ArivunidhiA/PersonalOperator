@@ -63,12 +63,39 @@ export async function POST(req: Request) {
     .slice(0, 10)
     .map((s: { start_time: string }) => s.start_time);
 
+  // Build helpful context for the AI
+  let note: string | undefined;
+  if (slots.length === 0) {
+    note = "No slots found in the next 7 days between 10am-5pm EST. This could mean the calendar is fully booked this week OR the API returned no data. Tell the caller: 'His calendar looks pretty full this week, but it's generally open. Let me send you his booking link so you can pick a time that works.' Share the scheduling_url.";
+  }
+
+  // Group slots by day for easier AI consumption
+  const slotsByDay: Record<string, string[]> = {};
+  for (const s of slots) {
+    const day = new Date(s).toLocaleDateString("en-US", {
+      weekday: "long",
+      month: "short",
+      day: "numeric",
+      timeZone: "America/New_York",
+    });
+    if (!slotsByDay[day]) slotsByDay[day] = [];
+    slotsByDay[day].push(
+      new Date(s).toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        timeZone: "America/New_York",
+      })
+    );
+  }
+
   return NextResponse.json({
     slots,
+    slots_by_day: slotsByDay,
     scheduling_url: SCHEDULING_URL,
-    note:
-      slots.length === 0
-        ? "No specific slots returned by the API, but Ariv's calendar is generally open. Direct the caller to the scheduling URL to pick a time."
-        : undefined,
+    total_slots: slots.length,
+    note,
+    guidance: slots.length > 0
+      ? `Found ${slots.length} available slots across ${Object.keys(slotsByDay).length} days. Offer 2-3 options naturally. If the caller is unsure about their schedule, suggest the earliest available day and ask if morning or afternoon works better.`
+      : undefined,
   });
 }
