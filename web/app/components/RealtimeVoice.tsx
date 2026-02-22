@@ -57,6 +57,7 @@ export default function RealtimeVoice() {
 
   const sessionIdRef = useRef<string>("");
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const voiceQuietTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [status, setStatus] = useState<
     "disconnected" | "connecting" | "connected" | "error" | "reconnecting"
@@ -65,6 +66,23 @@ export default function RealtimeVoice() {
   const [messages, setMessages] = useState<TranscriptMessage[]>([]);
   const [voiceDetected, setVoiceDetected] = useState(false);
   const [sessionWarning, setSessionWarning] = useState<string | null>(null);
+
+  const handleVoiceDetected = useCallback((detected: boolean) => {
+    if (detected) {
+      if (voiceQuietTimerRef.current) {
+        clearTimeout(voiceQuietTimerRef.current);
+        voiceQuietTimerRef.current = null;
+      }
+      setVoiceDetected(true);
+    } else {
+      if (!voiceQuietTimerRef.current) {
+        voiceQuietTimerRef.current = setTimeout(() => {
+          setVoiceDetected(false);
+          voiceQuietTimerRef.current = null;
+        }, 3000);
+      }
+    }
+  }, []);
 
   const upsertDelta = useCallback((id: string, role: Role, delta: string) => {
     setMessages((prev) => {
@@ -456,183 +474,170 @@ export default function RealtimeVoice() {
   const isActive = status === "connected";
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-6 sm:gap-10 sm:px-6 sm:py-10">
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-            <div>
-              <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-                Ariv&apos;s AI Operator
-              </h1>
-              <p className="mt-1 text-sm text-white/60 sm:mt-2">
-                Live Agent Execution
-              </p>
-            </div>
+    <div className="flex min-h-screen flex-col bg-black text-white">
+      <audio ref={audioRef} autoPlay className="hidden" />
 
-            <div className="flex items-center gap-3">
-              <AuthHeader />
-              <Button
-                onClick={
-                  isActive || status === "reconnecting"
-                    ? disconnect
-                    : () => void connect()
-                }
-                disabled={status === "connecting"}
-                variant={isActive ? "destructive" : "default"}
-                className="rounded-full px-6"
-              >
-                {isActive ? (
-                  <>
-                    <MicOff className="mr-2 h-4 w-4" />
-                    Disconnect
-                  </>
-                ) : (
-                  <>
-                    <Mic className="mr-2 h-4 w-4" />
-                    {status === "reconnecting" ? "Cancel" : "Connect"}
-                  </>
-                )}
-              </Button>
+      {/* Top bar: auth + connect */}
+      <div className="flex items-center justify-end gap-3 px-4 py-3 sm:px-6">
+        <AuthHeader />
+        <Button
+          onClick={
+            isActive || status === "reconnecting"
+              ? disconnect
+              : () => void connect()
+          }
+          disabled={status === "connecting"}
+          variant={isActive ? "destructive" : "default"}
+          className="rounded-full px-5 text-sm"
+        >
+          {isActive ? (
+            <>
+              <MicOff className="mr-2 h-4 w-4" />
+              Disconnect
+            </>
+          ) : (
+            <>
+              <Mic className="mr-2 h-4 w-4" />
+              {isLoading ? "Connecting..." : "Connect"}
+            </>
+          )}
+        </Button>
+      </div>
 
-              <div className="hidden text-sm text-white/60 sm:block">
-                {status}
-              </div>
-            </div>
+      {error && (
+        <div className="mx-4 mb-2 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm text-red-200 sm:mx-6">
+          {error}
+        </div>
+      )}
+
+      {sessionWarning && (
+        <div className="mx-4 mb-2 rounded-xl border border-yellow-500/30 bg-yellow-500/10 px-4 py-2 text-sm text-yellow-200 sm:mx-6">
+          {sessionWarning}
+        </div>
+      )}
+
+      {/* Main content */}
+      <div className="flex flex-1 flex-col items-center justify-center gap-6 px-4 pb-8 lg:flex-row lg:items-start lg:gap-12 lg:px-6 lg:pt-4">
+        {/* Left: User transcript */}
+        <div className="hidden w-full max-w-xs lg:block">
+          <div className="text-xs font-medium uppercase tracking-widest text-white/40">
+            You
           </div>
-
-          {error && (
-            <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
-              {error}
-            </div>
-          )}
-
-          {sessionWarning && (
-            <div className="rounded-xl border border-yellow-500/30 bg-yellow-500/10 px-4 py-3 text-sm text-yellow-200">
-              {sessionWarning}
-            </div>
-          )}
+          <div className="mt-4 max-h-[65vh] space-y-5 overflow-auto pr-2">
+            {isLoading ? (
+              <div className="space-y-3">
+                <SkeletonLine className="h-3 w-3/4" />
+                <SkeletonLine className="h-3 w-1/2" />
+              </div>
+            ) : userMessages.length === 0 ? (
+              <div className="text-sm text-white/30">
+                Your words will appear here.
+              </div>
+            ) : (
+              userMessages.map((m) => (
+                <div
+                  key={m.id}
+                  className={`text-sm leading-6 ${m.final ? "text-white/80" : "text-white/40"}`}
+                >
+                  {m.text}
+                </div>
+              ))
+            )}
+          </div>
         </div>
 
-        <audio ref={audioRef} autoPlay className="hidden" />
-
-        {/* Mobile: stacked, Desktop: 3-column */}
-        <div className="flex flex-col gap-8 lg:grid lg:grid-cols-12 lg:gap-12">
-          {/* Center orb — shown first on mobile for visual hierarchy */}
-          <div className="order-1 lg:order-2 lg:col-span-4">
-            <div className="flex flex-col items-center justify-center">
-              <div className="relative h-48 w-48 sm:h-80 sm:w-80 lg:h-96 lg:w-96">
-                <div className="absolute inset-0 rounded-3xl bg-gradient-to-tr from-blue-500/20 via-purple-500/20 to-fuchsia-500/20 blur-2xl" />
-                <div className="relative h-full w-full rounded-3xl overflow-hidden">
-                  <VoicePoweredOrb
-                    enableVoiceControl={isActive}
-                    hue={orbHue}
-                    onVoiceDetected={setVoiceDetected}
-                    mediaStream={localStreamRef.current}
-                  />
-                </div>
-              </div>
-
-              <div className="mt-4 text-center text-sm text-white/60 sm:mt-6">
-                {isActive
-                  ? voiceDetected
-                    ? "Listening"
-                    : "Ready"
-                  : isLoading
-                    ? "Connecting..."
-                    : "Press Connect to start"}
-              </div>
+        {/* Center: Orb */}
+        <div className="flex flex-col items-center">
+          <div className="relative h-56 w-56 sm:h-72 sm:w-72 lg:h-96 lg:w-96">
+            <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-blue-500/15 via-purple-500/15 to-fuchsia-500/15 blur-3xl" />
+            <div className="relative h-full w-full overflow-hidden rounded-full">
+              <VoicePoweredOrb
+                enableVoiceControl={isActive}
+                hue={orbHue}
+                onVoiceDetected={handleVoiceDetected}
+                mediaStream={localStreamRef.current}
+              />
             </div>
           </div>
 
-          {/* Left: User transcript */}
-          <div className="order-2 lg:order-1 lg:col-span-4">
-            <div className="text-xs font-medium uppercase tracking-widest text-white/50">
-              You
-            </div>
+          <div className="mt-3 text-center text-xs text-white/40 sm:mt-4">
+            {isActive
+              ? voiceDetected
+                ? "Listening..."
+                : "Ready"
+              : isLoading
+                ? "Connecting..."
+                : ""}
+          </div>
+        </div>
 
-            <div className="mt-4 max-h-[40vh] space-y-6 overflow-auto pr-2 sm:mt-8 sm:space-y-8 lg:max-h-[55vh]">
-              {isLoading ? (
-                <div className="space-y-4">
-                  <SkeletonLine className="h-3 w-3/4" />
-                  <SkeletonLine className="h-3 w-1/2" />
-                  <SkeletonLine className="h-3 w-2/3" />
-                </div>
-              ) : userMessages.length === 0 ? (
-                <div className="text-sm text-white/40">
-                  Press Connect, then start talking.
-                </div>
-              ) : (
-                userMessages.map((m) => (
-                  <div key={m.id} className="space-y-2">
-                    <div className="text-xs font-medium uppercase tracking-widest text-white/40">
-                      You
-                    </div>
-                    <div
-                      className={`text-base leading-7 sm:text-lg ${m.final ? "" : "opacity-60"}`}
+        {/* Right: Assistant responses */}
+        <div className="w-full max-w-xs">
+          <div className="text-xs font-medium uppercase tracking-widest text-white/40">
+            Arivunidhi&apos;s AI
+          </div>
+          <div className="mt-4 max-h-[40vh] space-y-4 overflow-auto pr-2 lg:max-h-[65vh]">
+            {isLoading ? (
+              <div className="space-y-3">
+                <SkeletonLine className="h-10 w-full rounded-lg" />
+                <SkeletonLine className="h-10 w-5/6 rounded-lg" />
+              </div>
+            ) : assistantMessages.length === 0 ? (
+              <div className="text-sm text-white/30">
+                {isActive
+                  ? "Ask me anything about Arivunidhi."
+                  : ""}
+              </div>
+            ) : (
+              assistantMessages.map((m) => (
+                <ChatBubble
+                  key={m.id}
+                  variant="received"
+                  className="items-start"
+                >
+                  <ChatBubbleAvatar fallback="AI" />
+                  <div className="min-w-0 flex-1">
+                    <ChatBubbleMessage
+                      className={`text-sm leading-6 ${m.final ? "" : "opacity-70"}`}
                     >
                       {m.text}
-                    </div>
+                    </ChatBubbleMessage>
+
+                    <ChatBubbleActionWrapper>
+                      <ChatBubbleAction
+                        icon={<Copy className="h-3 w-3" />}
+                        onClick={() => {
+                          void navigator.clipboard.writeText(m.text);
+                        }}
+                      />
+                    </ChatBubbleActionWrapper>
                   </div>
-                ))
-              )}
-            </div>
-          </div>
-
-          {/* Right: System intelligence + assistant */}
-          <div className="order-3 lg:col-span-4">
-            <div className="text-xs font-medium uppercase tracking-widest text-white/50">
-              System intelligence
-            </div>
-
-            <div className="mt-4 space-y-2 font-mono text-xs text-white/70 sm:mt-6">
-              <div>→ Status: {status}</div>
-              <div>→ Voice: {voiceDetected ? "detected" : "quiet"}</div>
-              {reconnectAttemptRef.current > 0 && (
-                <div>→ Reconnect attempt: {reconnectAttemptRef.current}</div>
-              )}
-              {error && <div className="text-red-300">→ Error</div>}
-            </div>
-
-            <div className="mt-6 max-h-[40vh] space-y-4 overflow-auto pr-2 sm:mt-8 sm:space-y-5 lg:max-h-[55vh]">
-              {isLoading ? (
-                <div className="space-y-4">
-                  <SkeletonLine className="h-12 w-full rounded-lg" />
-                  <SkeletonLine className="h-12 w-5/6 rounded-lg" />
-                </div>
-              ) : assistantMessages.length === 0 ? (
-                <div className="text-sm text-white/40">
-                  Assistant responses will appear here.
-                </div>
-              ) : (
-                assistantMessages.map((m) => (
-                  <ChatBubble
-                    key={m.id}
-                    variant="received"
-                    className="items-start"
-                  >
-                    <ChatBubbleAvatar fallback="AI" />
-                    <div className="min-w-0 flex-1">
-                      <ChatBubbleMessage
-                        className={`font-mono text-sm leading-6 ${m.final ? "" : "opacity-70"}`}
-                      >
-                        {m.text}
-                      </ChatBubbleMessage>
-
-                      <ChatBubbleActionWrapper>
-                        <ChatBubbleAction
-                          icon={<Copy className="h-3 w-3" />}
-                          onClick={() => {
-                            void navigator.clipboard.writeText(m.text);
-                          }}
-                        />
-                      </ChatBubbleActionWrapper>
-                    </div>
-                  </ChatBubble>
-                ))
-              )}
-            </div>
+                </ChatBubble>
+              ))
+            )}
           </div>
         </div>
+      </div>
+
+      {/* Mobile: transcript below orb */}
+      <div className="px-4 pb-6 lg:hidden">
+        {userMessages.length > 0 && (
+          <div className="mb-4">
+            <div className="text-xs font-medium uppercase tracking-widest text-white/40">
+              You
+            </div>
+            <div className="mt-2 max-h-[25vh] space-y-3 overflow-auto">
+              {userMessages.map((m) => (
+                <div
+                  key={m.id}
+                  className={`text-sm leading-6 ${m.final ? "text-white/80" : "text-white/40"}`}
+                >
+                  {m.text}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

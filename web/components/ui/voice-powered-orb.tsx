@@ -355,7 +355,7 @@ export const VoicePoweredOrb: FC<VoicePoweredOrbProps> = ({
       let lastTime = 0;
       let currentRot = 0;
       let voiceLevel = 0;
-      const baseRotationSpeed = 0.3;
+      const baseRotationSpeed = 0.08;
       let isMicrophoneInitialized = false;
 
       if (enableVoiceControl) {
@@ -374,7 +374,7 @@ export const VoicePoweredOrb: FC<VoicePoweredOrbProps> = ({
 
         const dt = (t - lastTime) * 0.001;
         lastTime = t;
-        program.uniforms.iTime.value = t * 0.001;
+        program.uniforms.iTime.value = t * 0.0004;
         program.uniforms.hue.value = hue;
 
         if (enableVoiceControl && isMicrophoneInitialized) {
@@ -384,15 +384,15 @@ export const VoicePoweredOrb: FC<VoicePoweredOrbProps> = ({
             onVoiceDetected(voiceLevel > 0.1);
           }
 
-          const voiceRotationSpeed = baseRotationSpeed + voiceLevel * maxRotationSpeed * 2.0;
+          const voiceRotationSpeed = baseRotationSpeed + voiceLevel * maxRotationSpeed * 0.6;
 
           if (voiceLevel > 0.05) {
             currentRot += dt * voiceRotationSpeed;
           }
 
-          program.uniforms.hover.value = Math.min(voiceLevel * 2.0, 1.0);
+          program.uniforms.hover.value = Math.min(voiceLevel * 1.2, 1.0);
           program.uniforms.hoverIntensity.value = Math.min(
-            voiceLevel * maxHoverIntensity * 0.8,
+            voiceLevel * maxHoverIntensity * 0.5,
             maxHoverIntensity
           );
         } else {
