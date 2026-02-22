@@ -320,6 +320,7 @@ export default function RealtimeVoice() {
     retrieve_knowledge: { intent: "Knowledge", action: "Searching knowledge base" },
     lookup_caller: { intent: "Memory", action: "Looking up caller" },
     research_role: { intent: "Role Research", action: "Researching role fit" },
+    generate_summary: { intent: "Summary", action: "Generating recap" },
   };
 
   const handleFunctionCall = async (
@@ -418,6 +419,12 @@ export default function RealtimeVoice() {
           result =
             "No specific information found for that query. Answer based on what you already know about Ariv, or suggest they ask Ariv directly.";
         }
+      } else if (name === "generate_summary") {
+        const company = (args.company as string) || "Unknown";
+        const role = (args.role as string) || "General Inquiry";
+        const summaryStatus = (args.status as string) || "Exploring";
+        const meeting = (args.meeting as string) || "Not Scheduled";
+        result = `Recruiter Summary:\n- Company: ${company}\n- Role: ${role}\n- Status: ${summaryStatus}\n- Meeting: ${meeting}\n\nRead this summary to the caller naturally. For example: "So here's your recap. Company: ${company}. Role: ${role}. Status: ${summaryStatus}. Meeting: ${meeting}. It was great chatting with you!"`;
       } else if (name === "research_role") {
         const res = await fetch("/api/tools/research-role", {
           method: "POST",

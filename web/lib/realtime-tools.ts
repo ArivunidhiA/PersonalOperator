@@ -106,6 +106,38 @@ export const REALTIME_TOOLS = [
   },
   {
     type: "function",
+    name: "generate_summary",
+    description:
+      "Generate a post-call recruiter summary when the conversation is wrapping up. Call this when the caller seems done or says they have no more questions. This produces a clean recap with company, role, qualification status, and meeting status.",
+    parameters: {
+      type: "object",
+      properties: {
+        company: {
+          type: "string",
+          description:
+            "The company the caller is from or hiring for. Use 'Unknown' if not mentioned.",
+        },
+        role: {
+          type: "string",
+          description:
+            "The role being discussed. Use 'General Inquiry' if no specific role was mentioned.",
+        },
+        status: {
+          type: "string",
+          description:
+            "Whether Ariv seems qualified for the role based on the conversation. One of: 'Qualified', 'Strong Fit', 'Exploring', 'Not a Fit'.",
+        },
+        meeting: {
+          type: "string",
+          description:
+            "Whether a meeting was scheduled. E.g. 'Scheduled for Thursday at 2pm EST', 'Not Scheduled', 'Link Shared'.",
+        },
+      },
+      required: ["company", "role", "status", "meeting"],
+    },
+  },
+  {
+    type: "function",
     name: "research_role",
     description:
       "Research a specific company and role to understand what they need, what the company does, and which of Ariv's experiences are most relevant. Call this IMMEDIATELY when a caller mentions a company name, role title, or job they're hiring for. This helps you tailor your pitch to what actually matters for that role.",
