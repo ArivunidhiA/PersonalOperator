@@ -12,6 +12,7 @@ interface VoicePoweredOrbProps {
   maxRotationSpeed?: number;
   maxHoverIntensity?: number;
   onVoiceDetected?: (detected: boolean) => void;
+  mediaStream?: MediaStream | null;
 }
 
 const VERT = /* glsl */ `
@@ -181,6 +182,7 @@ export const VoicePoweredOrb: FC<VoicePoweredOrbProps> = ({
   maxRotationSpeed = 1.2,
   maxHoverIntensity = 0.8,
   onVoiceDetected,
+  mediaStream = null,
 }) => {
   const ctnDom = useRef<HTMLDivElement>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -207,15 +209,8 @@ export const VoicePoweredOrb: FC<VoicePoweredOrbProps> = ({
     return level;
   };
 
-  const stopMicrophone = () => {
+  const stopAudioAnalysis = () => {
     try {
-      if (mediaStreamRef.current) {
-        mediaStreamRef.current.getTracks().forEach((track) => {
-          track.stop();
-        });
-        mediaStreamRef.current = null;
-      }
-
       if (microphoneRef.current) {
         microphoneRef.current.disconnect();
         microphoneRef.current = null;
@@ -226,32 +221,40 @@ export const VoicePoweredOrb: FC<VoicePoweredOrbProps> = ({
         analyserRef.current = null;
       }
 
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+        mediaStreamRef.current = null;
+      }
+
       if (audioContextRef.current && audioContextRef.current.state !== "closed") {
         audioContextRef.current.close();
         audioContextRef.current = null;
       }
 
       dataArrayRef.current = null;
-      console.log("Microphone stopped and cleaned up");
     } catch (error) {
-      console.warn("Error stopping microphone:", error);
+      console.warn("Error stopping audio analysis:", error);
     }
   };
 
-  const initMicrophone = async () => {
+  const initAudioAnalysis = async (stream?: MediaStream | null) => {
     try {
-      stopMicrophone();
+      stopAudioAnalysis();
 
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: false,
-          noiseSuppression: false,
-          autoGainControl: false,
-          sampleRate: 44100,
-        },
-      });
-
-      mediaStreamRef.current = stream;
+      let activeStream: MediaStream;
+      if (stream && stream.getAudioTracks().length > 0) {
+        activeStream = stream;
+      } else {
+        activeStream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: false,
+            noiseSuppression: false,
+            autoGainControl: false,
+            sampleRate: 44100,
+          },
+        });
+        mediaStreamRef.current = activeStream;
+      }
 
       const AudioCtx = window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       audioContextRef.current = new AudioCtx();
@@ -261,7 +264,7 @@ export const VoicePoweredOrb: FC<VoicePoweredOrbProps> = ({
       }
 
       analyserRef.current = audioContextRef.current.createAnalyser();
-      microphoneRef.current = audioContextRef.current.createMediaStreamSource(stream);
+      microphoneRef.current = audioContextRef.current.createMediaStreamSource(activeStream);
 
       analyserRef.current.fftSize = 512;
       analyserRef.current.smoothingTimeConstant = 0.3;
@@ -271,10 +274,9 @@ export const VoicePoweredOrb: FC<VoicePoweredOrbProps> = ({
       microphoneRef.current.connect(analyserRef.current);
       dataArrayRef.current = new Uint8Array(analyserRef.current.frequencyBinCount);
 
-      console.log("Microphone initialized successfully");
       return true;
     } catch (error) {
-      console.warn("Microphone access denied or not available:", error);
+      console.warn("Audio analysis init failed:", error);
       return false;
     }
   };
@@ -357,11 +359,11 @@ export const VoicePoweredOrb: FC<VoicePoweredOrbProps> = ({
       let isMicrophoneInitialized = false;
 
       if (enableVoiceControl) {
-        initMicrophone().then((success) => {
+        initAudioAnalysis(mediaStream).then((success) => {
           isMicrophoneInitialized = success;
         });
       } else {
-        stopMicrophone();
+        stopAudioAnalysis();
         isMicrophoneInitialized = false;
       }
 
@@ -428,7 +430,7 @@ export const VoicePoweredOrb: FC<VoicePoweredOrbProps> = ({
           }
         }
 
-        stopMicrophone();
+        stopAudioAnalysis();
 
         gl.getExtension("WEBGL_lose_context")?.loseContext();
       };
@@ -449,6 +451,7 @@ export const VoicePoweredOrb: FC<VoicePoweredOrbProps> = ({
     maxRotationSpeed,
     maxHoverIntensity,
     onVoiceDetected,
+    mediaStream,
   ]);
 
   return <div ref={ctnDom} className={cn("w-full h-full relative", className)} />;

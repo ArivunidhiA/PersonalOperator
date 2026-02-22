@@ -1,5 +1,10 @@
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import RealtimeVoice from "./components/RealtimeVoice";
 
 export default function Home() {
-  return <RealtimeVoice />;
+  return (
+    <ErrorBoundary>
+      <RealtimeVoice />
+    </ErrorBoundary>
+  );
 }

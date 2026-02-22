@@ -1,6 +1,38 @@
+import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+import { getRateLimiter } from "@/lib/rate-limit";
+
+const clerkEnabled = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
 export async function POST() {
+  let userId: string | null = null;
+
+  if (clerkEnabled) {
+    const session = await auth();
+    userId = session.userId;
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+  }
+
+  const rateLimiter = getRateLimiter();
+  if (rateLimiter) {
+    const rateLimitKey = userId ?? "anonymous";
+    const { success, remaining, reset } = await rateLimiter.limit(rateLimitKey);
+    if (!success) {
+      return NextResponse.json(
+        { error: "Rate limit exceeded. Try again later." },
+        {
+          status: 429,
+          headers: {
+            "X-RateLimit-Remaining": String(remaining),
+            "X-RateLimit-Reset": String(reset),
+          },
+        }
+      );
+    }
+  }
+
   const apiKey = process.env.OPENAI_API_KEY;
 
   if (!apiKey) {
