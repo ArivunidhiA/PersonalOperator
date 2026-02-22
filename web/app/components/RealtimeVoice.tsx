@@ -159,16 +159,33 @@ export default function RealtimeVoice() {
     setSessionWarning(null);
   }, [clearTimers]);
 
+  const triggerPostCall = useCallback(
+    (msgs: TranscriptMessage[]) => {
+      const sid = sessionIdRef.current;
+      if (!sid) return;
+      const finalized = msgs.filter((m) => m.final && m.text.trim());
+      if (finalized.length === 0) return;
+
+      void fetch("/api/tools/post-call", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session_id: sid, messages: finalized }),
+      }).catch(() => null);
+    },
+    []
+  );
+
   const disconnect = useCallback(() => {
     intentionalDisconnectRef.current = true;
     reconnectAttemptRef.current = 0;
     setMessages((prev) => {
       saveConversation(prev);
+      triggerPostCall(prev);
       return prev;
     });
     teardownConnection();
     setStatus("disconnected");
-  }, [teardownConnection, saveConversation]);
+  }, [teardownConnection, saveConversation, triggerPostCall]);
 
   const setupDataChannel = useCallback(
     (dc: RTCDataChannel) => {
@@ -324,6 +341,49 @@ export default function RealtimeVoice() {
         result = data.success
           ? "Email sent successfully."
           : `Failed to send email: ${data.error || "unknown error"}`;
+      } else if (name === "retrieve_knowledge") {
+        const res = await fetch("/api/tools/rag", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query: args.query }),
+        });
+        const data = await res.json();
+        if (data.results && data.results.length > 0) {
+          result = data.results
+            .map(
+              (r: { content: string; similarity: number }) =>
+                `[Relevance: ${(r.similarity * 100).toFixed(0)}%] ${r.content}`
+            )
+            .join("\n\n");
+        } else {
+          result =
+            "No specific information found for that query. Answer based on what you already know about Ariv, or suggest they ask Ariv directly.";
+        }
+      } else if (name === "lookup_caller") {
+        const res = await fetch("/api/tools/caller-memory", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: args.email }),
+        });
+        const data = await res.json();
+        if (data.found) {
+          const c = data.caller;
+          let memory = `Returning caller! ${c.name || "Unknown name"} (${c.email}).`;
+          if (c.company) memory += ` Works at ${c.company}.`;
+          memory += ` This is call #${c.call_count}.`;
+          if (c.last_topics?.length) {
+            memory += ` Last time they asked about: ${c.last_topics.join(", ")}.`;
+          }
+          if (c.last_summary) {
+            memory += ` Previous call summary: ${c.last_summary}`;
+          }
+          if (data.recent_calls?.length) {
+            memory += ` They've had ${data.recent_calls.length} recent call(s).`;
+          }
+          result = memory;
+        } else {
+          result = "First-time caller — no previous history found.";
+        }
       } else {
         result = `Unknown function: ${name}`;
       }

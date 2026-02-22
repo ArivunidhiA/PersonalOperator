@@ -66,4 +66,37 @@ export const REALTIME_TOOLS = [
       required: ["to", "subject", "body"],
     },
   },
+  {
+    type: "function",
+    name: "retrieve_knowledge",
+    description:
+      "Search Ariv's knowledge base for specific information. Use this when someone asks a detailed question about Ariv's work, projects, skills, or experience that you want to answer accurately. Pass the question or topic as the query.",
+    parameters: {
+      type: "object",
+      properties: {
+        query: {
+          type: "string",
+          description:
+            "The question or topic to search for, e.g. 'What did Ariv do at Hyundai?' or 'Python experience' or 'payment processing projects'.",
+        },
+      },
+      required: ["query"],
+    },
+  },
+  {
+    type: "function",
+    name: "lookup_caller",
+    description:
+      "Look up a caller by their email to see if they've called before. Use this when a caller gives their email or name, to check if there's history from a previous conversation. This helps personalize the interaction.",
+    parameters: {
+      type: "object",
+      properties: {
+        email: {
+          type: "string",
+          description: "The caller's email address.",
+        },
+      },
+      required: ["email"],
+    },
+  },
 ];
