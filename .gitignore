@@ -1,0 +1,8 @@
+# Extras directory (private notes/docs)
+extras/
+
+# Environment variables
+.env*
+
+# OS
+.DS_Store
