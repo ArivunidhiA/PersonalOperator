@@ -1,15 +1,8 @@
 "use client";
 
-import {
-  ChatBubble,
-  ChatBubbleAction,
-  ChatBubbleActionWrapper,
-  ChatBubbleAvatar,
-  ChatBubbleMessage,
-} from "@/components/ui/chat-bubble";
 import { Button } from "@/components/ui/button";
 import { VoicePoweredOrb } from "@/components/ui/voice-powered-orb";
-import { Copy, Mic, MicOff } from "lucide-react";
+import { Mic, MicOff } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AuthHeader } from "./AuthHeader";
 
@@ -516,128 +509,128 @@ export default function RealtimeVoice() {
         </div>
       )}
 
-      {/* Main content */}
-      <div className="flex flex-1 flex-col items-center justify-center gap-6 px-4 pb-8 lg:flex-row lg:items-start lg:gap-12 lg:px-6 lg:pt-4">
-        {/* Left: User transcript */}
-        <div className="hidden w-full max-w-xs lg:block">
-          <div className="text-xs font-medium uppercase tracking-widest text-white/40">
-            You
-          </div>
-          <div className="mt-4 max-h-[65vh] space-y-5 overflow-auto pr-2">
-            {isLoading ? (
-              <div className="space-y-3">
-                <SkeletonLine className="h-3 w-3/4" />
-                <SkeletonLine className="h-3 w-1/2" />
-              </div>
-            ) : userMessages.length === 0 ? (
-              <div className="text-sm text-white/30">
-                Your words will appear here.
-              </div>
-            ) : (
-              userMessages.map((m) => (
-                <div
-                  key={m.id}
-                  className={`text-sm leading-6 ${m.final ? "text-white/80" : "text-white/40"}`}
-                >
-                  {m.text}
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-
-        {/* Center: Orb */}
-        <div className="flex flex-col items-center">
-          <div className="relative h-56 w-56 sm:h-72 sm:w-72 lg:h-96 lg:w-96">
-            <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-blue-500/15 via-purple-500/15 to-fuchsia-500/15 blur-3xl" />
-            <div className="relative h-full w-full overflow-hidden rounded-full">
-              <VoicePoweredOrb
-                enableVoiceControl={isActive}
-                hue={orbHue}
-                onVoiceDetected={handleVoiceDetected}
-                mediaStream={localStreamRef.current}
-              />
-            </div>
-          </div>
-
-          <div className="mt-3 text-center text-xs text-white/40 sm:mt-4">
-            {isActive
-              ? voiceDetected
-                ? "Listening..."
-                : "Ready"
-              : isLoading
-                ? "Connecting..."
-                : ""}
-          </div>
-        </div>
-
-        {/* Right: Assistant responses */}
-        <div className="w-full max-w-xs">
-          <div className="text-xs font-medium uppercase tracking-widest text-white/40">
-            Arivunidhi&apos;s AI
-          </div>
-          <div className="mt-4 max-h-[40vh] space-y-4 overflow-auto pr-2 lg:max-h-[65vh]">
-            {isLoading ? (
-              <div className="space-y-3">
-                <SkeletonLine className="h-10 w-full rounded-lg" />
-                <SkeletonLine className="h-10 w-5/6 rounded-lg" />
-              </div>
-            ) : assistantMessages.length === 0 ? (
-              <div className="text-sm text-white/30">
-                {isActive
-                  ? "Ask me anything about Arivunidhi."
-                  : ""}
-              </div>
-            ) : (
-              assistantMessages.map((m) => (
-                <ChatBubble
-                  key={m.id}
-                  variant="received"
-                  className="items-start"
-                >
-                  <ChatBubbleAvatar fallback="AI" />
-                  <div className="min-w-0 flex-1">
-                    <ChatBubbleMessage
-                      className={`text-sm leading-6 ${m.final ? "" : "opacity-70"}`}
-                    >
-                      {m.text}
-                    </ChatBubbleMessage>
-
-                    <ChatBubbleActionWrapper>
-                      <ChatBubbleAction
-                        icon={<Copy className="h-3 w-3" />}
-                        onClick={() => {
-                          void navigator.clipboard.writeText(m.text);
-                        }}
-                      />
-                    </ChatBubbleActionWrapper>
-                  </div>
-                </ChatBubble>
-              ))
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Mobile: transcript below orb */}
-      <div className="px-4 pb-6 lg:hidden">
-        {userMessages.length > 0 && (
-          <div className="mb-4">
+      {/* Main content — orb centered, transcripts on sides */}
+      <div className="flex flex-1 flex-col items-center justify-center px-4 pb-8 lg:px-6">
+        <div className="flex w-full max-w-6xl items-start justify-center gap-12">
+          {/* Left: User transcript (desktop only) */}
+          <div className="hidden w-64 shrink-0 lg:block">
             <div className="text-xs font-medium uppercase tracking-widest text-white/40">
               You
             </div>
-            <div className="mt-2 max-h-[25vh] space-y-3 overflow-auto">
-              {userMessages.map((m) => (
-                <div
-                  key={m.id}
-                  className={`text-sm leading-6 ${m.final ? "text-white/80" : "text-white/40"}`}
-                >
-                  {m.text}
+            <div className="mt-4 max-h-[65vh] space-y-5 overflow-auto pr-2">
+              {isLoading ? (
+                <div className="space-y-3">
+                  <SkeletonLine className="h-3 w-3/4" />
+                  <SkeletonLine className="h-3 w-1/2" />
                 </div>
-              ))}
+              ) : userMessages.length === 0 ? (
+                <div className="text-sm text-white/30">
+                  Your words will appear here.
+                </div>
+              ) : (
+                userMessages.map((m) => (
+                  <div
+                    key={m.id}
+                    className={`text-sm leading-6 ${m.final ? "text-white/80" : "text-white/40"}`}
+                  >
+                    {m.text}
+                  </div>
+                ))
+              )}
             </div>
           </div>
-        )}
+
+          {/* Center: Orb */}
+          <div className="flex flex-col items-center">
+            <div className="relative h-64 w-64 sm:h-80 sm:w-80 lg:h-[28rem] lg:w-[28rem]">
+              <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-blue-500/15 via-purple-500/15 to-fuchsia-500/15 blur-3xl" />
+              <div className="relative h-full w-full overflow-hidden rounded-full">
+                <VoicePoweredOrb
+                  enableVoiceControl={isActive}
+                  hue={orbHue}
+                  onVoiceDetected={handleVoiceDetected}
+                  mediaStream={localStreamRef.current}
+                />
+              </div>
+            </div>
+
+            <div className="mt-3 text-center text-xs text-white/40 sm:mt-4">
+              {isActive
+                ? voiceDetected
+                  ? "Listening..."
+                  : "Ready"
+                : isLoading
+                  ? "Connecting..."
+                  : ""}
+            </div>
+          </div>
+
+          {/* Right: Assistant responses — plain text, no boxes */}
+          <div className="hidden w-64 shrink-0 lg:block">
+            <div className="text-xs font-medium uppercase tracking-widest text-white/40">
+              Ariv&apos;s AI
+            </div>
+            <div className="mt-4 max-h-[65vh] space-y-5 overflow-auto pr-2">
+              {isLoading ? (
+                <div className="space-y-3">
+                  <SkeletonLine className="h-3 w-3/4" />
+                  <SkeletonLine className="h-3 w-1/2" />
+                </div>
+              ) : assistantMessages.length === 0 ? (
+                <div className="text-sm text-white/30">
+                  {isActive ? "Ask anything about Ariv." : ""}
+                </div>
+              ) : (
+                assistantMessages.map((m) => (
+                  <div
+                    key={m.id}
+                    className={`text-sm leading-6 ${m.final ? "text-white/80" : "text-white/40"}`}
+                  >
+                    {m.text}
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile: transcripts below orb */}
+        <div className="mt-6 w-full max-w-sm space-y-4 lg:hidden">
+          {userMessages.length > 0 && (
+            <div>
+              <div className="text-xs font-medium uppercase tracking-widest text-white/40">
+                You
+              </div>
+              <div className="mt-2 max-h-[20vh] space-y-3 overflow-auto">
+                {userMessages.map((m) => (
+                  <div
+                    key={m.id}
+                    className={`text-sm leading-6 ${m.final ? "text-white/80" : "text-white/40"}`}
+                  >
+                    {m.text}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {assistantMessages.length > 0 && (
+            <div>
+              <div className="text-xs font-medium uppercase tracking-widest text-white/40">
+                Ariv&apos;s AI
+              </div>
+              <div className="mt-2 max-h-[20vh] space-y-3 overflow-auto">
+                {assistantMessages.map((m) => (
+                  <div
+                    key={m.id}
+                    className={`text-sm leading-6 ${m.final ? "text-white/80" : "text-white/40"}`}
+                  >
+                    {m.text}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
