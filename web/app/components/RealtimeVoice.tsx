@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { VoicePoweredOrb } from "@/components/ui/voice-powered-orb";
 import { Mic, MicOff } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useUser } from "@clerk/nextjs";
+import { useUser as useClerkUser } from "@clerk/nextjs";
 import { AuthHeader } from "./AuthHeader";
 
 type Role = "user" | "assistant";
@@ -36,8 +36,16 @@ function SkeletonLine({ className = "" }: { className?: string }) {
   );
 }
 
+function useSafeUser() {
+  try {
+    return useClerkUser();
+  } catch {
+    return { user: null, isLoaded: true, isSignedIn: false };
+  }
+}
+
 export default function RealtimeVoice() {
-  const { user } = useUser();
+  const { user } = useSafeUser();
   const callerName = user ? `${user.firstName || ""} ${user.lastName || ""}`.trim() : "";
   const callerEmail = user?.primaryEmailAddress?.emailAddress || "";
 
