@@ -51,8 +51,15 @@ export async function POST(req: Request) {
   }
 
   const data = await res.json();
+
+  // Filter to 10am-5pm EST only (UTC-5 = 15:00-22:00 UTC)
   const slots = (data.collection || [])
-    .filter((s: { status: string }) => s.status === "available")
+    .filter((s: { status: string; start_time: string }) => {
+      if (s.status !== "available") return false;
+      const hour = new Date(s.start_time).getUTCHours();
+      // 10am EST = 15 UTC, 5pm EST = 22 UTC (last slot at 4:30pm = 21:30 UTC)
+      return hour >= 15 && hour < 22;
+    })
     .slice(0, 10)
     .map((s: { start_time: string }) => s.start_time);
 

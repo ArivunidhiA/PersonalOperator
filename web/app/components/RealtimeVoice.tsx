@@ -767,11 +767,11 @@ export default function RealtimeVoice() {
             </div>
 
             {activities.length > 0 && (
-              <div className="mt-4 w-full max-w-xs rounded-lg border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-sm">
-                <div className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-white/30">
+              <div className="mt-4 w-full max-w-xs px-4">
+                <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-white/25">
                   System
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-1">
                   {activities.slice(-3).map((a) => (
                     <div key={a.id} className="flex items-center gap-2 text-xs">
                       {a.status === "running" ? (
@@ -781,8 +781,8 @@ export default function RealtimeVoice() {
                       ) : (
                         <span className="h-1.5 w-1.5 rounded-full bg-red-400" />
                       )}
-                      <span className="font-medium text-white/50">{a.intent}</span>
-                      <span className="text-white/30">{a.action}</span>
+                      <span className="font-medium text-white/40">{a.intent}</span>
+                      <span className="text-white/25">{a.action}</span>
                     </div>
                   ))}
                 </div>

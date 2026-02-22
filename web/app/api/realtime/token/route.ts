@@ -63,9 +63,9 @@ export async function POST() {
             type: "server_vad",
             create_response: true,
             interrupt_response: true,
-            silence_duration_ms: 800,
-            threshold: 0.4,
-            prefix_padding_ms: 300,
+            silence_duration_ms: 1200,
+            threshold: 0.6,
+            prefix_padding_ms: 500,
           },
         },
         output: {
