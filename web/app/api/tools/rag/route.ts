@@ -19,6 +19,17 @@ async function getEmbedding(text: string): Promise<number[]> {
   return data.data[0].embedding;
 }
 
+function cosineSimilarity(a: number[], b: number[]): number {
+  let dot = 0, magA = 0, magB = 0;
+  for (let i = 0; i < a.length; i++) {
+    dot += a[i] * b[i];
+    magA += a[i] * a[i];
+    magB += b[i] * b[i];
+  }
+  const denom = Math.sqrt(magA) * Math.sqrt(magB);
+  return denom === 0 ? 0 : dot / denom;
+}
+
 export async function POST(req: Request) {
   const supabase = getSupabase();
   if (!supabase || !OPENAI_API_KEY) {
@@ -35,14 +46,42 @@ export async function POST(req: Request) {
 
   const embedding = await getEmbedding(body.query);
 
-  const { data, error } = await supabase.rpc("match_knowledge", {
+  // First try the RPC function
+  const rpcResult = await supabase.rpc("match_knowledge", {
     query_embedding: embedding,
-    match_threshold: 0.5,
+    match_threshold: 0.15,
     match_count: 5,
   });
+  const rpcError = rpcResult.error;
+  let data = rpcResult.data;
 
-  if (error) {
-    console.error("RAG search error:", error);
+  // If RPC returns empty (can happen with ivfflat on small datasets), do a direct query
+  if (!rpcError && (!data || data.length === 0)) {
+    const { data: allRows, error: fetchErr } = await supabase
+      .from("knowledge_base")
+      .select("id, content, metadata, embedding");
+
+    if (!fetchErr && allRows && allRows.length > 0) {
+      // Compute cosine similarity manually
+      // Supabase returns pgvector as a string like "[0.005,-0.03,...]"
+      const scored = allRows
+        .map((row: { id: string; content: string; metadata: unknown; embedding: string | number[] }) => {
+          const rowEmb = typeof row.embedding === "string"
+            ? JSON.parse(row.embedding) as number[]
+            : row.embedding;
+          const sim = cosineSimilarity(embedding, rowEmb);
+          return { id: row.id, content: row.content, metadata: row.metadata, similarity: sim };
+        })
+        .filter((r: { similarity: number }) => r.similarity > 0.15)
+        .sort((a: { similarity: number }, b: { similarity: number }) => b.similarity - a.similarity)
+        .slice(0, 5);
+
+      data = scored;
+    }
+  }
+
+  if (rpcError) {
+    console.error("RAG search error:", rpcError);
     return NextResponse.json(
       { error: "Search failed" },
       { status: 500 }

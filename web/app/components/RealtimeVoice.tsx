@@ -301,6 +301,7 @@ export default function RealtimeVoice() {
           body: JSON.stringify({ start_date: args.start_date }),
         });
         const data = await res.json();
+        const schedulingUrl = data.scheduling_url || "https://calendly.com/annaarivan-a-northeastern/15-min-coffee-chat";
         if (data.slots && data.slots.length > 0) {
           const formatted = data.slots
             .map((s: string) =>
@@ -314,10 +315,9 @@ export default function RealtimeVoice() {
               })
             )
             .join(", ");
-          result = `Available slots in the next 7 days: ${formatted}`;
+          result = `Available slots in the next 7 days: ${formatted}. Booking link: ${schedulingUrl}`;
         } else {
-          result =
-            "No available slots found in the next 7 days. Suggest they email Ariv at annaarivan.a@northeastern.edu to coordinate.";
+          result = `${data.note || "Ariv's calendar is generally open."} Direct booking link: ${schedulingUrl} — share this with the caller so they can pick a time that works.`;
         }
       } else if (name === "schedule_meeting") {
         const res = await fetch("/api/tools/schedule", {

@@ -96,6 +96,21 @@ const CHUNKS = [
       "Key numbers: Bright Mind — 1,000+ volunteers, 12 states, 40% faster response time, 35% less admin overhead. Serotonin — 2hr to 30s support response, 12,000+ queries/month, 5,000+ events/day, 25+ incidents resolved. Crossroads — 10,000+ records/day, $90K+ donations, 99.8% accuracy, 65% Salesforce speedup. Hyundai — 50M+ data points/day, 10,000+ vehicles, sub-150ms inference, 95% test coverage. LLMLab — sub-45ms response, 8 merged PRs, multi-provider support.",
     metadata: { category: "numbers" },
   },
+  {
+    content:
+      "Ariv's online profiles and portfolio links: Portfolio website: https://arivfolio.tech/ — LinkedIn: https://www.linkedin.com/in/arivunidhi-anna-arivan/ — GitHub: https://github.com/ArivunidhiA — X (Twitter): https://twitter.com/Ariv_2012 — Email: annaarivan.a@northeastern.edu — Phone: 857-398-5481 — Calendly (book a meeting): https://calendly.com/annaarivan-a-northeastern/15-min-coffee-chat",
+    metadata: { category: "links", type: "profiles" },
+  },
+  {
+    content:
+      "Ariv's project links — LLMLab (LLM cost tracking platform): GitHub: https://github.com/ArivunidhiA/llmlab | Live: https://llmlab.vercel.app — Job Copilot (AI job application system): GitHub: https://github.com/ArivunidhiA/Job-Copilot — AI Infrastructure Orchestration Platform (RAG-powered): GitHub: https://github.com/ArivunidhiA/AI-Infrastructure-Orchestration-Platform---RAG | Live Demo: https://ai-infrastructure-with-rag.netlify.app/ — Retention & Upsell AI Agent: GitHub: https://github.com/ArivunidhiA/Retention-and-Upsell-AI-Agent | Live Demo: https://ai-agent-retention.netlify.app/ — Vendor Scorecard Platform: GitHub: https://github.com/ArivunidhiA/vendor-scorecard | Live: https://vendor-scorecard.onrender.com",
+    metadata: { category: "links", type: "projects" },
+  },
+  {
+    content:
+      "Ariv's research publications: 1) 'Cryptocurrency Market Price Prediction using Machine Learning' (2023) — published in Seybold Report Vol 18, pages 2351-2358. Compared LSTM, Random Forest, XGBoost, ARIMA on 5 years of Bitcoin/Ethereum data. Link: https://seyboldreport.org/article_overview?id=MDIyMDIzMDMwNzMyMjUzODAx 2) 'Finding Missing Person using Artificial Intelligence' (2023) — computer vision + geospatial analysis using FaceNet embeddings. Link: https://drive.google.com/file/d/1PfNSfmv3DBBAQcGAscawKWGqXiz1OlT0/view",
+    metadata: { category: "links", type: "publications" },
+  },
 ];
 
 async function embed(text) {
