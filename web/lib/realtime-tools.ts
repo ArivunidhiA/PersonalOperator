@@ -104,4 +104,26 @@ export const REALTIME_TOOLS = [
       required: ["email"],
     },
   },
+  {
+    type: "function",
+    name: "research_role",
+    description:
+      "Research a specific company and role to understand what they need, what the company does, and which of Ariv's experiences are most relevant. Call this IMMEDIATELY when a caller mentions a company name, role title, or job they're hiring for. This helps you tailor your pitch to what actually matters for that role.",
+    parameters: {
+      type: "object",
+      properties: {
+        company: {
+          type: "string",
+          description:
+            "The company name, e.g. 'Strada', 'Palantir', 'Google'.",
+        },
+        role: {
+          type: "string",
+          description:
+            "The role title, e.g. 'Forward Deployment Engineer', 'Software Engineer', 'Data Analyst'.",
+        },
+      },
+      required: ["company", "role"],
+    },
+  },
 ];

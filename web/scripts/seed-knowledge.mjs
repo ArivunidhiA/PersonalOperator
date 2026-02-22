@@ -111,6 +111,31 @@ const CHUNKS = [
       "Ariv's research publications: 1) 'Cryptocurrency Market Price Prediction using Machine Learning' (2023) — published in Seybold Report Vol 18, pages 2351-2358. Compared LSTM, Random Forest, XGBoost, ARIMA on 5 years of Bitcoin/Ethereum data. Link: https://seyboldreport.org/article_overview?id=MDIyMDIzMDMwNzMyMjUzODAx 2) 'Finding Missing Person using Artificial Intelligence' (2023) — computer vision + geospatial analysis using FaceNet embeddings. Link: https://drive.google.com/file/d/1PfNSfmv3DBBAQcGAscawKWGqXiz1OlT0/view",
     metadata: { category: "links", type: "publications" },
   },
+  {
+    content:
+      "Ariv's customer-facing and end-to-end implementation experience: At Crossroads Community Services, Ariv didn't just write backend code. He sat with nonprofit staff who had zero technical background, understood their donation workflow pain points, and built a complete Stripe payment system end-to-end. He handled onboarding, integration, testing with real donors, and post-launch support. When webhooks were duplicating transactions, he diagnosed it in production while coordinating with the finance team. At Bright Mind, he built a volunteer coordination platform by embedding with program coordinators across 12 states, understanding how each region operated differently, and shipping a system that 1,000+ non-technical volunteers could actually use. He owned the entire lifecycle: requirements gathering, architecture, implementation, deployment, and ongoing support.",
+    metadata: { category: "role_fit", role_type: "forward_deployment_engineer" },
+  },
+  {
+    content:
+      "Ariv's ability to translate customer problems into technical solutions: At Serotonin, the customer support team was drowning in 2-hour response times. Ariv didn't just build a RAG system. He spent time understanding what questions customers actually asked, how support agents triaged issues, and what 'good enough' accuracy looked like for the business. He built the system to handle 12,000+ queries/month with sub-200ms latency. At Crossroads, he optimized Salesforce queries not because someone filed a Jira ticket, but because he noticed the ops team waiting 8 seconds per query and realized it was killing their productivity. He cut it to 2.9 seconds. This is the pattern: he sees the human problem, not just the technical one.",
+    metadata: { category: "role_fit", role_type: "forward_deployment_engineer" },
+  },
+  {
+    content:
+      "Ariv's post-sales and integration support experience: At every role, Ariv has owned post-deployment support. At Crossroads, after launching the Stripe payment system ($90K+ processed), he handled webhook failures, duplicate transaction bugs, and donor-facing issues in production. At Bright Mind, after deploying the volunteer platform, he maintained it across 12 states with different operational needs, responding to coordinator feedback and shipping updates. At Serotonin, he resolved 25+ recurring production incidents using DataDog distributed tracing, often working directly with the team that reported the issue to understand the real impact. He doesn't just ship and move on. He owns it.",
+    metadata: { category: "role_fit", role_type: "forward_deployment_engineer" },
+  },
+  {
+    content:
+      "Ariv's system design and architecture experience (for Software Engineer roles): Built microservices OAuth architecture with unified API gateway at Serotonin (5+ integrations, 100% unauthorized access prevention). Designed async event pipeline processing 5,000+ events/day with two-stage ingestion and verification. Built telemetry microservice at Hyundai handling 50M+ data points/day using MQTT, delta encoding, gzip compression. Designed serverless data pipeline at Crossroads (AWS Lambda + S3) syncing 10,000+ records/day. Built LLMLab as a proxy layer with sub-45ms response times, async SSE streaming, and multi-provider support. Every system was production-grade with monitoring, error handling, and CI/CD.",
+    metadata: { category: "role_fit", role_type: "software_engineer" },
+  },
+  {
+    content:
+      "Ariv's data and analytics experience (for Data Analyst / Data Engineer roles): At Hyundai, processed 50M+ telemetry data points daily from 10,000+ vehicles, stored in AWS S3 data lake with Parquet format. Built anomaly detection (Z-score based) and cost forecasting (linear regression) in LLMLab. Optimized Salesforce SOQL queries at Crossroads from 8.2s to 2.9s (65% improvement) by fixing N+1 patterns and switching to Bulk API 2.0. Published research comparing LSTM, Random Forest, XGBoost, and ARIMA for cryptocurrency price prediction. Comfortable with Python data stack, SQL, and building data pipelines at scale.",
+    metadata: { category: "role_fit", role_type: "data_analyst" },
+  },
 ];
 
 async function embed(text) {

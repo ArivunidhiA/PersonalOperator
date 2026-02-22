@@ -319,6 +319,7 @@ export default function RealtimeVoice() {
     send_confirmation_email: { intent: "Email", action: "Sending confirmation" },
     retrieve_knowledge: { intent: "Knowledge", action: "Searching knowledge base" },
     lookup_caller: { intent: "Memory", action: "Looking up caller" },
+    research_role: { intent: "Role Research", action: "Researching role fit" },
   };
 
   const handleFunctionCall = async (
@@ -415,6 +416,29 @@ export default function RealtimeVoice() {
         } else {
           result =
             "No specific information found for that query. Answer based on what you already know about Ariv, or suggest they ask Ariv directly.";
+        }
+      } else if (name === "research_role") {
+        const res = await fetch("/api/tools/research-role", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ company: args.company, role: args.role }),
+        });
+        const data = await res.json();
+        if (data.lead_with) {
+          result = `ROLE RESEARCH RESULTS for ${data.role} at ${data.company}:\n`;
+          result += `\nCompany: ${data.company_summary}`;
+          result += `\nWhat this role ACTUALLY needs: ${(data.role_core_needs || []).join(", ")}`;
+          result += `\nKey traits they're looking for: ${(data.key_traits || []).join(", ")}`;
+          result += `\nPitch order (lead with first): ${(data.pitch_order || []).join(" → ")}`;
+          result += `\n\nLEAD WITH THIS: ${data.lead_with}`;
+          result += `\n\nSUPPORTING POINTS:\n${(data.supporting_points || []).map((p: string, i: number) => `${i + 1}. ${p}`).join("\n")}`;
+          result += `\n\nCONNECTION TO COMPANY: ${data.connection}`;
+          result += `\n\nAVOID leading with: ${data.avoid}`;
+          if (data.relevant_experiences?.length) {
+            result += `\n\nRELEVANT EXPERIENCE DETAILS:\n${data.relevant_experiences.join("\n\n")}`;
+          }
+        } else {
+          result = `Could not research this role. Give a general pitch about Ariv's technical skills and production experience.`;
         }
       } else if (name === "lookup_caller") {
         const res = await fetch("/api/tools/caller-memory", {
