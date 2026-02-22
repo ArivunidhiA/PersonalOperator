@@ -618,6 +618,9 @@ export default function RealtimeVoice() {
     };
   }, [messages, saveConversation]);
 
+  const cleanText = (text: string) =>
+    text.replace(/\u2014/g, ", ").replace(/\u2013/g, ", ").replace(/, ,/g, ",");
+
   const orbHue = useMemo(() => {
     if (status === "connecting" || status === "reconnecting") return 280;
     if (status === "error") return 0;
@@ -671,7 +674,7 @@ export default function RealtimeVoice() {
         </div>
       )}
 
-      {/* Main content — orb centered, transcripts on sides */}
+      {/* Main content: orb centered, transcripts on sides */}
       <div className="flex flex-1 flex-col items-center justify-center px-4 pb-8 lg:px-6">
         <div className="flex w-full max-w-6xl items-start justify-center gap-12">
           {/* Left: User transcript (desktop only) */}
@@ -695,7 +698,7 @@ export default function RealtimeVoice() {
                     key={m.id}
                     className={`text-sm leading-6 ${m.final ? "text-white/80" : "text-white/40"}`}
                   >
-                    {m.text}
+                    {cleanText(m.text)}
                   </div>
                 ))
               )}
@@ -748,7 +751,7 @@ export default function RealtimeVoice() {
                     key={m.id}
                     className={`text-sm leading-6 ${m.final ? "text-white/80" : "text-white/40"}`}
                   >
-                    {m.text}
+                    {cleanText(m.text)}
                   </div>
                 ))
               )}
@@ -769,7 +772,7 @@ export default function RealtimeVoice() {
                     key={m.id}
                     className={`text-sm leading-6 ${m.final ? "text-white/80" : "text-white/40"}`}
                   >
-                    {m.text}
+                    {cleanText(m.text)}
                   </div>
                 ))}
               </div>
@@ -786,7 +789,7 @@ export default function RealtimeVoice() {
                     key={m.id}
                     className={`text-sm leading-6 ${m.final ? "text-white/80" : "text-white/40"}`}
                   >
-                    {m.text}
+                    {cleanText(m.text)}
                   </div>
                 ))}
               </div>
