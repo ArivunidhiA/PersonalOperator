@@ -242,6 +242,9 @@ export default function RealtimeVoice() {
 
   const setupDataChannel = useCallback(
     (dc: RTCDataChannel) => {
+      dc.addEventListener("open", () => {
+        dc.send(JSON.stringify({ type: "response.create" }));
+      });
       dc.addEventListener("message", (e) => {
         if (typeof e.data !== "string") return;
         let evt: unknown;
