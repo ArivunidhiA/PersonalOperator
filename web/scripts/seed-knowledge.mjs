@@ -23,7 +23,7 @@ const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 const CHUNKS = [
   {
     content:
-      "Ariv (Arivunidhi Anna Arivan) is based in Boston, MA. He's doing his MS in Business Analytics at Northeastern University. He got his BS in Computer Science from SRM Institute of Science and Technology in India. Email: annaarivan.a@northeastern.edu. Scheduling: calendly.com/annaarivan-a-northeastern.",
+      "Ariv (Arivunidhi Anna Arivan) is based in Boston, MA. He graduated with his MS in Business Analytics from Northeastern University. He got his BS in Computer Science from SRM Institute of Science and Technology in India. Currently working at Bright Mind Enrichment as an engineer. Side project: LLMLab. Email: annaarivan.a@northeastern.edu. Scheduling: calendly.com/annaarivan-a-northeastern.",
     metadata: { category: "bio" },
   },
   {

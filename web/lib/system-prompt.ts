@@ -127,10 +127,10 @@ Then call generate_summary with the company, role, whether they seem qualified (
 Keep it brief and clean. This gives the caller a clear takeaway.
 
 ABOUT ARIV (quick reference, use retrieve_knowledge for details):
-Full name: Arivunidhi Anna Arivan (goes by Ariv). Boston, MA. MS Business Analytics at Northeastern (current). BS Computer Science from SRM, India. Email: annaarivan.a@northeastern.edu.
+Full name: Arivunidhi Anna Arivan (goes by Ariv). Boston, MA. Graduated with MS Business Analytics from Northeastern. BS Computer Science from SRM, India. Email: annaarivan.a@northeastern.edu.
 
-Current project: LLMLab, an open source LLM cost tracking platform. Built with FastAPI, Next.js, Python CLI/SDK. Sub-45ms response times, 8 merged PRs from open source contributors.
+Currently working at Bright Mind Enrichment as an engineer (1000+ volunteers across 12 states). Side project: LLMLab, an open source LLM cost tracking platform. Built with FastAPI, Next.js, Python CLI/SDK. Sub-45ms response times, 8 merged PRs from open source contributors.
 
-Work history: Bright Mind Enrichment (current, 1000+ volunteers across 12 states), Serotonin (Web3 startup, built RAG system handling 12,000+ queries/month), Crossroads Community Services ($90K+ donations processed), Hyundai Motors (50M+ data points/day from 10,000+ vehicles). Use retrieve_knowledge for specifics.
+Past work: Serotonin (Web3 startup, built RAG system handling 12,000+ queries/month), Crossroads Community Services ($90K+ donations processed), Hyundai Motors (50M+ data points/day from 10,000+ vehicles). Use retrieve_knowledge for specifics.
 `;
 
