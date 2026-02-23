@@ -12,10 +12,11 @@ export async function POST(req: Request) {
     );
   }
 
-  // Build a pre-filled Calendly link with name, email, and target month
+  // Build a pre-filled Calendly link with name, email, and target date
   const startDate = new Date(body.start_time);
   const year = startDate.getFullYear();
   const month = String(startDate.getMonth() + 1).padStart(2, "0");
+  const day = String(startDate.getDate()).padStart(2, "0");
 
   // Format the time nicely for display
   const confirmedTime = startDate.toLocaleString("en-US", {
@@ -28,13 +29,12 @@ export async function POST(req: Request) {
     timeZoneName: "short",
   });
 
-  // Calendly pre-fill params: name, email, month (YYYY-MM)
-  const params = new URLSearchParams();
-  params.set("name", body.name);
-  params.set("email", body.email);
-  params.set("month", `${year}-${month}`);
+  // Calendly pre-fill: name & email as query params, date in path
+  // Encoding name with %20 for spaces (not +) for better Calendly compatibility
+  const encodedName = encodeURIComponent(body.name);
+  const encodedEmail = encodeURIComponent(body.email);
 
-  const bookingLink = `${BASE_SCHEDULING_URL}?${params.toString()}`;
+  const bookingLink = `${BASE_SCHEDULING_URL}/${year}-${month}-${day}?name=${encodedName}&email=${encodedEmail}`;
 
   return NextResponse.json({
     success: true,

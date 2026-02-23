@@ -810,14 +810,15 @@ export default function RealtimeVoice() {
     // Process each line (split on newlines) and linkify URLs within each line
     const lines = final.split("\n");
     const elements: React.ReactNode[] = [];
-    // Match full URLs (https://...) and bare domains (github.com/..., arivfolio.tech, etc.)
-    const urlPattern = /(https?:\/\/[^\s,)]+|(?:[a-zA-Z0-9-]+\.)+(?:com|org|net|io|dev|tech|app|co|me|ai)(?:\/[^\s,)]*)?)/g;
+    // Split regex (global) to break text into parts around URLs
+    const splitPattern = /(https?:\/\/[^\s,)]+|(?:[a-zA-Z0-9-]+\.)+(?:com|org|net|io|dev|tech|app|co|me|ai)(?:\/[^\s,)]*)?)/g;
+    // Test regex (non-global) to check if a part is a URL — avoids lastIndex bugs
+    const testPattern = /^(https?:\/\/[^\s,)]+|(?:[a-zA-Z0-9-]+\.)+(?:com|org|net|io|dev|tech|app|co|me|ai)(?:\/[^\s,)]*)?)$/;
     lines.forEach((line, lineIdx) => {
       if (lineIdx > 0) elements.push(<br key={`br-${lineIdx}`} />);
-      const parts = line.split(urlPattern);
+      const parts = line.split(splitPattern);
       parts.forEach((part, partIdx) => {
-        if (urlPattern.test(part)) {
-          urlPattern.lastIndex = 0;
+        if (testPattern.test(part)) {
           const href = part.startsWith("http") ? part : `https://${part}`;
           elements.push(
             <a
@@ -834,7 +835,6 @@ export default function RealtimeVoice() {
           elements.push(<span key={`${lineIdx}-${partIdx}`}>{part}</span>);
         }
       });
-      urlPattern.lastIndex = 0;
     });
     return elements;
   };
