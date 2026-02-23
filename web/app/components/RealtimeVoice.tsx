@@ -70,6 +70,8 @@ export default function RealtimeVoice() {
   const postCallFiredRef = useRef(false);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const voiceQuietTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const silenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const silencePromptedRef = useRef(false);
 
   interface SystemActivity {
     id: string;
@@ -190,6 +192,11 @@ export default function RealtimeVoice() {
       clearInterval(pingIntervalRef.current);
       pingIntervalRef.current = null;
     }
+    if (silenceTimerRef.current) {
+      clearTimeout(silenceTimerRef.current);
+      silenceTimerRef.current = null;
+    }
+    silencePromptedRef.current = false;
     latencyRef.current = [];
 
     setVoiceDetected(false);
@@ -255,6 +262,8 @@ export default function RealtimeVoice() {
           )
             return;
           upsertDelta(`user:${item_id}:${content_index}`, "user", delta);
+          if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+          silencePromptedRef.current = false;
           return;
         }
 
@@ -306,6 +315,24 @@ export default function RealtimeVoice() {
             "assistant",
             transcript
           );
+
+          if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+          silencePromptedRef.current = false;
+          silenceTimerRef.current = setTimeout(() => {
+            if (silencePromptedRef.current) return;
+            silencePromptedRef.current = true;
+            if (dc.readyState === "open") {
+              dc.send(JSON.stringify({
+                type: "conversation.item.create",
+                item: {
+                  type: "message",
+                  role: "user",
+                  content: [{ type: "input_text", text: "[15 seconds of silence from the caller. Gently check in with ONE short question like 'Anything else you wanna know, or?' or 'Want me to set up a call with him?' Do NOT repeat yourself. Just one brief check-in.]" }],
+                },
+              }));
+              dc.send(JSON.stringify({ type: "response.create" }));
+            }
+          }, 15000);
         }
 
         if (evt.type === "response.function_call_arguments.done") {
@@ -435,7 +462,7 @@ export default function RealtimeVoice() {
         const role = (args.role as string) || "General Inquiry";
         const summaryStatus = (args.status as string) || "Exploring";
         const meeting = (args.meeting as string) || "Not Scheduled";
-        result = `Recruiter Summary:\n- Company: ${company}\n- Role: ${role}\n- Status: ${summaryStatus}\n- Meeting: ${meeting}\n\nRead this summary to the caller naturally. For example: "So here's your recap. Company: ${company}. Role: ${role}. Status: ${summaryStatus}. Meeting: ${meeting}. It was great chatting with you!"`;
+        result = `Recruiter Summary:\n\nCompany: ${company}\nRole: ${role}\nStatus: ${summaryStatus}\nMeeting: ${meeting}\n\nDo NOT read this summary out loud. The caller can see it on screen. Just say something brief like "There you go!" or "Hope that helps!" and wait.`;
       } else if (name === "research_role") {
         const res = await fetch("/api/tools/research-role", {
           method: "POST",
