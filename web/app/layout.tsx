@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
+import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
 import { FaviconAnimator } from "./components/FaviconAnimator";
 
@@ -36,6 +37,7 @@ export default function RootLayout({
       >
         <FaviconAnimator />
         {children}
+        <Analytics />
       </body>
     </html>
   );
