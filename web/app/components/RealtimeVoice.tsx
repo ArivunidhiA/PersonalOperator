@@ -406,7 +406,7 @@ export default function RealtimeVoice() {
               timestamp: Date.now(),
             },
           ]);
-          result = `Booking link has been displayed in the chat for the caller. They can see and click it. Do NOT read the URL out loud. Just say something like "I've got a booking link ready for you, just click it in the chat and pick the time." The meeting is NOT yet confirmed until they click and confirm.`;
+          result = `Booking link has been displayed in the chat for the caller. They can see and click it. Do NOT read the URL out loud. Say something like: "I've dropped a booking link in the chat for you. Everything's pre-filled, just click it and you're all set." Do NOT say "pick the time" — the time and their info are already filled in. One click to confirm.`;
         } else {
           const fallbackLink = "https://calendly.com/annaarivan-a-northeastern/15-min-coffee-chat";
           setMessages((prev) => [

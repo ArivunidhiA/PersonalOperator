@@ -95,7 +95,7 @@ export async function POST(req: Request) {
     total_slots: slots.length,
     note,
     guidance: slots.length > 0
-      ? `Found ${slots.length} available slots across ${Object.keys(slotsByDay).length} days. Offer 2-3 options naturally. If the caller is unsure about their schedule, suggest the earliest available day and ask if morning or afternoon works better.`
+      ? `Found ${slots.length} available slots across ${Object.keys(slotsByDay).length} days (${Object.keys(slotsByDay).join(", ")}). IMPORTANT: Mention ALL available days, not just the first one. Say something like "He's got time on ${Object.keys(slotsByDay).join(", ")}, what day works best for you?" If the caller asks for a specific day, check if that day is in the list above. If it is, offer those times. Don't say a day is unavailable if it has slots.`
       : undefined,
   });
 }
