@@ -330,12 +330,12 @@ export default function RealtimeVoice() {
                 item: {
                   type: "message",
                   role: "user",
-                  content: [{ type: "input_text", text: "[15 seconds of silence from the caller. Gently check in with ONE short question like 'Anything else you wanna know, or?' or 'Want me to set up a call with him?' Do NOT repeat yourself. Just one brief check-in.]" }],
+                  content: [{ type: "input_text", text: "[25 seconds of silence from the caller. Gently check in with ONE short question like 'Still there?' or 'Want me to set up a call with him?' Do NOT repeat yourself. Just one brief check-in.]" }],
                 },
               }));
               dc.send(JSON.stringify({ type: "response.create" }));
             }
-          }, 15000);
+          }, 25000);
         }
 
         if (evt.type === "response.function_call_arguments.done") {
