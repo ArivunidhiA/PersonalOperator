@@ -21,20 +21,21 @@ export async function POST(req: Request) {
 
   const resend = new Resend(resendKey);
 
-  const { error } = await resend.emails.send({
-    from: "Ariv's AI <onboarding@resend.dev>",
+  const { data, error } = await resend.emails.send({
+    from: "Ariv's AI <ai@arivsai.app>",
     to: body.to,
     subject: body.subject,
     html: body.html || body.text || "",
   });
 
   if (error) {
-    console.error("Resend error:", error);
+    console.error("Resend error:", JSON.stringify(error));
     return NextResponse.json(
-      { error: "Failed to send email" },
+      { error: error.message || "Failed to send email", success: false },
       { status: 500 }
     );
   }
 
+  console.log("Email sent:", data);
   return NextResponse.json({ success: true });
 }
