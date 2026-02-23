@@ -395,9 +395,31 @@ export default function RealtimeVoice() {
         });
         const data = await res.json();
         if (data.success) {
-          result = `Booking link ready: ${data.booking_link}\nSuggested time: ${data.suggested_time}\n\nTell the caller: "I've got a booking link ready for you with your info pre-filled. Just click it, pick the time, and you're all set." Do NOT read the URL out loud. The link is visible in the chat.`;
+          const linkText = `📅 Book your meeting\n\nSuggested time: ${data.suggested_time}\n\n${data.booking_link}`;
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: `booking-${Date.now()}`,
+              role: "assistant" as const,
+              text: linkText,
+              final: true,
+              timestamp: Date.now(),
+            },
+          ]);
+          result = `Booking link has been displayed in the chat for the caller. They can see and click it. Do NOT read the URL out loud. Just say something like "I've got a booking link ready for you, just click it in the chat and pick the time." The meeting is NOT yet confirmed until they click and confirm.`;
         } else {
-          result = `Could not generate booking link: ${data.error || "unknown error"}. Share the direct link instead: https://calendly.com/annaarivan-a-northeastern/15-min-coffee-chat`;
+          const fallbackLink = "https://calendly.com/annaarivan-a-northeastern/15-min-coffee-chat";
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: `booking-fallback-${Date.now()}`,
+              role: "assistant" as const,
+              text: `📅 Book a meeting with Ariv\n\n${fallbackLink}`,
+              final: true,
+              timestamp: Date.now(),
+            },
+          ]);
+          result = `Booking link has been displayed in the chat. Tell the caller: "I dropped a booking link in the chat for you, just click it and pick a time that works."`;
         }
       } else if (name === "send_confirmation_email") {
         const res = await fetch("/api/tools/send-email", {
