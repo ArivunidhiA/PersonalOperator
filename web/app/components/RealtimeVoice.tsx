@@ -462,7 +462,18 @@ export default function RealtimeVoice() {
         const role = (args.role as string) || "General Inquiry";
         const summaryStatus = (args.status as string) || "Exploring";
         const meeting = (args.meeting as string) || "Not Scheduled";
-        result = `Recruiter Summary:\n\nCompany: ${company}\nRole: ${role}\nStatus: ${summaryStatus}\nMeeting: ${meeting}\n\nDo NOT read this summary out loud. The caller can see it on screen. Just say something brief like "There you go!" or "Hope that helps!" and wait.`;
+        const summaryText = `📋 Recap\n\nCompany: ${company}\nRole: ${role}\nStatus: ${summaryStatus}\nMeeting: ${meeting}`;
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: `summary-${Date.now()}`,
+            role: "assistant" as const,
+            text: summaryText,
+            final: true,
+            timestamp: Date.now(),
+          },
+        ]);
+        result = `Summary has been displayed to the caller on screen. Do NOT read it out loud. Just say something brief like "There you go!" or "Hope that was helpful!" and wait.`;
       } else if (name === "research_role") {
         const res = await fetch("/api/tools/research-role", {
           method: "POST",
@@ -799,24 +810,32 @@ export default function RealtimeVoice() {
     // Strip non-Latin characters (CJK, Korean, etc.) that appear from transcription hallucinations
     cleaned = cleaned.replace(/[\u3000-\u9FFF\uAC00-\uD7AF\uF900-\uFAFF]/g, "").trim();
     const final = cleaned || text;
-    // Convert URLs to clickable links
-    const parts = final.split(/(https?:\/\/[^\s,)]+)/g);
-    if (parts.length === 1) return final;
-    return parts.map((part, i) =>
-      /^https?:\/\//.test(part) ? (
-        <a
-          key={i}
-          href={part}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-400 underline hover:text-blue-300 break-all"
-        >
-          {part}
-        </a>
-      ) : (
-        <span key={i}>{part}</span>
-      )
-    );
+
+    // Process each line (split on newlines) and linkify URLs within each line
+    const lines = final.split("\n");
+    const elements: React.ReactNode[] = [];
+    lines.forEach((line, lineIdx) => {
+      if (lineIdx > 0) elements.push(<br key={`br-${lineIdx}`} />);
+      const parts = line.split(/(https?:\/\/[^\s,)]+)/g);
+      parts.forEach((part, partIdx) => {
+        if (/^https?:\/\//.test(part)) {
+          elements.push(
+            <a
+              key={`${lineIdx}-${partIdx}`}
+              href={part}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-400 underline hover:text-blue-300 break-all"
+            >
+              {part}
+            </a>
+          );
+        } else if (part) {
+          elements.push(<span key={`${lineIdx}-${partIdx}`}>{part}</span>);
+        }
+      });
+    });
+    return elements;
   };
 
   const orbHue = useMemo(() => {
