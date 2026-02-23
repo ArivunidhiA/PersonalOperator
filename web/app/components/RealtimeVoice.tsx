@@ -70,8 +70,6 @@ export default function RealtimeVoice() {
   const postCallFiredRef = useRef(false);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const voiceQuietTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const silenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const silencePromptedRef = useRef(false);
 
   interface SystemActivity {
     id: string;
@@ -192,11 +190,6 @@ export default function RealtimeVoice() {
       clearInterval(pingIntervalRef.current);
       pingIntervalRef.current = null;
     }
-    if (silenceTimerRef.current) {
-      clearTimeout(silenceTimerRef.current);
-      silenceTimerRef.current = null;
-    }
-    silencePromptedRef.current = false;
     latencyRef.current = [];
 
     setVoiceDetected(false);
@@ -265,8 +258,6 @@ export default function RealtimeVoice() {
           )
             return;
           upsertDelta(`user:${item_id}:${content_index}`, "user", delta);
-          if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
-          silencePromptedRef.current = false;
           return;
         }
 
@@ -319,23 +310,6 @@ export default function RealtimeVoice() {
             transcript
           );
 
-          if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
-          silencePromptedRef.current = false;
-          silenceTimerRef.current = setTimeout(() => {
-            if (silencePromptedRef.current) return;
-            silencePromptedRef.current = true;
-            if (dc.readyState === "open") {
-              dc.send(JSON.stringify({
-                type: "conversation.item.create",
-                item: {
-                  type: "message",
-                  role: "user",
-                  content: [{ type: "input_text", text: "[25 seconds of silence from the caller. Gently check in with ONE short question like 'Still there?' or 'Want me to set up a call with him?' Do NOT repeat yourself. Just one brief check-in.]" }],
-                },
-              }));
-              dc.send(JSON.stringify({ type: "response.create" }));
-            }
-          }, 25000);
         }
 
         if (evt.type === "response.function_call_arguments.done") {
@@ -814,15 +788,19 @@ export default function RealtimeVoice() {
     // Process each line (split on newlines) and linkify URLs within each line
     const lines = final.split("\n");
     const elements: React.ReactNode[] = [];
+    // Match full URLs (https://...) and bare domains (github.com/..., arivfolio.tech, etc.)
+    const urlPattern = /(https?:\/\/[^\s,)]+|(?:[a-zA-Z0-9-]+\.)+(?:com|org|net|io|dev|tech|app|co|me|ai)(?:\/[^\s,)]*)?)/g;
     lines.forEach((line, lineIdx) => {
       if (lineIdx > 0) elements.push(<br key={`br-${lineIdx}`} />);
-      const parts = line.split(/(https?:\/\/[^\s,)]+)/g);
+      const parts = line.split(urlPattern);
       parts.forEach((part, partIdx) => {
-        if (/^https?:\/\//.test(part)) {
+        if (urlPattern.test(part)) {
+          urlPattern.lastIndex = 0;
+          const href = part.startsWith("http") ? part : `https://${part}`;
           elements.push(
             <a
               key={`${lineIdx}-${partIdx}`}
-              href={part}
+              href={href}
               target="_blank"
               rel="noopener noreferrer"
               className="text-blue-400 underline hover:text-blue-300 break-all"
@@ -834,6 +812,7 @@ export default function RealtimeVoice() {
           elements.push(<span key={`${lineIdx}-${partIdx}`}>{part}</span>);
         }
       });
+      urlPattern.lastIndex = 0;
     });
     return elements;
   };
