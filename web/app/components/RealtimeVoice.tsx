@@ -418,12 +418,9 @@ export default function RealtimeVoice() {
         });
         const data = await res.json();
         if (data.success) {
-          result = `Meeting confirmed! ${data.message}`;
-          if (data.cancel_url) result += ` Cancel link: ${data.cancel_url}`;
-          if (data.reschedule_url) result += ` Reschedule link: ${data.reschedule_url}`;
+          result = `Booking link ready: ${data.booking_link}\nSuggested time: ${data.suggested_time}\n\nTell the caller: "I've got a booking link ready for you with your info pre-filled. Just click it, pick the time, and you're all set." Do NOT read the URL out loud. The link is visible in the chat.`;
         } else {
-          result = `Booking failed: ${data.error || "unknown error"}. ${data.recovery || "Try a different time."}`;
-          if (data.scheduling_url) result += ` Fallback booking link: ${data.scheduling_url}`;
+          result = `Could not generate booking link: ${data.error || "unknown error"}. Share the direct link instead: https://calendly.com/annaarivan-a-northeastern/15-min-coffee-chat`;
         }
       } else if (name === "send_confirmation_email") {
         const res = await fetch("/api/tools/send-email", {
@@ -793,12 +790,30 @@ export default function RealtimeVoice() {
     };
   }, [messages, saveConversation]);
 
-  const cleanText = (text: string) => {
+  const cleanText = (text: string): React.ReactNode => {
     // Strip em/en dashes
     let cleaned = text.replace(/\u2014/g, ", ").replace(/\u2013/g, ", ").replace(/, ,/g, ",");
     // Strip non-Latin characters (CJK, Korean, etc.) that appear from transcription hallucinations
     cleaned = cleaned.replace(/[\u3000-\u9FFF\uAC00-\uD7AF\uF900-\uFAFF]/g, "").trim();
-    return cleaned || text;
+    const final = cleaned || text;
+    // Convert URLs to clickable links
+    const parts = final.split(/(https?:\/\/[^\s,)]+)/g);
+    if (parts.length === 1) return final;
+    return parts.map((part, i) =>
+      /^https?:\/\//.test(part) ? (
+        <a
+          key={i}
+          href={part}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-400 underline hover:text-blue-300 break-all"
+        >
+          {part}
+        </a>
+      ) : (
+        <span key={i}>{part}</span>
+      )
+    );
   };
 
   const orbHue = useMemo(() => {
