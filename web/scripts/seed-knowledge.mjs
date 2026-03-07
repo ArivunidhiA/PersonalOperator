@@ -109,7 +109,7 @@ const CHUNKS = [
   },
   {
     content:
-      "When someone asks for Ariv's resume: Share his portfolio (https://arivfolio.tech/), LinkedIn (https://www.linkedin.com/in/arivunidhi-anna-arivan/), and GitHub (https://github.com/ArivunidhiA). These contain his full experience. No resume PDF is available — portfolio and LinkedIn are the closest. If a resume PDF URL is added to the knowledge base later, use that instead.",
+      "When someone asks for Ariv's resume: Say 'You can grab his resume from his portfolio' — do NOT say 'Here's his resume link' or 'Here's his resume' because the portfolio is where they get it, not the resume itself. Include portfolio https://arivfolio.tech/ and LinkedIn https://www.linkedin.com/in/arivunidhi-anna-arivan/ in your response. Never read URLs out loud.",
     metadata: { category: "links", type: "resume" },
   },
   {

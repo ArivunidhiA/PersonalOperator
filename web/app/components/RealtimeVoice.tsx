@@ -639,8 +639,9 @@ export default function RealtimeVoice() {
     const final = cleaned || text;
     const lines = final.split("\n");
     const elements: React.ReactNode[] = [];
-    const splitPattern = /(https?:\/\/[^\s,)]+|(?:[a-zA-Z0-9-]+\.)+(?:com|org|net|io|dev|tech|app|co|me|ai)(?:\/[^\s,)]*)?)/g;
-    const testPattern = /^(https?:\/\/[^\s,)]+|(?:[a-zA-Z0-9-]+\.)+(?:com|org|net|io|dev|tech|app|co|me|ai)(?:\/[^\s,)]*)?)$/;
+    // Match URLs but exclude trailing punctuation (period, comma, etc.) so only the URL is linkified
+    const splitPattern = /(https?:\/\/[^\s,)]+?|(?:[a-zA-Z0-9-]+\.)+(?:com|org|net|io|dev|tech|app|co|me|ai)(?:\/[^\s,)]*)?)(?=[.,!?)\]\s,]|$)/g;
+    const testPattern = /^(https?:\/\/[^\s,)]+?|(?:[a-zA-Z0-9-]+\.)+(?:com|org|net|io|dev|tech|app|co|me|ai)(?:\/[^\s,)]*)?)$/;
     lines.forEach((line, lineIdx) => {
       if (lineIdx > 0) elements.push(<br key={`br-${lineIdx}`} />);
       const parts = line.split(splitPattern);
