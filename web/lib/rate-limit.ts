@@ -27,14 +27,14 @@ export function getRateLimiter(): Ratelimit | null {
   return _authLimiter;
 }
 
-/** Anonymous users: 3 sessions per hour (stricter) */
+/** Anonymous users: 10 sessions per hour (enough to try the app) */
 export function getAnonymousRateLimiter(): Ratelimit | null {
   if (_anonLimiter === undefined) {
     const redis = createRedis();
     _anonLimiter = redis
       ? new Ratelimit({
           redis,
-          limiter: Ratelimit.slidingWindow(3, "1 h"),
+          limiter: Ratelimit.slidingWindow(10, "1 h"),
           analytics: true,
           prefix: "ratelimit:realtime:anon",
         })

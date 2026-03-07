@@ -139,7 +139,7 @@ export async function POST(req: Request) {
     session: {
       type: "realtime",
       model: "gpt-realtime",
-      output_modalities: ["text", "audio"],
+      output_modalities: ["audio"],
       instructions,
       tools: REALTIME_TOOLS,
       tool_choice: "auto",
