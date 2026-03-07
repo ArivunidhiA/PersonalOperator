@@ -180,12 +180,16 @@ export async function POST(req: Request) {
 
   const tokenData = await tokenRes.json().catch(() => null);
   if (!tokenRes.ok || !tokenData?.value) {
+    const openAiError =
+      (tokenData && typeof tokenData === "object" && "error" in tokenData
+        ? (tokenData.error as { message?: string })?.message ?? JSON.stringify(tokenData.error)
+        : null) || "Failed to mint Realtime token";
     log.error("Token minting failed", {
       status: tokenRes.status,
       error: tokenData,
     });
     return NextResponse.json(
-      { error: "Failed to mint Realtime token" },
+      { error: openAiError },
       { status: tokenRes.status },
     );
   }
