@@ -1,9 +1,15 @@
 // Seed the knowledge_base table with Ariv's story bank chunks + embeddings
-// Run: node scripts/seed-knowledge.mjs
+// Run: node scripts/seed-knowledge.mjs (from web/) or node web/scripts/seed-knowledge.mjs (from project root)
 
 import { createClient } from "@supabase/supabase-js";
 import { config } from "dotenv";
-config({ path: ".env" });
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const webDir = join(__dirname, "..");
+config({ path: join(webDir, ".env") });
+config({ path: join(webDir, ".env.local") });
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -100,6 +106,11 @@ const CHUNKS = [
     content:
       "Ariv's online profiles and portfolio links: Portfolio website: https://arivfolio.tech/ — LinkedIn: https://www.linkedin.com/in/arivunidhi-anna-arivan/ — GitHub: https://github.com/ArivunidhiA — X (Twitter): https://twitter.com/Ariv_2012 — Email: annaarivan.a@northeastern.edu — Phone: 857-398-5481 — Calendly (book a meeting): https://calendly.com/annaarivan-a-northeastern/15-min-coffee-chat",
     metadata: { category: "links", type: "profiles" },
+  },
+  {
+    content:
+      "When someone asks for Ariv's resume: Share his portfolio (https://arivfolio.tech/), LinkedIn (https://www.linkedin.com/in/arivunidhi-anna-arivan/), and GitHub (https://github.com/ArivunidhiA). These contain his full experience. No resume PDF is available — portfolio and LinkedIn are the closest. If a resume PDF URL is added to the knowledge base later, use that instead.",
+    metadata: { category: "links", type: "resume" },
   },
   {
     content:
