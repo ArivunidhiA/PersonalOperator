@@ -9,10 +9,7 @@ export async function POST(req: Request) {
 
   if (clerkEnabled) {
     const session = await auth();
-    userId = session.userId;
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    userId = session?.userId ?? null;
   }
 
   const supabase = getSupabase();
@@ -58,10 +55,7 @@ export async function GET() {
 
   if (clerkEnabled) {
     const session = await auth();
-    userId = session.userId;
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    userId = session?.userId ?? null;
   }
 
   const supabase = getSupabase();
@@ -72,17 +66,16 @@ export async function GET() {
     );
   }
 
-  const query = supabase
-    .from("conversations")
-    .select("session_id, messages, updated_at")
-    .order("updated_at", { ascending: false })
-    .limit(20);
-
-  if (userId) {
-    query.eq("user_id", userId);
+  if (!userId) {
+    return NextResponse.json({ conversations: [] });
   }
 
-  const { data, error } = await query;
+  const { data, error } = await supabase
+    .from("conversations")
+    .select("session_id, messages, updated_at")
+    .eq("user_id", userId)
+    .order("updated_at", { ascending: false })
+    .limit(20);
 
   if (error) {
     console.error("Supabase query error:", error);

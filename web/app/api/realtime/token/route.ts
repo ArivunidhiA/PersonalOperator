@@ -82,7 +82,7 @@ export async function POST(req: Request) {
           },
         },
         output: {
-          voice: "ash",
+          voice: "cedar",
         },
       },
     },

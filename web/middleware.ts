@@ -4,10 +4,8 @@ import type { NextRequest } from "next/server";
 
 const clerkKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
-const isProtectedRoute = createRouteMatcher([
-  "/",
-  "/api/realtime/(.*)",
-]);
+// Only dashboard and analytics require sign-in; home and voice API allow anonymous
+const isProtectedRoute = createRouteMatcher(["/dashboard", "/api/analytics"]);
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function noopMiddleware(_req: NextRequest) {

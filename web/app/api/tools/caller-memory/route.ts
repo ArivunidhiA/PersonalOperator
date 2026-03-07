@@ -1,12 +1,16 @@
 import { NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase";
+import { recallMemories } from "@/lib/semantic-memory";
+import { createLogger } from "@/lib/logger";
+
+const log = createLogger({ tool: "caller-memory" });
 
 export async function POST(req: Request) {
   const supabase = getSupabase();
   if (!supabase) {
     return NextResponse.json(
-      { error: "Not configured" },
-      { status: 503 }
+      { error: "Database not configured" },
+      { status: 503 },
     );
   }
 
@@ -15,37 +19,58 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Missing email" }, { status: 400 });
   }
 
-  const { data: caller } = await supabase
-    .from("callers")
-    .select("*")
-    .eq("email", body.email)
-    .single();
+  const { email } = body;
+  const contextQuery = body.context || "previous conversations and interests";
 
-  if (!caller) {
-    return NextResponse.json({ found: false });
+  try {
+    // Fetch structured caller record
+    const { data: caller } = await supabase
+      .from("callers")
+      .select("*")
+      .eq("email", email)
+      .single();
+
+    if (!caller) {
+      log.info("First-time caller", { callerId: email });
+      return NextResponse.json({ found: false });
+    }
+
+    // Fetch semantically relevant memories
+    const memories = await recallMemories(email, contextQuery, 3);
+
+    // Fetch recent call summaries
+    const { data: recentCalls } = await supabase
+      .from("call_summaries")
+      .select("session_id, summary, topics, outcome, created_at")
+      .eq("caller_email", email)
+      .order("created_at", { ascending: false })
+      .limit(3);
+
+    log.info("Caller found", {
+      callerId: email,
+      callCount: caller.call_count,
+      memoryCount: memories.length,
+    });
+
+    return NextResponse.json({
+      found: true,
+      caller,
+      memories: memories.map((m) => ({
+        summary: m.summary,
+        topics: m.topics,
+        sentiment: m.sentiment,
+        when: m.createdAt,
+      })),
+      recent_calls: recentCalls || [],
+    });
+  } catch (err) {
+    log.error("Caller memory lookup failed", {
+      callerId: email,
+      error: err instanceof Error ? err.message : String(err),
+    });
+    return NextResponse.json(
+      { error: "Lookup failed" },
+      { status: 500 },
+    );
   }
-
-  // Also get their recent call summaries
-  const { data: recentCalls } = await supabase
-    .from("call_summaries")
-    .select("summary, topics, intent, outcome, created_at")
-    .eq("caller_email", body.email)
-    .order("created_at", { ascending: false })
-    .limit(3);
-
-  return NextResponse.json({
-    found: true,
-    caller: {
-      name: caller.name,
-      email: caller.email,
-      company: caller.company,
-      role: caller.role,
-      call_count: caller.call_count,
-      last_topics: caller.last_topics,
-      last_summary: caller.last_summary,
-      first_seen: caller.first_seen,
-      last_seen: caller.last_seen,
-    },
-    recent_calls: recentCalls || [],
-  });
 }
