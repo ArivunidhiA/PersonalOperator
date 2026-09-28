@@ -88,3 +88,32 @@ describe("verifier no longer flags true lines (false positives found in review)"
     expect(verifyUtterance(line)).toEqual([]);
   });
 });
+
+describe("third-round verifier gaps (independent re-check)", () => {
+  it.each([
+    ["He's a forward deployed engineer at INZI Controls.", "forward-deployed title"],
+    ["His title at INZI is Forward Deployed Engineer.", "engineer title at INZI"],
+    ["No, I'm a real person.", "claims to be human"],
+    ["You're talking to a real person, promise.", "claims to be human"],
+    ["Not only is he AWS certified, he uses it daily.", "certification claim"],
+    ["At INZI he's a controls engineer.", "engineer title at INZI"],
+    ["He's an INZI engineer.", "engineer title at INZI"],
+    ["He's an engineer over at INZI.", "engineer title at INZI"],
+    ["He did 4 internships.", "number not in facts"],
+    ["He improved margins 30% for Serotonin.", "number not in facts"],
+    ["He led a team of 4 engineers.", "number not in facts"],
+    ["He grew revenue 3x.", "number not in facts"],
+    ["Check northeastern dot edu for that.", "URL spoken"],
+  ])("%s", (line, rule) => {
+    expect(rules(line)).toContain(rule);
+  });
+  it.each([
+    "The title says coordinator, but the work is basically forward-deployed.",
+    "He's basically a forward-deployed engineer in practice, just without building their software.",
+    "Two merged fixes in Agno, and three docs fixes in PyTorch AO.",
+    "CI runs on 3 operating systems and 4 Python versions.",
+    "Nope, I'm not a real person. I'm an AI Ariv built.",
+  ])("passes: %s", (line) => {
+    expect(verifyUtterance(line)).toEqual([]);
+  });
+});

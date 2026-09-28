@@ -29,7 +29,7 @@ export async function GET(
     // Verify token exists and hasn't expired
     const { data: tokenRecord, error: tokenError } = await supabase
       .from("share_tokens")
-      .select("session_id, expires_at, views")
+      .select("session_id, expires_at")
       .eq("token", token)
       .single();
 
@@ -40,12 +40,6 @@ export async function GET(
     if (tokenRecord.expires_at && new Date(tokenRecord.expires_at) < new Date()) {
       return NextResponse.json({ error: "Link expired" }, { status: 410 });
     }
-
-    // Increment view count
-    await supabase
-      .from("share_tokens")
-      .update({ views: (tokenRecord.views || 0) + 1 })
-      .eq("token", token);
 
     // Fetch the call summary
     const { data: call } = await supabase
@@ -58,10 +52,7 @@ export async function GET(
       return NextResponse.json({ error: "Call not found" }, { status: 404 });
     }
 
-    log.info("Shared call viewed", {
-      sessionId: tokenRecord.session_id,
-      views: (tokenRecord.views || 0) + 1,
-    });
+    log.info("Shared call viewed", { sessionId: tokenRecord.session_id });
 
     return NextResponse.json({
       verified: false,

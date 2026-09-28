@@ -72,16 +72,21 @@ describe("/api/cron/maintenance", () => {
 });
 
 describe("/api/voice/session", () => {
+  it("only our own page can start calls (no cross-site session burning)", async () => {
+    const { POST } = await import("@/app/api/voice/session/route");
+    expect((await POST(post("/api/voice/session", {}))).status).toBe(403);
+    expect((await POST(post("/api/voice/session", {}, { "x-ariv-client": "1", "sec-fetch-site": "cross-site" }))).status).toBe(403);
+  });
   it("reports offline (not a crash) when no voice engine is configured", async () => {
     const { POST } = await import("@/app/api/voice/session/route");
-    const res = await POST(post("/api/voice/session", {}));
+    const res = await POST(post("/api/voice/session", {}, { "x-ariv-client": "1" }));
     expect(res.status).toBe(503);
     expect((await res.json()).code).toBe("offline");
   });
   it("blocks EEA/UK/CH visitors from the Gemini free tier", async () => {
     process.env.GEMINI_API_KEY = "k";
     const { POST } = await import("@/app/api/voice/session/route");
-    const res = await POST(post("/api/voice/session", {}, { "x-vercel-ip-country": "DE" }));
+    const res = await POST(post("/api/voice/session", {}, { "x-vercel-ip-country": "DE", "x-ariv-client": "1" }));
     expect(res.status).toBe(451);
     expect((await res.json()).code).toBe("region");
     delete process.env.GEMINI_API_KEY;

@@ -15,6 +15,7 @@ class PcmPlayer extends AudioWorkletProcessor {
     this.playing = false;
     this.waitBlocks = 0;
     this.last = 0;
+    this.gain = 1;
     this.speaking = false;
     this.tick = 0;
     this.port.onmessage = (e) => {
@@ -46,6 +47,7 @@ class PcmPlayer extends AudioWorkletProcessor {
       if (avail >= PREROLL || (avail > 0 && ++this.waitBlocks > 18)) {
         this.playing = true;
         this.waitBlocks = 0;
+        this.gain = 0; // fade in over ~5 ms so a start never clicks
       }
     }
     let sq = 0;
@@ -59,7 +61,8 @@ class PcmPlayer extends AudioWorkletProcessor {
       }
       const a = this.buf[this.read];
       const b = this.buf[(this.read + 1) % this.size];
-      const v = a + (b - a) * this.frac;
+      if (this.gain < 1) this.gain = Math.min(1, this.gain + 1 / 256);
+      const v = (a + (b - a) * this.frac) * this.gain;
       out[i] = v;
       this.last = v;
       sq += v * v;

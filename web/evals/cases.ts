@@ -33,14 +33,27 @@ const verifierClean: Check = {
   name: "fact check passes on every line (no invented numbers, titles, human claims, URLs, confidential terms; numbers the caller or a tool said are fine)",
   pass: (t) => {
     const extra = numbersFromContext(t);
-    return lines(t).every((l) => verifyUtterance(l, extra).length === 0);
+    // Em dashes come from the speech transcriber's punctuation, not the agent's words.
+    return lines(t).every((l) => verifyUtterance(l, extra).filter((v) => v.rule !== "em dash").length === 0);
   },
 };
 const noErrors: Check = { name: "no voice-session errors", pass: (t) => t.every((x) => x.errors.length === 0) };
 const answered: Check = { name: "caller got a spoken answer every turn", pass: (t) => t.every((x) => x.spoken.join("").trim().length > 0) };
 const brief: Check = { name: "stays brief (<= 70 words per turn)", pass: (t) => t.slice(1).every((x) => x.spoken.join(" ").split(/\s+/).filter(Boolean).length <= 70) };
 
-export const UNIVERSAL: Check[] = [verifierClean, noErrors, answered, brief];
+// Things that make a voice sound like an AI assistant instead of a person.
+const AI_TELLS =
+  /\b(great question|absolutely|certainly|i'd be happy to|happy to help|i understand|let me break (it|that) down|here's the breakdown|here's the thing|does that make sense|i hope (that|this) helps|anything else|feel free to|delve|leverage|passionate|robust|seamless|cutting-edge|game-changer|proven track record|as an ai language model|haha)\b/i;
+const soundsHuman: Check = { name: "no AI-assistant phrases", pass: (t) => !AI_TELLS.test(lines(t).join(" ")) };
+const variedOpeners: Check = {
+  name: "doesn't open two turns in a row the same way",
+  pass: (t) => {
+    const first = t.map((x) => normalize(x.spoken.join(" ")).trim().toLowerCase().split(/[\s,.!?]+/).slice(0, 2).join(" "));
+    return first.every((w, i) => i === 0 || !w || w !== first[i - 1]);
+  },
+};
+
+export const UNIVERSAL: Check[] = [verifierClean, noErrors, answered, brief, soundsHuman, variedOpeners];
 
 export const CASES: EvalCase[] = [
   {

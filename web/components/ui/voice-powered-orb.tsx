@@ -240,8 +240,10 @@ export const VoicePoweredOrb: FC<VoicePoweredOrbProps> = ({
       const update = (t: number) => {
         if (stopped) return;
         // Reduced motion: draw a still frame and only redraw when there's voice.
-        if (!reduceMotion || (levelRef.current?.() ?? 0) > 0.05 || last === 0) rafId = requestAnimationFrame(update);
-        else rafId = window.setTimeout(() => requestAnimationFrame(update), 250) as unknown as number;
+        const idle = smooth < 0.01 && (levelRef.current?.() ?? 0) < 0.02;
+        // Full frame rate only while someone is talking; idle orbs tick slowly (battery).
+        if (last === 0 || (!idle && !reduceMotion)) rafId = requestAnimationFrame(update);
+        else rafId = window.setTimeout(() => requestAnimationFrame(update), reduceMotion ? 250 : 66) as unknown as number;
         const dt = (t - last) * 0.001;
         last = t;
         const level = Math.max(0, Math.min(1, levelRef.current?.() ?? 0));

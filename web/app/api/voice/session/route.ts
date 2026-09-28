@@ -19,6 +19,12 @@ const clerkEnabled = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
  * server-side (Gemini) or set server-side in the SDP exchange (OpenAI).
  */
 export async function POST(req: Request) {
+  // Only our own page may start calls: a custom header forces a CORS preflight
+  // (which we never allow cross-site), and browsers mark cross-site requests.
+  const site = req.headers.get("sec-fetch-site");
+  if (req.headers.get("x-ariv-client") !== "1" || (site && site !== "same-origin" && site !== "none")) {
+    return NextResponse.json({ error: "Forbidden", code: "forbidden" }, { status: 403 });
+  }
   const country = req.headers.get("x-vercel-ip-country");
   const provider = chooseProvider(country);
   if (!provider) {
@@ -57,24 +63,25 @@ export async function POST(req: Request) {
       { status: 429 },
     );
   }
-  const global = await checkLimit("sessionGlobal", "all");
-  if (!global.ok) {
-    return NextResponse.json(
-      { error: "The agent has hit its limit for today. Try again tomorrow, or book a call with Ariv below.", code: "busy" },
-      { status: 429 },
-    );
-  }
-
   const sessionId = newSessionId();
   const ticket = mintTicket({ sid: sessionId, p: provider, uid, em: email });
 
+  const busy = () =>
+    NextResponse.json(
+      { error: "The agent has hit its limit for today. Try again tomorrow, or book a call with Ariv below.", code: "busy" },
+      { status: 429 },
+    );
+
   if (provider === "openai") {
+    if (!(await checkLimit("sessionGlobal", "all")).ok) return busy();
     log.info("session started", { sessionId, provider, signedIn: !!uid, country });
     return NextResponse.json({ provider, sessionId, ticket, maxCallSeconds: MAX_CALL_SECONDS });
   }
 
   try {
     const { token, model } = await mintGeminiToken();
+    // Count against the shared daily cap only once a session is really granted.
+    if (!(await checkLimit("sessionGlobal", "all")).ok) return busy();
     log.info("session started", { sessionId, provider, signedIn: !!uid, country });
     return NextResponse.json({
       provider,

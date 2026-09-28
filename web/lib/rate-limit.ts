@@ -63,7 +63,8 @@ const LIMITS = {
     make: () => Ratelimit.fixedWindow(Number(process.env.DAILY_SESSION_CAP || 200), "1 d"),
   },
   toolCall: { max: 40, windowMs: 600_000, make: () => Ratelimit.slidingWindow(40, "10 m") }, // per session
-  finish: { max: 3, windowMs: 3600_000, make: () => Ratelimit.fixedWindow(3, "1 h") }, // per session
+  finish: { max: 8, windowMs: 3600_000, make: () => Ratelimit.fixedWindow(8, "1 h") }, // per session (snapshots + final + retry)
+  notifyDaily: { max: 60, windowMs: 86400_000, make: () => Ratelimit.fixedWindow(60, "1 d") }, // Ariv's inbox
   emailTranscript: { max: 3, windowMs: 86400_000, make: () => Ratelimit.fixedWindow(3, "1 d") }, // per user
   // Paid fallback: hard daily ceiling across everyone.
   openaiDaily: {
@@ -128,11 +129,13 @@ export async function checkLimit(name: LimitName, key: string): Promise<LimitRes
   }
 }
 
-/** The caller's IP as seen by Vercel's edge (not spoofable there). */
+/**
+ * The caller's IP as seen by Vercel's edge (not spoofable there). IPv6 is keyed
+ * by its /64, since one person usually controls a whole /64.
+ */
 export function clientIp(req: Request): string {
-  return (
-    req.headers.get("x-real-ip") ||
-    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    "unknown"
-  );
+  const ip = req.headers.get("x-real-ip") || req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  if (!ip.includes(":")) return ip;
+  const parts = ip.split("::")[0].split(":").filter(Boolean);
+  return `${parts.slice(0, 4).join(":")}::/64`;
 }

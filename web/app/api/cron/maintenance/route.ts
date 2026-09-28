@@ -30,6 +30,9 @@ export async function GET(req: Request) {
     const cutoff = new Date(Date.now() - days * 86400_000).toISOString();
     const c = await supabase.from("conversations").delete({ count: "exact" }).lt("updated_at", cutoff);
     const s = await supabase.from("call_summaries").delete({ count: "exact" }).lt("created_at", cutoff);
+    // Verified caller emails and legacy memories follow the same retention.
+    await supabase.from("callers").delete().lt("last_seen", cutoff);
+    await supabase.from("caller_memories").delete().lt("created_at", cutoff);
     conversations = c.count ?? 0;
     summaries = s.count ?? 0;
   }

@@ -14,11 +14,13 @@ export type Violation = { rule: string; excerpt: string };
 /** Gemini transcripts use curly apostrophes; normalize before matching. */
 export const normalize = (t: string) => t.replace(/[‘’ʼ′]/g, "'").replace(/[“”]/g, '"');
 
-const NEGATION = /\b(?:not|never|isn't|wasn't|hasn't|doesn't|didn't|no longer)\b|\bno\b(?! (?:doubt|question))/i;
+// "not only" and "no doubt" are emphasis, not negation.
+const NEGATION = /\b(?:not(?! only)|never|isn't|wasn't|hasn't|doesn't|didn't|no longer)\b|\bno\b(?! (?:doubt|question))/i;
 const negatedBefore = (text: string, idx: number, span = 30) => NEGATION.test(text.slice(Math.max(0, idx - span), idx));
 
 const HUMAN_CLAIMS: RegExp[] = [
-  /\bi(?:'m| am) (?:a )?(?:real )?(?:human|person|human being)\b/i,
+  /\bi(?:'m| am) (?:a |an )?(?:real |actual |living )?(?:human|person|human being)\b/i,
+  /\byou(?:'re| are) (?:talking|speaking) (?:to|with) (?:a )?(?:real |actual )?(?:human|person)\b/i,
   /\bi(?:'m| am) not (?:an? )?(?:ai|bot|robot|machine)\b/i,
   /\b(?:not|no) (?:an? )?(?:ai|bot)\b(?!\s+(?:yet|either))/i,
   /\bi(?:'m| am) ariv\b(?!'s)/i,
@@ -28,19 +30,24 @@ const HUMAN_CLAIMS: RegExp[] = [
 const FALSE_HISTORY: [string, RegExp, RegExp?][] = [
   // [rule, pattern, exemption tested on the same sentence]
   ["software engineer title", /\b(?:was|is|he's|worked as|title is) (?:a |an )?(?:software|senior|lead|staff) engineer\b/i, /\blooking for|roles? as|wants to be|aiming\b/i],
-  // "basically forward-deployed" framing is fine (Ariv's own description); a plain engineer title isn't.
-  ["engineer title at INZI", /\b(?:engineer|developer)(?: (?:job|role|position))? (?:at|for|with) inzi\b|\binzi\b[^.]{0,20}\bas an? (?:\w+ )?(?:engineer|developer)\b/i, /forward[- ]deploy|basically|kind of|like an?\b/i],
+// Any engineer title at INZI (his title is Client Project Coordinator), in the usual phrasings.
+  ["engineer title at INZI", /\b(?:engineer|developer)(?: (?:job|role|position))? (?:over )?(?:at|for|with) inzi\b|\binzi (?:\w+ )?(?:engineer|developer)\b|\bat inzi,? he(?:'s| is) (?:an? )?(?:\w+ )?(?:engineer|developer)\b|\binzi\b[^.]{0,20}\bas an? (?:\w+ )?(?:engineer|developer)\b|\btitle (?:at inzi )?is (?:an? )?(?!client project coordinator)[\w -]{0,30}(?:engineer|developer)\b/i, /\b(?:basically|kind of|like|essentially)\b[^.]{0,25}forward[- ]deployed|\bwork (?:is|looks) (?:basically |like )?forward[- ]deployed/i],
+  // "Forward-deployed" describes the work, never his title.
+  ["forward-deployed title", /\b(?:he(?:'s| is)|works as|title (?:at inzi )?is|job title is) (?:an? )?forward[- ]deployed (?:software )?engineer\b/i, /\b(?:basically|kind of|like|essentially|pretty much)\b/i],
   ["volunteer called a job", /\b(?:works?|working|worked|job|employed) (?:as an? \w+ )?at (?:bright ?mind|crossroads)\b/i, /volunteer/i],
   ["wrong location", /\b(?:lives|based|he's|he is) in boston\b/i],
   ["old project", /\bllm ?lab\b|\bjob copilot\b/i],
-  ["certification claim", /\b(?:is|he's|he is) (?:an? )?aws[- ]?certified\b|\bhas (?:an? |the |a couple of |some |two |several )?aws(?: [a-z]+){0,3} cert(?:ification)?s?\b|\bgot (?:an? )?aws(?: [a-z]+){0,3} cert/i],
+  ["certification claim", /\b(?:is|he's|he is|is he) (?:an? )?aws[- ]?certified\b|\bhas (?:an? |the |a couple of |some |two |several )?aws(?: [a-z]+){0,3} cert(?:ification)?s?\b|\bgot (?:an? )?aws(?: [a-z]+){0,3} cert/i],
   ["published research", /\bpublished (?:a )?(?:research|paper)/i],
   ["years of experience", /\b(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten)\+? (?:years?|yrs) (?:of )?(?:experience|exp)\b/i],
 ];
 
-const URL_SPOKEN = /\bhttps?:\/\/|\bwww\b|\b[a-z0-9-]+\s?(?:\.|dot)\s?(?:com|io|app|dev|org|net)\b/i;
+const URL_SPOKEN = /\bhttps?:\/\/|\bwww\b|\b[a-z0-9-]+\s?(?:\.|dot)\s?(?:com|io|app|dev|org|net|edu|ai)\b/i;
 const TIME_OR_DATE =
   /\b\d{1,2}(?::\d{2})?\s?(?:a\.?m\.?|p\.?m\.?)|\b\d{1,2}(?:st|nd|rd|th)\b|\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.? \d{1,2}\b/gi;
+// Small counts are allowed ("two merged fixes") but not as invented metrics ("3 years", "a team of 4").
+const SMALL_COUNT_CLAIM =
+  /\b(?:\d+|two|three|four|five|six|seven|eight|nine|ten|dozen)\+? (?:years?|yrs|internships|products|engineers|people|reports|direct reports|clients|customers|startups|companies|x\b|times)\b|\b\d+(?:\.\d+)?\s?(?:%|percent|x\b)/i;
 const SPELLED_METRIC =
   /\b(?:(?:twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|million|billion)[- ]?(?:\w+ )?)(?:percent|%|users|people|customers|clients|vehicles|records|volunteers|engineers|states|queries|requests|events)\b/i;
 
@@ -70,12 +77,11 @@ export function verifyUtterance(raw: string, extraAllowedNumbers: string[] = [])
   for (const re of HUMAN_CLAIMS) {
     const m = text.match(re);
     if (!m) continue;
-    // "I'm not a real person" is an admission; the denial patterns ("not an AI") never are.
-    const isDenial = /\bnot\b|\bno\b/i.test(m[0]);
-    if (isDenial || !negatedBefore(text, m.index ?? 0, 12)) {
-      out.push({ rule: "claims to be human", excerpt: m[0] });
-      break;
-    }
+    // The patterns only match direct claims ("I'm not a real person" never matches), so a
+    // leading "No," doesn't excuse "No, I'm a real person". Only "you're not talking to a real person" does.
+    if (/^you/i.test(m[0]) && negatedBefore(text, (m.index ?? 0) + 12, 16)) continue;
+    out.push({ rule: "claims to be human", excerpt: m[0] });
+    break;
   }
   for (const [rule, re, exempt] of FALSE_HISTORY) {
     const m = text.match(re);
@@ -89,6 +95,10 @@ export function verifyUtterance(raw: string, extraAllowedNumbers: string[] = [])
   if (u) out.push({ rule: "URL spoken", excerpt: u[0] });
   if (text.includes("—")) out.push({ rule: "em dash", excerpt: excerpt(text, text.indexOf("—")) });
 
+  const small = text.match(SMALL_COUNT_CLAIM);
+  if (small && !negatedBefore(text, small.index ?? 0) && !/\b(?:merged|fixes|changes|features|operating systems|python versions|nonprofits)\b/i.test(text.slice(small.index ?? 0, (small.index ?? 0) + 40))) {
+    out.push({ rule: "number not in facts", excerpt: excerpt(text, small.index ?? 0) });
+  }
   const spelled = text.match(SPELLED_METRIC);
   if (spelled && !negatedBefore(text, spelled.index ?? 0)) out.push({ rule: "number not in facts", excerpt: excerpt(text, spelled.index ?? 0) });
 

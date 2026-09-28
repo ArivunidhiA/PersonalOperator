@@ -52,7 +52,7 @@ const bufferFromB64 = (b64: string) => {
 const isSafari = () => /^((?!chrome|android|crios|fxios).)*safari/i.test(navigator.userAgent);
 
 /** Chromium echo-cancel workaround. Resolves null (use plain playback) if it can't connect in 2 s. */
-async function loopbackPlayback(ctx: AudioContext, node: AudioNode): Promise<{ close: () => void } | null> {
+async function loopbackPlayback(ctx: AudioContext, node: AudioNode, onLaterFailure: () => void): Promise<{ close: () => void } | null> {
   if (isSafari() || typeof RTCPeerConnection === "undefined") return null;
   const a = new RTCPeerConnection();
   const b = new RTCPeerConnection();
@@ -99,6 +99,13 @@ async function loopbackPlayback(ctx: AudioContext, node: AudioNode): Promise<{ c
       close();
       return null;
     }
+    // If the loopback dies mid-call, fall back to direct playback instead of going silent.
+    b.onconnectionstatechange = () => {
+      if (b.connectionState === "failed" || b.connectionState === "closed") {
+        close();
+        onLaterFailure();
+      }
+    };
     return { close };
   } catch {
     close();
@@ -119,7 +126,14 @@ export async function startGemini(info: SessionInfo, prepared: Prepared, h: Voic
   const player = new AudioWorkletNode(ctx, "pcm-player", { outputChannelCount: [1] });
   const src = ctx.createMediaStreamSource(mic);
   src.connect(capture);
-  const loop = await loopbackPlayback(ctx, player);
+  let loop = await loopbackPlayback(ctx, player, () => {
+    loop = null;
+    try {
+      player.connect(ctx.destination);
+    } catch {
+      /* already connected */
+    }
+  });
   if (!loop) player.connect(ctx.destination);
 
   let micLevel = 0;
@@ -207,7 +221,9 @@ export async function startGemini(info: SessionInfo, prepared: Prepared, h: Voic
   });
   // iOS suspends audio for phone calls and interruptions; try to come back.
   ctx.onstatechange = () => {
-    if (!ended && (ctx.state === "suspended" || (ctx.state as string) === "interrupted")) void ctx.resume().catch(() => {});
+    if (!ended && (ctx.state === "suspended" || (ctx.state as string) === "interrupted")) {
+      void ctx.resume().catch(() => end("dropped", "Audio got interrupted, so the call ended. Tap Talk again to start a new one."));
+    }
   };
 
   timers.push(
@@ -300,9 +316,10 @@ export async function startGemini(info: SessionInfo, prepared: Prepared, h: Voic
     }
     const goAway = msg.goAway as { timeLeft?: string } | undefined;
     if (goAway) {
-      // The server will close soon (session length). Let the agent finish, then end cleanly.
-      const secs = Math.max(2, Number.parseFloat(String(goAway.timeLeft ?? "10")) - 2);
-      timers.push(setTimeout(() => end("time", "That's the max call length. Thanks for chatting!"), secs * 1000));
+      // The server will close soon. Let the agent finish, then end cleanly.
+      const left = Number.parseFloat(String(goAway.timeLeft ?? ""));
+      const secs = Number.isFinite(left) ? Math.max(2, left - 2) : 10;
+      timers.push(setTimeout(() => end("time", "The voice service is wrapping up this call. Thanks for chatting!"), secs * 1000));
     }
   };
 

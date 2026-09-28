@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { randomBytes } from "crypto";
 import { Resend } from "resend";
 import { getSupabase } from "@/lib/supabase";
 import { checkLimit, safeRedis } from "@/lib/rate-limit";
@@ -16,6 +15,9 @@ export const maxDuration = 30;
 
 const log = createLogger({ tool: "call-finish" });
 
+const MAX_BODY = 48_000;
+const MAX_MESSAGES = 120;
+
 const ANALYSIS_SCHEMA = {
   type: "object",
   properties: {
@@ -30,12 +32,14 @@ const ANALYSIS_SCHEMA = {
 };
 
 /**
- * Called once when a call ends (button, tab close via sendBeacon, or timeout).
- * Saves the transcript, writes a summary, makes a share link, and notifies Ariv.
+ * Saves a call. Called when a call ends (button, timeout, drop), and also as a
+ * snapshot when a phone backgrounds the tab (the socket may be killed), so it's
+ * save-or-update: a later call with a longer transcript updates the record.
+ * Ariv is notified once per call. Sharing is a separate, opt-in step.
  */
 export async function POST(req: Request) {
   const raw = await req.text();
-  if (raw.length > 200_000) return NextResponse.json({ error: "Too large" }, { status: 413 });
+  if (raw.length > MAX_BODY) return NextResponse.json({ error: "Too large" }, { status: 413 });
   let body: { ticket?: unknown; messages?: unknown };
   try {
     body = JSON.parse(raw);
@@ -49,96 +53,105 @@ export async function POST(req: Request) {
 
   const messages: Msg[] = (Array.isArray(body.messages) ? body.messages : [])
     .filter((m): m is Msg => !!m && (m.role === "user" || m.role === "assistant") && typeof m.text === "string")
-    .map((m) => ({ role: m.role, text: m.text.slice(0, 4000).trim() }))
+    .map((m) => ({ role: m.role, text: m.text.slice(0, 2000).trim() }))
     .filter((m) => m.text)
-    .slice(0, 300);
+    .slice(0, MAX_MESSAGES);
 
   // Nothing the caller said = nothing worth summarizing (no junk summaries).
   if (!messages.some((m) => m.role === "user")) return NextResponse.json({ ok: true, skipped: true });
 
   const supabase = getSupabase();
   if (!supabase) return NextResponse.json({ ok: false, error: "Storage not configured" }, { status: 503 });
+  if (!(await checkLimit("finish", sid)).ok) return NextResponse.json({ ok: false, error: "Too many saves" }, { status: 429 });
 
-  if (!(await checkLimit("finish", sid)).ok) return NextResponse.json({ error: "Already saved" }, { status: 429 });
+  // Short lock so a snapshot and the final save don't process at the same time.
+  const lockKey = `finish-lock:${sid}`;
+  const locked = await safeRedis<string | number | null>((r) => r.set(lockKey, 1, { nx: true, ex: 25 }), "OK");
+  if (!locked) return NextResponse.json({ ok: false, pending: true, error: "Saving, try again in a moment" }, { status: 409 });
+  const unlock = () => safeRedis((r) => r.del(lockKey), 0);
 
-  // Idempotent: the button and the tab-close beacon can both fire.
-  const lock = await safeRedis((r) => r.set(`finish:${sid}`, 1, { nx: true, ex: 120 }), "OK" as const);
-  if (!lock) {
-    const existing = await supabase.from("call_summaries").select("share_token, summary").eq("session_id", sid).maybeSingle();
-    return NextResponse.json({ ok: true, share_token: existing.data?.share_token ?? null, summary: existing.data?.summary ?? null });
-  }
-  const already = await supabase.from("call_summaries").select("share_token, summary").eq("session_id", sid).maybeSingle();
-  if (already.data) return NextResponse.json({ ok: true, share_token: already.data.share_token, summary: already.data.summary });
+  try {
+    const existing = await supabase.from("call_summaries").select("summary, transcript").eq("session_id", sid).maybeSingle();
+    const prevLen = Array.isArray(existing.data?.transcript) ? existing.data.transcript.length : 0;
+    if (existing.data && messages.length <= prevLen) {
+      return NextResponse.json({ ok: true, summary: existing.data.summary ?? null });
+    }
 
-  const transcript = messages.map((m) => `${m.role === "user" ? "Caller" : "Ariv's AI"}: ${m.text}`).join("\n");
-  const analysis = (await completeJSON<Analysis>({
-    system:
-      "You summarize calls between a visitor and Ariv's AI voice agent. Be literal: only report what was actually said. Never invent a company, role or name; use null when the caller didn't clearly state it. Speech-to-text can garble words, so don't treat one odd word as a company.",
-    user: transcript.slice(0, 30_000),
-    schema: ANALYSIS_SCHEMA,
-    maxTokens: 500,
-    timeoutMs: 20_000,
-  })) ?? fallbackAnalysis(messages);
+    const transcript = messages.map((m) => `${m.role === "user" ? "Caller" : "Ariv's AI"}: ${m.text}`).join("\n");
+    const analysis =
+      (await completeJSON<Analysis>({
+        system:
+          "You summarize calls between a visitor and Ariv's AI voice agent. Be literal: only report what was actually said. Never invent a company, role or name; use null when the caller didn't clearly state it. Speech-to-text can garble words, so don't treat one odd word as a company.",
+        user: transcript.slice(0, 30_000),
+        schema: ANALYSIS_SCHEMA,
+        maxTokens: 500,
+        timeoutMs: 20_000,
+      })) ?? fallbackAnalysis(messages);
+    const topics = Array.isArray(analysis.topics) ? analysis.topics.map(String).slice(0, 5) : [];
+    const flags = verifyTranscript(
+      messages.filter((m) => m.role === "assistant").map((m) => m.text),
+      messages.filter((m) => m.role === "user").map((m) => m.text),
+    );
+    const row = {
+      intent: String(analysis.intent ?? "unknown"),
+      summary: String(analysis.summary ?? "").slice(0, 600),
+      topics,
+      transcript: messages,
+      outcome: String(analysis.outcome ?? "info_provided"),
+      company: typeof analysis.company === "string" ? analysis.company.slice(0, 80) : null,
+    };
 
-  const flags = verifyTranscript(
-    messages.filter((m) => m.role === "assistant").map((m) => m.text),
-    messages.filter((m) => m.role === "user").map((m) => m.text),
-  );
-  // Transcripts are assembled in the caller's browser, so they can be forged.
-  // Never publish a share link for one whose "agent" lines fail the fact check.
-  const severe = flags.some((f) => f.rule !== "number not in facts" && f.rule !== "em dash");
-  const shareToken = severe ? null : randomBytes(16).toString("hex");
+    if (existing.data) {
+      const upd = await supabase.from("call_summaries").update(row).eq("session_id", sid);
+      if (upd.error) throw new Error(upd.error.message);
+      slog.info("call updated", { turns: messages.length });
+      return NextResponse.json({ ok: true, summary: row.summary });
+    }
 
-  await supabase.from("conversations").upsert(
-    { session_id: sid, user_id: ticket.uid ?? "anonymous", messages, updated_at: new Date().toISOString() },
-    { onConflict: "session_id" },
-  );
-  const inserted = await supabase.from("call_summaries").insert({
-    session_id: sid,
-    caller_name: null,
-    caller_email: ticket.em,
-    intent: analysis.intent,
-    summary: analysis.summary,
-    topics: (analysis.topics || []).slice(0, 5),
-    transcript: messages,
-    outcome: analysis.outcome,
-    company: analysis.company,
-    share_token: shareToken,
-    follow_up_sent: false,
-  });
-  if (inserted.error) {
-    slog.error("save summary failed", { error: inserted.error.message });
+    const ins = await supabase.from("call_summaries").insert({ session_id: sid, caller_name: null, caller_email: ticket.em, follow_up_sent: false, ...row });
+    if (ins.error) {
+      // A concurrent save may have won (unique index on session_id): treat as saved.
+      const again = await supabase.from("call_summaries").select("summary").eq("session_id", sid).maybeSingle();
+      if (again.data) return NextResponse.json({ ok: true, summary: again.data.summary ?? null });
+      throw new Error(ins.error.message);
+    }
+
+    if (ticket.em) {
+      const { data: caller } = await supabase.from("callers").select("id, call_count").eq("email", ticket.em).maybeSingle();
+      const fields = { company: row.company ?? undefined, last_topics: topics, last_summary: row.summary, last_seen: new Date().toISOString() };
+      const res = caller
+        ? await supabase.from("callers").update({ ...fields, call_count: (caller.call_count || 1) + 1 }).eq("id", caller.id)
+        : await supabase.from("callers").insert({ email: ticket.em, ...fields, interests: topics });
+      if (res.error) slog.warn("caller upsert failed", { error: res.error.message });
+    }
+
+    if ((await checkLimit("notifyDaily", "all")).ok) {
+      await notifyAriv({ sid, analysis: { ...analysis, summary: row.summary, topics }, transcript, flags, signedIn: !!ticket.uid }).catch((err) =>
+        slog.warn("notify failed", { error: err instanceof Error ? err.message : String(err) }),
+      );
+    } else {
+      slog.warn("notification cap reached; call saved without email");
+    }
+    if (flags.length) slog.warn("verifier flags", { count: flags.length, rules: [...new Set(flags.map((f) => f.rule))] });
+    slog.info("call saved", { intent: row.intent, outcome: row.outcome, turns: messages.length });
+    return NextResponse.json({ ok: true, summary: row.summary });
+  } catch (err) {
+    slog.error("save failed", { error: err instanceof Error ? err.message : String(err) });
     return NextResponse.json({ ok: false, error: "Couldn't save the call" }, { status: 500 });
+  } finally {
+    await unlock();
   }
-  if (shareToken) await supabase.from("share_tokens").insert({ token: shareToken, session_id: sid });
-
-  if (ticket.em) {
-    const { data: caller } = await supabase.from("callers").select("id, call_count").eq("email", ticket.em).maybeSingle();
-    const fields = { company: analysis.company ?? undefined, role: analysis.role ?? undefined, last_topics: analysis.topics, last_summary: analysis.summary, last_seen: new Date().toISOString() };
-    if (caller) await supabase.from("callers").update({ ...fields, call_count: (caller.call_count || 1) + 1 }).eq("id", caller.id);
-    else await supabase.from("callers").insert({ email: ticket.em, ...fields, interests: analysis.topics });
-  }
-
-  await notifyAriv({ sid, analysis, transcript, shareToken, flags, signedIn: !!ticket.uid }).catch((err) =>
-    slog.warn("notify failed", { error: err instanceof Error ? err.message : String(err) }),
-  );
-  if (flags.length) slog.warn("verifier flags", { count: flags.length, rules: [...new Set(flags.map((f) => f.rule))] });
-  slog.info("call saved", { intent: analysis.intent, outcome: analysis.outcome, turns: messages.length });
-
-  return NextResponse.json({ ok: true, share_token: shareToken, summary: analysis.summary });
 }
 
 async function notifyAriv(p: {
   sid: string;
   analysis: Analysis;
   transcript: string;
-  shareToken: string | null;
   flags: { rule: string; excerpt: string }[];
   signedIn: boolean;
 }) {
   const key = process.env.RESEND_API_KEY;
   if (!key) return;
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://arivsai.app";
   const a = p.analysis;
   const flagsHtml = p.flags.length
     ? `<p style="color:#b45309"><strong>Check these lines (automatic fact check):</strong></p><ul>${p.flags
@@ -149,7 +162,7 @@ async function notifyAriv(p: {
   const { error } = await new Resend(key).emails.send({
     from: process.env.EMAIL_FROM || "Ariv's AI <ai@arivsai.app>",
     to: process.env.ARIV_NOTIFY_EMAIL || LINKS.email,
-    subject: `New call: ${a.intent}${a.company ? ` (${a.company.slice(0, 60)})` : ""}`,
+    subject: `New call: ${a.intent}${a.company ? ` (${String(a.company).slice(0, 60)})` : ""}`,
     html: `<div style="font-family:sans-serif;line-height:1.6;max-width:640px">
 <p><strong>Summary:</strong> ${escapeHtml(a.summary)}</p>
 <p><strong>Intent:</strong> ${escapeHtml(a.intent)} &middot; <strong>Outcome:</strong> ${escapeHtml(a.outcome)} &middot; <strong>Signed in:</strong> ${p.signedIn ? "yes" : "no"}</p>
@@ -157,7 +170,7 @@ ${a.company ? `<p><strong>Company (as stated):</strong> ${escapeHtml(a.company)}
 ${a.role ? `<p><strong>Role:</strong> ${escapeHtml(a.role)}</p>` : ""}
 <p><strong>Topics:</strong> ${escapeHtml((a.topics || []).join(", ") || "n/a")}</p>
 ${flagsHtml}
-${p.shareToken ? `<p><a href="${escapeHtml(`${appUrl}/call/${p.shareToken}`)}">Open transcript</a></p>` : "<p>No share link was made (fact check flagged the transcript).</p>"}
+<p style="color:#888;font-size:12px">Transcripts are assembled in the caller's browser, so treat them as unverified. Session ${escapeHtml(p.sid)}.</p>
 <pre style="background:#f5f5f5;padding:12px;border-radius:6px;white-space:pre-wrap;font-size:13px">${escapeHtml(p.transcript.slice(0, 20_000))}</pre>
 </div>`,
   });

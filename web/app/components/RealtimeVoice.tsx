@@ -34,6 +34,9 @@ function useSafeUser() {
   }
 }
 
+// The speech transcriber adds em dashes as punctuation; show them as commas.
+const displayText = (t: string) => t.replace(/\s*\u2014\s*/g, ", ");
+
 const fmt = (s: number) => `${Math.floor(s / 60)}:${String(Math.max(0, s) % 60).padStart(2, "0")}`;
 
 export default function RealtimeVoice() {
@@ -46,7 +49,15 @@ export default function RealtimeVoice() {
   const [mode, setMode] = useState<string>("greeter");
   const [muted, setMuted] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(0);
-  const [post, setPost] = useState<{ shareToken?: string; summary?: string; saving: boolean; failed?: boolean; emailed?: string; emailError?: string } | null>(null);
+  const [post, setPost] = useState<{
+    shareToken?: string;
+    shareError?: string;
+    summary?: string;
+    saving: boolean;
+    failed?: boolean;
+    emailed?: string;
+    emailError?: string;
+  } | null>(null);
   const [copied, setCopied] = useState(false);
 
   const sessionRef = useRef<VoiceSession | null>(null);
@@ -55,6 +66,7 @@ export default function RealtimeVoice() {
   const finishedRef = useRef(false);
   const modeRef = useRef("greeter");
   const cancelRef = useRef(false);
+  const abortRef = useRef<AbortController | null>(null);
   const logRef = useRef<HTMLDivElement | null>(null);
   itemsRef.current = transcript.items;
 
@@ -67,19 +79,22 @@ export default function RealtimeVoice() {
   const finish = useCallback(async (viaBeacon = false) => {
     const info = infoRef.current;
     if (!info || finishedRef.current) return;
-    finishedRef.current = true;
     const body = JSON.stringify({ ticket: info.ticket, messages: toMessages(itemsRef.current) });
     if (viaBeacon) {
-      navigator.sendBeacon?.("/api/calls/finish", new Blob([body], { type: "text/plain" }));
+      // Snapshot while the page may be going away. The server is save-or-update, so the
+      // final save (if the page comes back) still updates it.
+      const sent = navigator.sendBeacon?.("/api/calls/finish", new Blob([body], { type: "text/plain" }));
+      if (!sent) void fetch("/api/calls/finish", { method: "POST", body, keepalive: true, headers: { "Content-Type": "text/plain" } }).catch(() => {});
       return;
     }
+    finishedRef.current = true;
     setPost({ saving: true });
     try {
       const res = await fetch("/api/calls/finish", { method: "POST", headers: { "Content-Type": "application/json" }, body });
-      const data = (await res.json().catch(() => ({}))) as { ok?: boolean; share_token?: string | null; summary?: string; skipped?: boolean };
+      const data = (await res.json().catch(() => ({}))) as { ok?: boolean; summary?: string; skipped?: boolean };
       if (data.skipped) return setPost(null);
       if (!res.ok || !data.ok) throw new Error("save failed");
-      setPost({ saving: false, shareToken: data.share_token ?? undefined, summary: data.summary });
+      setPost({ saving: false, summary: data.summary });
     } catch {
       finishedRef.current = false; // allow Retry
       setPost({ saving: false, failed: true });
@@ -93,7 +108,7 @@ export default function RealtimeVoice() {
       setActiveTool(null);
       setPhase("ended");
       if (message) setNotice({ text: message, tone: reason === "hangup" || reason === "time" ? "info" : "error", showLinks: reason === "quota" });
-      void finish(reason === "hidden");
+      if (reason !== "hidden") void finish();
     },
     [finish],
   );
@@ -106,6 +121,7 @@ export default function RealtimeVoice() {
     finishedRef.current = false;
     infoRef.current = null;
     cancelRef.current = false;
+    abortRef.current = new AbortController();
     modeRef.current = "greeter";
     setMode("greeter");
     setMuted(false);
@@ -131,7 +147,7 @@ export default function RealtimeVoice() {
             if (card) dispatch({ type: "card", card });
           },
           onEnded,
-        });
+        }, abortRef.current?.signal);
         sessionRef.current = session;
         infoRef.current = info;
         setSecondsLeft(info.maxCallSeconds);
@@ -139,6 +155,7 @@ export default function RealtimeVoice() {
       } catch (err) {
         setPhase("idle");
         const e = err instanceof StartError ? err : null;
+        if (e?.code === "cancelled") return;
         setNotice({
           text: e?.message ?? "Couldn't start the call. Try again in a minute.",
           tone: "error",
@@ -149,8 +166,9 @@ export default function RealtimeVoice() {
 
   const hangUp = useCallback(() => {
     if (!sessionRef.current) {
-      // Still setting up: cancel as soon as the session exists.
+      // Still setting up: abort the setup (releases the mic), or cancel once the session exists.
       cancelRef.current = true;
+      abortRef.current?.abort();
       return;
     }
     setPhase("ending");
@@ -172,9 +190,9 @@ export default function RealtimeVoice() {
     return () => clearInterval(id);
   }, [phase]);
 
-  // Leaving or backgrounding the page ends the call and still saves the transcript
-  // (mobile browsers suspend background tabs and kill the socket anyway; pagehide
-  // often never fires when iOS discards a tab).
+  // Leaving the page ends the call and still saves the transcript. Backgrounding
+  // (e.g. tapping a link in the chat on a phone) keeps the call going but saves a
+  // snapshot, since mobile browsers may kill a background tab without pagehide.
   useEffect(() => {
     const onHide = () => {
       if (sessionRef.current) {
@@ -182,10 +200,8 @@ export default function RealtimeVoice() {
         sessionRef.current.stop("hidden");
       }
     };
-    // Only on phones/tablets: desktop keeps background calls alive (e.g. while the
-    // caller opens a link from the chat in a new tab).
     const onVisibility = () => {
-      if (document.visibilityState === "hidden" && window.matchMedia?.("(pointer: coarse)").matches) onHide();
+      if (document.visibilityState === "hidden" && sessionRef.current) void finish(true);
     };
     window.addEventListener("pagehide", onHide);
     document.addEventListener("visibilitychange", onVisibility);
@@ -231,6 +247,14 @@ export default function RealtimeVoice() {
       y += 3;
     }
     doc.save("ariv-ai-conversation.pdf");
+  };
+
+  const createShareLink = async () => {
+    const info = infoRef.current;
+    if (!info) return;
+    const res = await fetch("/api/calls/share", { method: "POST", headers: { "x-session-ticket": info.ticket } }).catch(() => null);
+    const data = (await res?.json().catch(() => ({}))) as { share_token?: string; error?: string } | undefined;
+    setPost((p) => (p ? { ...p, shareToken: res?.ok ? data?.share_token : undefined, shareError: res?.ok ? undefined : data?.error || "Couldn't make a link." } : p));
   };
 
   const emailTranscript = async () => {
@@ -368,7 +392,7 @@ export default function RealtimeVoice() {
                     <span className="mr-2 text-[11px] font-medium uppercase tracking-wider text-white/35">
                       {it.role === "user" ? "You" : "Ariv's AI"}
                     </span>
-                    <span className={it.final ? "text-white/85" : "text-white/50"}>{it.text}</span>
+                    <span className={it.final ? "text-white/85" : "text-white/50"}>{displayText(it.text)}</span>
                   </div>
                 ),
               )
@@ -388,6 +412,12 @@ export default function RealtimeVoice() {
               {post.summary && <p className="mt-1 text-sm text-white/60">{post.summary}</p>}
               {!post.saving && !post.failed && (
                 <div className="mt-4 flex flex-wrap gap-2">
+                  {!shareUrl && (
+                    <Button variant="secondary" size="sm" className="gap-2" onClick={() => void createShareLink()}>
+                      <Copy className="h-4 w-4" aria-hidden />
+                      Create share link
+                    </Button>
+                  )}
                   {shareUrl && (
                     <Button
                       variant="secondary"
@@ -428,6 +458,7 @@ export default function RealtimeVoice() {
                   </a>
                 </div>
               )}
+              {post.shareError && <p className="mt-2 text-xs text-red-200">{post.shareError}</p>}
               {post.emailed && <p className="mt-2 text-xs text-white/50">Sent to {post.emailed}.</p>}
               {post.emailError && <p className="mt-2 text-xs text-red-200">{post.emailError}</p>}
             </div>

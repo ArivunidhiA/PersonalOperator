@@ -17,7 +17,7 @@ export async function mintGeminiToken(now = Date.now()): Promise<{ token: string
       uses: 1,
       newSessionExpireTime: new Date(now + 60_000).toISOString(),
       expireTime: new Date(now + (MAX_CALL_SECONDS + 120) * 1000).toISOString(),
-      liveConnectConstraints: { model: GEMINI_LIVE_MODEL, config: buildGeminiLiveConfig() as never },
+      liveConnectConstraints: { model: GEMINI_LIVE_MODEL, config: buildGeminiLiveConfig(new Date(now)) as never },
       httpOptions: { apiVersion: "v1beta" },
     },
   });

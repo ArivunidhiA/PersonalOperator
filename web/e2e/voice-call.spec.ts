@@ -43,20 +43,28 @@ test("voice call: greeting, facts, links card, saved transcript", async ({ page,
   const agentText = (await log.innerText()).toLowerCase();
   expect(agentText).not.toMatch(/https?:|www\.|dot com/);
 
-  // End the call; the transcript is saved and shareable.
-  const finished = page.waitForResponse((r) => r.url().includes("/api/calls/finish"), { timeout: 60_000 });
+  // End the call; the transcript is saved. Sharing is opt-in.
+  const finished = page.waitForResponse((r) => r.url().includes("/api/calls/finish") && r.request().method() === "POST", { timeout: 60_000 });
   await page.getByRole("button", { name: /end call/i }).click();
   const finishRes = await finished;
   expect(finishRes.status()).toBe(200);
-  const saved = await finishRes.json();
-  expect(saved.share_token).toMatch(/^[0-9a-f]{32}$/);
+  expect((await finishRes.json()).ok).toBe(true);
   await expect(page.getByText("Your transcript")).toBeVisible({ timeout: 30_000 });
+
+  const shared = page.waitForResponse((r) => r.url().includes("/api/calls/share"), { timeout: 30_000 });
+  await page.getByRole("button", { name: /create share link/i }).click();
+  const shareRes = await shared;
+  expect(shareRes.status()).toBe(200);
+  const saved = await shareRes.json();
+  expect(saved.share_token).toMatch(/^[0-9a-f]{32}$/);
   await expect(page.getByRole("button", { name: /copy share link/i })).toBeVisible();
 
-  const shared = await request.get(`/api/calls/${saved.share_token}`);
-  expect(shared.status()).toBe(200);
-  const call = await shared.json();
+  const view = await request.get(`/api/calls/${saved.share_token}`);
+  expect(view.status()).toBe(200);
+  expect(view.headers()["x-robots-tag"]).toContain("noindex");
+  const call = await view.json();
   expect(JSON.stringify(call.transcript)).toMatch(/INZI/i);
+  expect(call.verified).toBe(false);
 
   test.info().annotations.push({ type: "greeting_ms", description: String(greetMs) }, { type: "share_token", description: saved.share_token });
   // Off-Vercel, the analytics script 404s and a production Clerk key refuses localhost.
@@ -68,7 +76,9 @@ test("security surface: old open endpoints are gone, new ones need a live-call t
     const r = await request.post(path, { data: { to: "victim@example.com", subject: "x", html: "x", email: "a@b.co" } });
     expect(r.status(), path).toBe(404);
   }
+  expect((await request.post("/api/voice/session", { data: {} })).status()).toBe(403); // no cross-site/scripted starts
   expect((await request.post("/api/tools/execute", { data: { name: "share_links", args: {} } })).status()).toBe(401);
+  expect((await request.post("/api/calls/share", { data: {} })).status()).toBe(401);
   expect((await request.post("/api/calls/finish", { data: { messages: [{ role: "user", text: "hi" }] } })).status()).toBe(401);
   expect((await request.post("/api/calls/email", { data: {} })).status()).toBe(401);
   expect((await request.get("/api/cron/maintenance")).status()).toBe(401);

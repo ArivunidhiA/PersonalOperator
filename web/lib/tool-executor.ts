@@ -85,11 +85,11 @@ async function researchRole(company: string, role: string): Promise<ToolResult> 
     const llm = await researchRoleLLM(company, role);
     if (llm) return { result: `${header}\n${llm}` };
   }
-  const kind = /forward|deploy|solution|customer|applied|field|implement|success/i.test(role)
+  const kind = /forward|deploy|solution|customer|applied|field|implement|success|sales engineer|pre-?sales/i.test(role)
     ? "role-fit-fde"
-    : /program|project|product|coordinat|analyst|analytics|operations|\bops\b|manager|business/i.test(role)
-      ? "role-fit-coordination"
-      : "role-fit-swe";
+    : /software|back-?end|front-?end|full-?stack|\bai\b|\bml\b|machine learning|\bllm|data scien|developer|devops|platform|\bswe\b/i.test(role)
+      ? "role-fit-swe"
+      : "role-fit-coordination"; // product, program, project, analyst, ops, and roles outside his lane
   const fit = FACTS.find((f) => f.id === kind)!;
   const extra = searchFacts(`${role} ${company}`, 4)
     .filter((f) => f.id !== kind && !f.id.startsWith("role-fit"))

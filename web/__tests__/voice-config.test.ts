@@ -54,7 +54,8 @@ describe("session configs", () => {
     const { buildGeminiLiveConfig } = await import("@/lib/voice-config");
     const { SYSTEM_PROMPT } = await import("@/lib/system-prompt");
     const cfg = buildGeminiLiveConfig();
-    expect(cfg.systemInstruction).toBe(SYSTEM_PROMPT);
+    expect(cfg.systemInstruction.startsWith(SYSTEM_PROMPT)).toBe(true);
+    expect(cfg.systemInstruction).toMatch(/TODAY\nToday is \w+day, /); // the model is told the date
     const decls = cfg.tools[0].functionDeclarations;
     expect(decls.map((d) => d.name)).toEqual(TOOL_NAMES);
     expect(decls.find((d) => d.name === "retrieve_knowledge")!.behavior).toBe("BLOCKING");

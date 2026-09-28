@@ -26,7 +26,8 @@ function micError(err: unknown): StartError {
 }
 
 /** Start a call. Must be invoked directly from a click/tap handler. */
-export async function startVoiceCall(h: VoiceHandlers): Promise<{ session: VoiceSession; info: SessionInfo }> {
+export async function startVoiceCall(h: VoiceHandlers, signal?: AbortSignal): Promise<{ session: VoiceSession; info: SessionInfo }> {
+  const cancelled = () => new StartError("Call cancelled.", "cancelled");
   if (!navigator.mediaDevices?.getUserMedia) {
     throw new StartError("This browser can't use a microphone here. Try Chrome, Safari or Edge.", "unsupported");
   }
@@ -37,18 +38,30 @@ export async function startVoiceCall(h: VoiceHandlers): Promise<{ session: Voice
   } catch (err) {
     throw micError(err);
   }
+  const release = () => {
+    prepared.mic.getTracks().forEach((t) => t.stop());
+    void prepared.ctx.close().catch(() => {});
+  };
+  if (signal?.aborted) {
+    release();
+    throw cancelled();
+  }
 
   let info: SessionInfo;
   try {
-    const res = await fetch("/api/voice/session", { method: "POST" });
+    const res = await fetch("/api/voice/session", { method: "POST", headers: { "x-ariv-client": "1" }, signal });
     const data = (await res.json().catch(() => ({}))) as SessionInfo & { error?: string; code?: string };
     if (!res.ok) throw new StartError(data.error || "Couldn't start the call right now.", data.code || String(res.status));
     info = data;
   } catch (err) {
-    prepared.mic.getTracks().forEach((t) => t.stop());
-    void prepared.ctx.close().catch(() => {});
+    release();
+    if (signal?.aborted) throw cancelled();
     if (err instanceof StartError) throw err;
     throw new StartError("Network issue. Check your connection and try again.", "network");
+  }
+  if (signal?.aborted) {
+    release();
+    throw cancelled();
   }
 
   try {
@@ -59,8 +72,7 @@ export async function startVoiceCall(h: VoiceHandlers): Promise<{ session: Voice
     return { session: await startGemini(info, prepared, h), info };
   } catch (err) {
     // Setup failed after the mic was granted: release it and the audio context.
-    prepared.mic.getTracks().forEach((t) => t.stop());
-    void prepared.ctx.close().catch(() => {});
+    release();
     throw err instanceof StartError
       ? err
       : new StartError(err instanceof Error && err.message.startsWith("This browser") ? err.message : "Couldn't start the call. Try again in a minute.", "setup");

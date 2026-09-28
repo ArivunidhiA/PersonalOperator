@@ -12,7 +12,8 @@ import { AGENT_TOOLS } from "./tools";
 export type VoiceProvider = "gemini" | "openai";
 
 export const GEMINI_LIVE_MODEL = process.env.GEMINI_LIVE_MODEL || "gemini-3.8-live";
-export const GEMINI_VOICE = process.env.GEMINI_VOICE || "Zubenelgenubi"; // "Casual"
+// "Easy-going" (Google's label). Alternatives that fit: Zubenelgenubi ("Casual"), Achird ("Friendly").
+export const GEMINI_VOICE = process.env.GEMINI_VOICE || "Umbriel";
 export const OPENAI_REALTIME_MODEL = process.env.OPENAI_REALTIME_MODEL || "gpt-realtime-2.1-mini";
 export const OPENAI_VOICE = process.env.OPENAI_VOICE || "cedar";
 
@@ -25,7 +26,15 @@ const PAID_ONLY_COUNTRIES = new Set(
 );
 
 export function geminiAllowedIn(country: string | null | undefined): boolean {
-  return !country || !PAID_ONLY_COUNTRIES.has(country.toUpperCase());
+  // On Vercel every real request carries a country; if it's missing, don't assume it's allowed.
+  if (!country) return !process.env.VERCEL_ENV;
+  return !PAID_ONLY_COUNTRIES.has(country.toUpperCase());
+}
+
+/** The model doesn't know today's date; tell it (tokens are minted per call, so it's fresh). */
+export function todayLine(now = new Date()): string {
+  const d = now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric", timeZone: "America/New_York" });
+  return `\n\nTODAY\nToday is ${d} (US Eastern). Use it for "tomorrow", "this week" and how long ago things happened.`;
 }
 
 export function openAIFallbackEnabled(): boolean {
@@ -42,14 +51,15 @@ export function chooseProvider(country: string | null | undefined): VoiceProvide
   return null;
 }
 
-const GREETING_NUDGE = "(The caller just connected. Greet them in one short line that says you're Ariv's AI, then wait.)";
+const GREETING_NUDGE =
+  "(The caller just connected. Greet them in one short, casual line that says you're Ariv's AI, with a little personality, then wait.)";
 export { GREETING_NUDGE };
 
 /** Gemini Live session config, locked into the ephemeral token server-side. */
-export function buildGeminiLiveConfig() {
+export function buildGeminiLiveConfig(now = new Date()) {
   return {
     responseModalities: ["AUDIO"],
-    systemInstruction: SYSTEM_PROMPT,
+    systemInstruction: SYSTEM_PROMPT + todayLine(now),
     tools: [
       {
         functionDeclarations: AGENT_TOOLS.map((t) => ({
@@ -78,12 +88,12 @@ export function buildGeminiLiveConfig() {
 }
 
 /** OpenAI Realtime session (GA shape) for the optional paid fallback. */
-export function buildOpenAISession() {
+export function buildOpenAISession(now = new Date()) {
   return {
     type: "realtime",
     model: OPENAI_REALTIME_MODEL,
     output_modalities: ["audio"],
-    instructions: SYSTEM_PROMPT,
+    instructions: SYSTEM_PROMPT + todayLine(now),
     tools: AGENT_TOOLS.map((t) => ({ type: "function", name: t.name, description: t.description, parameters: t.parameters })),
     tool_choice: "auto",
     reasoning: { effort: "low" },
