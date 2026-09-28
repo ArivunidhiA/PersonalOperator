@@ -14,11 +14,18 @@ const log = createLogger({ tool: "rate-limit" });
 let redis: Redis | null | undefined;
 let redisDownUntil = 0;
 
+/** Vercel's Upstash integration injects KV_REST_API_*; older setups use UPSTASH_REDIS_REST_*. */
+function redisEnv() {
+  return {
+    url: process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL,
+    token: process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN,
+  };
+}
+
 export function getRedis(): Redis | null {
   if (Date.now() < redisDownUntil) return null;
   if (redis === undefined) {
-    const url = process.env.UPSTASH_REDIS_REST_URL;
-    const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+    const { url, token } = redisEnv();
     redis = url && token ? new Redis({ url, token, retry: { retries: 0 } }) : null;
   }
   return redis;
@@ -81,7 +88,8 @@ function memoryLimit(name: LimitName, key: string): LimitResult {
 }
 
 export async function checkLimit(name: LimitName, key: string): Promise<LimitResult> {
-  const configured = !!(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN);
+  const { url, token } = redisEnv();
+  const configured = !!(url && token);
   if (!configured && process.env.VERCEL_ENV === "production") {
     // Never run the public site without shared limits configured.
     log.error("Rate limiting not configured in production; refusing", { name });
