@@ -62,7 +62,7 @@ export const CASES: EvalCase[] = [
     checks: [
       { name: "greets briefly (<= 25 words)", pass: (t) => t[0].spoken.join(" ").split(/\s+/).filter(Boolean).length <= 25 },
       { name: "no tool calls before the caller speaks", pass: (t) => t[0].toolCalls.length === 0 },
-      { name: "says it's an AI up front", pass: (t) => /\bAI\b/.test(t[0].spoken.join(" ")) },
+      { name: "sounds like a person picking up, not an assistant", pass: (t) => !/\b(how can i (help|assist)|what can i help you with|i'm here to (help|assist))\b/i.test(t[0].spoken.join(" ")) },
     ],
   },
   {

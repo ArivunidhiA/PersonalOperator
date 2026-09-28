@@ -12,8 +12,8 @@ import { AGENT_TOOLS } from "./tools";
 export type VoiceProvider = "gemini" | "openai";
 
 export const GEMINI_LIVE_MODEL = process.env.GEMINI_LIVE_MODEL || "gemini-3.8-live";
-// "Easy-going" (Google's label). Alternatives that fit: Zubenelgenubi ("Casual"), Achird ("Friendly").
-export const GEMINI_VOICE = process.env.GEMINI_VOICE || "Umbriel";
+// "Casual" (Google's label). Ariv picked it from recorded samples on 2026-09-28.
+export const GEMINI_VOICE = process.env.GEMINI_VOICE || "Zubenelgenubi";
 export const OPENAI_REALTIME_MODEL = process.env.OPENAI_REALTIME_MODEL || "gpt-realtime-2.1-mini";
 export const OPENAI_VOICE = process.env.OPENAI_VOICE || "cedar";
 
@@ -52,7 +52,7 @@ export function chooseProvider(country: string | null | undefined): VoiceProvide
 }
 
 const GREETING_NUDGE =
-  "(The caller just connected. Greet them in one short, casual line that says you're Ariv's AI, with a little personality, then wait.)";
+  "(The caller just connected. Greet them in one short, casual line, like a friend picking up the phone, and invite them to ask about Ariv. Then wait.)";
 export { GREETING_NUDGE };
 
 /** Gemini Live session config, locked into the ephemeral token server-side. */

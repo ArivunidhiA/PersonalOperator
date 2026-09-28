@@ -23,7 +23,7 @@ export const AGENT_MODES: AgentMode[] = [
     id: "greeter",
     name: "Greeter",
     focus:
-      "Start of the call. Greet in one short, casual line that says you're Ariv's AI, a little fun, then wait. Answer whatever they ask from FACTS. If they name a role but not the company (or the other way round), it's fine to ask for the missing piece.",
+      "Start of the call. Greet in one short, casual line, like a friend picking up the phone, then wait. The page already tells people you're an AI, so don't open with it. Answer whatever they ask from FACTS. If they name a role but not the company (or the other way round), it's fine to ask for the missing piece.",
     triggers: [],
   },
   {

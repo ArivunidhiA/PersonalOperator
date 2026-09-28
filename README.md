@@ -13,7 +13,8 @@ Browser (Next.js page)
   │ 3. tool calls → POST /api/tools/execute (ticket required)
   │      retrieve_knowledge · research_role · check_availability
   │      schedule_meeting · share_links · generate_summary
-  │ 4. call ends → POST /api/calls/finish (ticket) → Supabase + summary + share link
+  │ 4. call ends → POST /api/calls/finish (ticket) → Supabase + summary + email to me
+  │    (optional) POST /api/calls/share → opt-in, fact-checked, unverified-labeled share link
   ▼
 Vercel (Hobby) · Supabase (Postgres) · Upstash (rate limits) · Clerk (optional sign-in)
 Resend (my notification + "email me the transcript") · Calendly (open slots)
@@ -38,6 +39,10 @@ Optional paid paths, both off by default:
 - OpenAI Realtime (`VOICE_FALLBACK=openai`, `gpt-realtime-2.1-mini`).
 - Claude via [Vercel AI Gateway's Anthropic Messages API](https://vercel.com/docs/ai-gateway/sdks-and-apis/anthropic-messages-api) (`AI_GATEWAY_API_KEY`, `LLM_PROVIDER=gateway`).
 
+## Personality
+
+It's meant to sound like a chill, funny friend who knows me, not an assistant. `web/lib/system-prompt.ts` sets the persona, the spoken style (short spoken sentences, react-then-answer, varied openers, callbacks) and the humor rules (answer first, joke second, never at anyone's expense, a straight face for visa, salary and confidential stuff). It still says it's an AI whenever asked, and the evals fail any reply that sounds like a generic assistant ("great question", "I'd be happy to", "anything else?"). The voice is Gemini's prebuilt `Umbriel`; you can change it with `GEMINI_VOICE`.
+
 ## Run it
 
 ```bash
@@ -48,6 +53,8 @@ npm run dev
 ```
 
 Node 22+ (Vercel uses 24). Env vars are documented in [`web/.env.example`](web/.env.example).
+
+**Database:** run [`web/scripts/migrate-v3.sql`](web/scripts/migrate-v3.sql) once in the Supabase SQL editor. It turns on row-level security, creates `conversations`, adds a unique index per call, and drops the unused vector indexes.
 
 ## Tests
 
@@ -79,7 +86,7 @@ npm test && npm run eval:live && npm run kb:seed
 - `web/lib/voice/`: browser clients (Gemini WebSocket plus worklets, OpenAI WebRTC fallback), transcript reducer
 - `web/app/api/voice/session`: starts a call
 - `web/app/api/tools/execute`: runs tools
-- `web/app/api/calls/*`: finish, share, email
+- `web/app/api/calls/*`: finish (save-or-update), share (opt-in), [token] (share view), email
 - `web/app/api/cron/maintenance`: daily housekeeping
 - `web/evals/`, `web/e2e/`: live evals and the browser call test
 - `docs/qa/`: QA profile and release reports
