@@ -17,9 +17,20 @@ describe("fact registry", () => {
 
   it("states the current job correctly", () => {
     const job = FACTS.find((f) => f.id === "current-job")!.text;
-    expect(job).toContain("Client Project Coordinator at INZI Controls");
+    expect(job).toMatch(/INZI Controls.*Client Project Coordinator/);
     expect(job).toContain("June 2026");
-    expect(job).toMatch(/not an engineering role/);
+    // Ariv, 2026-09-28: coordination is part of the job, not all of it.
+    expect(job).toMatch(/isn't the whole job/);
+    expect(allFactText).not.toMatch(/not an engineering role/);
+  });
+
+  it("leads with his direction: AI engineering, product management, software engineering, building daily", () => {
+    const d = FACTS.find((f) => f.id === "direction")!.text;
+    expect(d).toMatch(/AI engineering/);
+    expect(d).toMatch(/product management/);
+    expect(d).toMatch(/software engineering/);
+    expect(d).toMatch(/every day/);
+    expect(SYSTEM_PROMPT).toMatch(/Never reduce him to "a coordinator"/);
   });
 
   it("keeps volunteer work framed as volunteer work", () => {

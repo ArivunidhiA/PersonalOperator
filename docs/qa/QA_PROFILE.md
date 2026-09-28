@@ -33,6 +33,7 @@ Product-specific facts for the universal rules in `/AGENTS.md`. Promises come fr
 | P-05 | The site can't be used to email arbitrary people, read other callers' data, or burn Ariv's money | Ariv ("production ready", "free only") | Yes |
 | P-06 | Voice runs on free tiers; paid providers only if explicitly enabled | Ariv ("only free tools") | Yes |
 | P-07 | Tone: casual "chill guy who builds a lot", short answers, no corporate/AI-slop phrasing | Ariv | No (quality) |
+| P-08 | Ariv is presented as inclined toward AI engineering, product management and software engineering, building every day; his INZI title (Client Project Coordinator) is never reduced to "just coordination" | Ariv (2026-09-28) | Yes |
 
 ## 4. Release-blocking journeys
 

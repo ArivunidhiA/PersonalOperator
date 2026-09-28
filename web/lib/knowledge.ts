@@ -52,19 +52,25 @@ export const FACTS: Fact[] = [
   {
     id: "bio",
     topic: "Who Ariv is",
-    text: "Ariv (full name Arivunidhi Anna Arivan) lives in Alabama. He has a master's in Business Analytics from Northeastern University in Boston and a B.Tech in Computer Science from SRM Institute of Science and Technology in India. He's early in his career and is looking for applied AI, AI engineer and forward-deployed engineer roles.",
+    text: "Ariv (full name Arivunidhi Anna Arivan) lives in Alabama. He has a master's in Business Analytics from Northeastern University in Boston and a B.Tech in Computer Science from SRM Institute of Science and Technology in India. He's early in his career. He's most drawn to AI engineering, product management and software engineering, including applied AI and forward-deployed roles.",
     keywords: ["who", "about", "background", "education", "degree", "school", "university", "northeastern", "srm", "master", "masters", "live", "location", "where", "alabama", "looking", "roles"],
+  },
+  {
+    id: "direction",
+    topic: "What Ariv is into and where he's headed",
+    text: "Ariv is inclined toward AI engineering, product management and software engineering. He works on AI engineering every day on his own, building agents, voice agents and developer tools and shipping them, so that's the lens to see him through, whatever his current title says.",
+    keywords: ["direction", "goal", "goals", "interested", "interests", "passion", "want", "wants", "looking", "headed", "future", "career", "inclined", "focus", "ai", "engineering", "product", "management", "pm", "software", "every", "daily", "day"],
   },
   {
     id: "current-job",
     topic: "Current job",
-    text: "Right now Ariv works full-time as a Client Project Coordinator at INZI Controls, an automotive parts supplier. He started in June 2026. It's a coordination role, not an engineering role: he runs the weekly follow-up loop on projects (meeting notes, action items, owners, due dates), chases open issues across engineering, quality, production and sales until they close, and keeps project documents and status updates current.",
+    text: "Right now Ariv works full-time at INZI Controls, an automotive parts supplier, as a Client Project Coordinator. He started in June 2026. Coordination is a big part of it, running the weekly follow-up loop on projects (meeting notes, action items, owners, due dates) and chasing open issues across engineering, quality, production and sales until they close, but it isn't the whole job, and it isn't where he's headed: he's most drawn to AI engineering, product management and software engineering.",
     keywords: ["job", "work", "current", "currently", "now", "today", "inzi", "controls", "coordinator", "client", "project", "day", "role", "employer", "company", "automotive"],
   },
   {
     id: "builder",
     topic: "What he builds on the side",
-    text: "Outside his day job Ariv builds a lot: AI agents, voice agents and developer tools, mostly in Python and TypeScript. This voice agent is one of them. He ships small real things and learns fast.",
+    text: "Ariv builds every day on his own: AI agents, voice agents and developer tools, mostly in Python and TypeScript. It's not a side interest, it's what he does daily, and this voice agent is one of the things he built. He ships small real things and learns fast.",
     keywords: ["build", "builds", "side", "projects", "hobby", "free", "time", "ship", "ships", "creative"],
   },
   {
@@ -136,7 +142,7 @@ export const FACTS: Fact[] = [
   {
     id: "role-fit-coordination",
     topic: "Fit for program, project, product and analyst roles",
-    text: "Why Ariv fits program, project, product and analyst roles: coordination is literally his day job, running follow-ups, owners and due dates across engineering, quality, production and sales. He has a master's in Business Analytics, and he's technical enough to build his own tools and agents, so he can talk to engineers in their language. He's early in his career, so it's a fit for roles that value range and follow-through over years of experience.",
+    text: "Why Ariv fits product management, program, project and analyst roles: he's drawn to product management, and his day job already has him running follow-ups, owners and due dates across engineering, quality, production and sales. He has a master's in Business Analytics, and he's technical enough to build his own tools and agents, so he can talk to engineers in their language. He's early in his career, so it's a fit for roles that value range and follow-through over years of experience.",
     keywords: ["program", "project", "product", "manager", "pm", "tpm", "analyst", "analytics", "business", "operations", "ops", "coordinator", "coordination", "fit", "hire", "why"],
   },
   {

@@ -79,7 +79,7 @@ describe("verifier no longer flags true lines (false positives found in review)"
     "He's looking for a job as a software engineer or AI engineer.",
     "He did his master's at Northeastern, which is in Boston.",
     "Nope, I'm not a real person, I'm an AI Ariv built.",
-    "It's a coordination role at INZI, not an engineering role.",
+    "He's a Client Project Coordinator at INZI, but he's really into AI engineering.",
     "He wants to grow into an AI engineer role, and right now he's at INZI.",
     "He's a Client Project Coordinator at INZI Controls.",
     "His HTTP APIs are in FastAPI.",

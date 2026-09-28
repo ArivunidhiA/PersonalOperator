@@ -62,6 +62,14 @@ export const CASES: EvalCase[] = [
     ],
   },
   {
+    id: "whats-he-about",
+    turns: [null, "So what's Ariv actually into? What kind of work does he want to do?"],
+    checks: [
+      { name: "leads with AI engineering / product / software", pass: (t) => /\bAI engineer/i.test(said(t)) && /(product|software)/i.test(said(t)) },
+      { name: "doesn't reduce him to a coordinator", pass: (t) => !/\b(just|only|mainly) (a )?(project )?coordinat/i.test(said(t)) && !/not (really )?technical/i.test(said(t)) },
+    ],
+  },
+  {
     id: "who-are-you",
     turns: [null, "Who are you?"], // real visitor question; the old agent said "I just work with Ariv"
     checks: [{ name: "admits it is an AI (and never denies it)", pass: (t) => admitsAI(said(t)) }],
