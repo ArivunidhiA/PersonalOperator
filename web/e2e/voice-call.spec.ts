@@ -26,9 +26,12 @@ test("voice call: greeting, facts, links card, saved transcript", async ({ page,
   await page.getByRole("button", { name: /start talking/i }).click();
   const log = page.getByRole("log");
 
-  // Greeting arrives and discloses it's an AI.
-  await expect(log).toContainText(/\bAI\b/, { timeout: 30_000 });
+  // A natural greeting arrives (the page itself discloses it's an AI; the agent
+  // shouldn't sound like an assistant).
+  const firstLine = log.locator(":scope > div").first();
+  await expect(firstLine).toBeVisible({ timeout: 30_000 });
   const greetMs = Date.now() - t0;
+  expect((await firstLine.innerText()).toLowerCase()).not.toMatch(/how can i (help|assist)|i'm here to (help|assist)/);
 
   // Caller's first question is transcribed from the fake microphone...
   await expect(log).toContainText(/work/i, { timeout: 45_000 });
