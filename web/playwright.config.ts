@@ -7,7 +7,7 @@ import path from "path";
  * (run e2e/make-audio.sh first). Needs web/.env.local with GEMINI_API_KEY.
  *
  * Local:   npm run build && npm run test:e2e
- * Deploy:  E2E_BASE_URL=https://<preview>.vercel.app npm run test:e2e
+ * Deploy:  E2E_BASE_URL=https://<preview>.vercel.app VERCEL_AUTOMATION_BYPASS_SECRET=... npm run test:e2e
  */
 const external = process.env.E2E_BASE_URL;
 
@@ -20,6 +20,10 @@ export default defineConfig({
   use: {
     baseURL: external || "http://localhost:3100",
     permissions: ["microphone"],
+    // Protected Vercel previews: pass the project's automation bypass secret.
+    extraHTTPHeaders: process.env.VERCEL_AUTOMATION_BYPASS_SECRET
+      ? { "x-vercel-protection-bypass": process.env.VERCEL_AUTOMATION_BYPASS_SECRET, "x-vercel-set-bypass-cookie": "true" }
+      : undefined,
     trace: "retain-on-failure",
     launchOptions: {
       args: [

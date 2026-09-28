@@ -87,3 +87,18 @@ describe("/api/voice/session", () => {
     delete process.env.GEMINI_API_KEY;
   });
 });
+
+describe("post-call summary fallback (all free models busy)", () => {
+  it("summarizes from what the caller actually asked, never inventing a company", async () => {
+    const { fallbackAnalysis } = await import("@/lib/call-summary");
+    const a = fallbackAnalysis([
+      { role: "assistant", text: "Hey! I'm Ariv's AI." },
+      { role: "user", text: "Where does Ariv work right now?" },
+      { role: "user", text: "ok" },
+      { role: "assistant", text: "[Book a chat with Ariv shown in chat]" },
+    ]);
+    expect(a.summary).toBe('Caller asked: "Where does Ariv work right now?". A booking link was shared.');
+    expect(a.outcome).toBe("booking_link_shared");
+    expect(a.company).toBeNull();
+  });
+});

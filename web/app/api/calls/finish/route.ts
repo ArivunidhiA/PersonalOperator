@@ -9,21 +9,12 @@ import { verifyTranscript } from "@/lib/verifier";
 import { escapeHtml } from "@/lib/html";
 import { LINKS } from "@/lib/knowledge";
 import { createLogger } from "@/lib/logger";
+import { fallbackAnalysis, type Analysis, type Msg } from "@/lib/call-summary";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
 
 const log = createLogger({ tool: "call-finish" });
-
-type Msg = { role: "user" | "assistant"; text: string };
-type Analysis = {
-  summary: string;
-  intent: "recruiter" | "hiring_manager" | "engineer" | "general_inquiry" | "scheduling" | "unknown";
-  topics: string[];
-  outcome: "booking_link_shared" | "info_provided" | "dropped_off";
-  company: string | null;
-  role: string | null;
-};
 
 const ANALYSIS_SCHEMA = {
   type: "object",
@@ -87,7 +78,7 @@ export async function POST(req: Request) {
     schema: ANALYSIS_SCHEMA,
     maxTokens: 500,
     timeoutMs: 20_000,
-  })) ?? { summary: "Call ended (no automatic summary).", intent: "unknown", topics: [], outcome: "info_provided", company: null, role: null };
+  })) ?? fallbackAnalysis(messages);
 
   const flags = verifyTranscript(
     messages.filter((m) => m.role === "assistant").map((m) => m.text),

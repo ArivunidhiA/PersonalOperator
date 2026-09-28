@@ -15,7 +15,7 @@ type Provider = "gemini" | "gateway" | "openai";
 
 export const GEMINI_TEXT_MODEL = process.env.GEMINI_TEXT_MODEL || "gemini-3.5-flash-lite";
 // Free-tier text models return 503 "high demand" at times; try the next one.
-const GEMINI_TEXT_FALLBACKS = (process.env.GEMINI_TEXT_FALLBACKS || "gemini-3.8-flash,gemini-flash-latest")
+const GEMINI_TEXT_FALLBACKS = (process.env.GEMINI_TEXT_FALLBACKS || "gemma-4-26b-a4b-it,gemini-3.8-flash")
   .split(",")
   .map((m) => m.trim())
   .filter(Boolean);
@@ -77,13 +77,19 @@ export function parseJson<T>(text: string | null | undefined): T | null {
   try {
     return JSON.parse(cleaned) as T;
   } catch {
-    const m = cleaned.match(/\{[\s\S]*\}/);
-    if (!m) return null;
-    try {
-      return JSON.parse(m[0]) as T;
-    } catch {
-      return null;
+    // Some models think out loud before the JSON: take the last object that parses.
+    const end = cleaned.lastIndexOf("}");
+    if (end < 0) return null;
+    for (let i = cleaned.lastIndexOf("{", end); i >= 0; i = cleaned.lastIndexOf("{", i - 1)) {
+      try {
+        const v = JSON.parse(cleaned.slice(i, end + 1));
+        if (v && typeof v === "object") return v as T;
+      } catch {
+        /* keep scanning left */
+      }
+      if (i === 0) break;
     }
+    return null;
   }
 }
 

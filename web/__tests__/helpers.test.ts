@@ -53,3 +53,10 @@ describe("rate limiting", () => {
     delete process.env.VERCEL_ENV;
   });
 });
+
+describe("parseJson with models that think out loud", () => {
+  it("takes the last JSON object after reasoning text", () => {
+    const out = '*   Goal: return {"a": 1} maybe?\n* Format: `{`\n\n{"summary":"ok","topics":["x"]}';
+    expect(parseJson<{ summary: string }>(out)).toEqual({ summary: "ok", topics: ["x"] });
+  });
+});
