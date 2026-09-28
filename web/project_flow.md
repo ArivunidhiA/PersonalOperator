@@ -8,6 +8,38 @@ The goal was simple: a recruiter lands on [arivsai.app](https://arivsai.app), cl
 
 ---
 
+## September 2026: making it honest, safe and free
+
+Everything below this section is the original build (Feb–Mar 2026). A few things about it didn't hold up, so I rebuilt the core.
+
+**What was wrong.**
+- **It said things about me that weren't true.** The knowledge base still had an old version of my history with inflated numbers, and the live agent repeated them to real visitors. Examples: "engineer at Bright Mind" (that was volunteer work), "based in Boston", "50 million data points a day". The facts lived in four places (prompt, four personas, a seed script, the database) and they drifted apart.
+- **It dodged being an AI.** Asked "who are you?", it said "I just work with Ariv."
+- **The send-email route was an open relay.** Anyone could send email from my domain.
+- **Caller memory was readable by anyone** who knew an email address.
+- **Links didn't work.** The regex cut every URL at its first dot. And with audio-only output, the "put the URL in the text but don't say it" rule couldn't work at all.
+- **Persona swaps broke things.** Switching personas mid-call dropped the scheduling tools and the honesty rules. The sideband never actually connected because of a call-id bug.
+- **The model was on its way out.** It runs on `gpt-realtime`, which shuts down in January 2027, and it cost money per minute.
+
+**What I changed.**
+- **One fact registry** (`lib/knowledge.ts`). The prompt inlines it, tools search it, and the DB mirrors it, so there's nothing left to drift. Most questions now get answered with zero tool calls, which is also what made it faster.
+- **A fast check after the fact.** I borrowed the "System 1" idea from TypeSafe's Jev: answer fast from a fixed set of facts, then check with plain code. A verifier reads every line the agent said and flags invented numbers, wrong titles, spoken URLs and "I'm human".
+- **Free voice.** Voice moved to Gemini Live (`gemini-3.8-live`) on the free tier. The browser gets a single-use token with the prompt and tools locked in on the server, so nobody can rewrite the agent from devtools. OpenAI stays as an optional paid fallback.
+- **Least privilege.**
+  - No tool can email anyone or look up another caller.
+  - Every call-scoped endpoint needs a signed ticket.
+  - Links go to the chat as structured cards.
+  - Personal data never goes through the model, which Google's free-tier terms also require.
+- **Evals that talk to the real model**, repeated, with deterministic checks built from lines the old agent really said to people. Plus a real browser test that talks through a fake microphone.
+
+**Tradeoffs I accepted.**
+- The free tier means Google may use calls to improve its models. The page says so.
+- The free tier can't serve the EU, UK or Switzerland.
+- Its rate limits aren't published, so I added a daily session cap.
+- I dropped the "caller memory" feature. It never worked (zero rows ever written), it leaked data, and sending callers' personal info to a free-tier model isn't OK.
+
+---
+
 ## Architecture Decisions
 
 ### Why WebRTC + OpenAI Realtime API
