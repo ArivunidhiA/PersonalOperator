@@ -84,7 +84,10 @@ export async function POST(req: Request) {
     messages.filter((m) => m.role === "assistant").map((m) => m.text),
     messages.filter((m) => m.role === "user").map((m) => m.text),
   );
-  const shareToken = randomBytes(16).toString("hex");
+  // Transcripts are assembled in the caller's browser, so they can be forged.
+  // Never publish a share link for one whose "agent" lines fail the fact check.
+  const severe = flags.some((f) => f.rule !== "number not in facts" && f.rule !== "em dash");
+  const shareToken = severe ? null : randomBytes(16).toString("hex");
 
   await supabase.from("conversations").upsert(
     { session_id: sid, user_id: ticket.uid ?? "anonymous", messages, updated_at: new Date().toISOString() },
@@ -107,7 +110,7 @@ export async function POST(req: Request) {
     slog.error("save summary failed", { error: inserted.error.message });
     return NextResponse.json({ ok: false, error: "Couldn't save the call" }, { status: 500 });
   }
-  await supabase.from("share_tokens").insert({ token: shareToken, session_id: sid });
+  if (shareToken) await supabase.from("share_tokens").insert({ token: shareToken, session_id: sid });
 
   if (ticket.em) {
     const { data: caller } = await supabase.from("callers").select("id, call_count").eq("email", ticket.em).maybeSingle();
@@ -129,7 +132,7 @@ async function notifyAriv(p: {
   sid: string;
   analysis: Analysis;
   transcript: string;
-  shareToken: string;
+  shareToken: string | null;
   flags: { rule: string; excerpt: string }[];
   signedIn: boolean;
 }) {
@@ -143,7 +146,7 @@ async function notifyAriv(p: {
         .map((f) => `<li>${escapeHtml(f.rule)}: "${escapeHtml(f.excerpt)}"</li>`)
         .join("")}</ul>`
     : "";
-  await new Resend(key).emails.send({
+  const { error } = await new Resend(key).emails.send({
     from: process.env.EMAIL_FROM || "Ariv's AI <ai@arivsai.app>",
     to: process.env.ARIV_NOTIFY_EMAIL || LINKS.email,
     subject: `New call: ${a.intent}${a.company ? ` (${a.company.slice(0, 60)})` : ""}`,
@@ -154,8 +157,10 @@ ${a.company ? `<p><strong>Company (as stated):</strong> ${escapeHtml(a.company)}
 ${a.role ? `<p><strong>Role:</strong> ${escapeHtml(a.role)}</p>` : ""}
 <p><strong>Topics:</strong> ${escapeHtml((a.topics || []).join(", ") || "n/a")}</p>
 ${flagsHtml}
-<p><a href="${escapeHtml(`${appUrl}/call/${p.shareToken}`)}">Open transcript</a></p>
+${p.shareToken ? `<p><a href="${escapeHtml(`${appUrl}/call/${p.shareToken}`)}">Open transcript</a></p>` : "<p>No share link was made (fact check flagged the transcript).</p>"}
 <pre style="background:#f5f5f5;padding:12px;border-radius:6px;white-space:pre-wrap;font-size:13px">${escapeHtml(p.transcript.slice(0, 20_000))}</pre>
 </div>`,
   });
+  // Resend reports failures in the result instead of throwing.
+  if (error) throw new Error(`resend: ${error.name ?? ""} ${error.message ?? ""}`.trim());
 }

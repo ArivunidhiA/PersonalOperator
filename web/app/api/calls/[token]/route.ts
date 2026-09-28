@@ -1,17 +1,23 @@
 import { NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase";
 import { createLogger } from "@/lib/logger";
+import { checkLimit, clientIp } from "@/lib/rate-limit";
+
+const NOINDEX = { "X-Robots-Tag": "noindex, nofollow" };
 
 const log = createLogger({ tool: "share-call" });
 
 export async function GET(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ token: string }> },
 ) {
   const { token } = await params;
 
-  if (!token || token.length < 16) {
-    return NextResponse.json({ error: "Invalid token" }, { status: 400 });
+  if (!token || !/^[0-9a-f]{32}$/.test(token)) {
+    return NextResponse.json({ error: "Invalid token" }, { status: 400, headers: NOINDEX });
+  }
+  if (!(await checkLimit("shareView", clientIp(req))).ok) {
+    return NextResponse.json({ error: "Too many requests" }, { status: 429, headers: NOINDEX });
   }
 
   const supabase = getSupabase();
@@ -58,6 +64,7 @@ export async function GET(
     });
 
     return NextResponse.json({
+      verified: false,
       caller: call.caller_name || "Anonymous",
       company: call.company || null,
       intent: call.intent,
@@ -71,7 +78,7 @@ export async function GET(
           text: m.text,
         }),
       ),
-    });
+    }, { headers: NOINDEX });
   } catch (err) {
     log.error("Share call fetch error", {
       error: err instanceof Error ? err.message : String(err),

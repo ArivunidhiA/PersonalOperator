@@ -195,8 +195,10 @@ export const VoicePoweredOrb: FC<VoicePoweredOrbProps> = ({
     if (!container) return;
     let renderer: Renderer | null = null;
     let rafId = 0;
+    let stopped = false;
     try {
-      renderer = new Renderer({ alpha: true, premultipliedAlpha: false, antialias: true, dpr: window.devicePixelRatio || 1 });
+      // Cap the pixel ratio: a 240px orb on a 3x phone doesn't need 9x the pixels.
+      renderer = new Renderer({ alpha: true, premultipliedAlpha: false, antialias: true, dpr: Math.min(window.devicePixelRatio || 1, 2) });
       const gl = renderer.gl;
       const canvas = gl.canvas as HTMLCanvasElement;
       gl.clearColor(0, 0, 0, 0);
@@ -220,10 +222,9 @@ export const VoicePoweredOrb: FC<VoicePoweredOrbProps> = ({
       const mesh = new Mesh(gl, { geometry: new Triangle(gl), program });
 
       const resize = () => {
-        const dpr = window.devicePixelRatio || 1;
         const { clientWidth: w, clientHeight: h } = container;
         if (!renderer || w === 0 || h === 0) return;
-        renderer.setSize(w * dpr, h * dpr);
+        renderer.setSize(w, h); // OGL applies the (capped) dpr itself
         canvas.style.width = `${w}px`;
         canvas.style.height = `${h}px`;
         program.uniforms.iResolution.value.set(canvas.width, canvas.height, canvas.width / canvas.height);
@@ -235,8 +236,12 @@ export const VoicePoweredOrb: FC<VoicePoweredOrbProps> = ({
       let last = 0;
       let rot = 0;
       let smooth = 0;
+      const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
       const update = (t: number) => {
-        rafId = requestAnimationFrame(update);
+        if (stopped) return;
+        // Reduced motion: draw a still frame and only redraw when there's voice.
+        if (!reduceMotion || (levelRef.current?.() ?? 0) > 0.05 || last === 0) rafId = requestAnimationFrame(update);
+        else rafId = window.setTimeout(() => requestAnimationFrame(update), 250) as unknown as number;
         const dt = (t - last) * 0.001;
         last = t;
         const level = Math.max(0, Math.min(1, levelRef.current?.() ?? 0));
@@ -253,7 +258,9 @@ export const VoicePoweredOrb: FC<VoicePoweredOrbProps> = ({
       rafId = requestAnimationFrame(update);
 
       return () => {
+        stopped = true;
         cancelAnimationFrame(rafId);
+        clearTimeout(rafId);
         ro.disconnect();
         if (container.contains(canvas)) container.removeChild(canvas);
         gl.getExtension("WEBGL_lose_context")?.loseContext();

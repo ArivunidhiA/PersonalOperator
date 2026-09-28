@@ -65,6 +65,13 @@ const LIMITS = {
   toolCall: { max: 40, windowMs: 600_000, make: () => Ratelimit.slidingWindow(40, "10 m") }, // per session
   finish: { max: 3, windowMs: 3600_000, make: () => Ratelimit.fixedWindow(3, "1 h") }, // per session
   emailTranscript: { max: 3, windowMs: 86400_000, make: () => Ratelimit.fixedWindow(3, "1 d") }, // per user
+  // Paid fallback: hard daily ceiling across everyone.
+  openaiDaily: {
+    max: Number(process.env.OPENAI_DAILY_SESSION_CAP || 30),
+    windowMs: 86400_000,
+    make: () => Ratelimit.fixedWindow(Number(process.env.OPENAI_DAILY_SESSION_CAP || 30), "1 d"),
+  },
+  shareView: { max: 60, windowMs: 600_000, make: () => Ratelimit.slidingWindow(60, "10 m") }, // per IP
 } satisfies Record<string, Spec>;
 
 export type LimitName = keyof typeof LIMITS;
@@ -85,6 +92,11 @@ function memoryLimit(name: LimitName, key: string): LimitResult {
   }
   cur.count++;
   return { ok: cur.count <= max, reset: cur.resetAt };
+}
+
+/** True when a shared Redis answered (not the per-instance fallback). */
+export function redisHealthy(): boolean {
+  return !!getRedis();
 }
 
 export async function checkLimit(name: LimitName, key: string): Promise<LimitResult> {

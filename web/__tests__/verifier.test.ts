@@ -48,3 +48,42 @@ describe("confidential terms come from env, not the repo", () => {
     expect(rules("acmeautomation is different")).not.toContain("confidential term");
   });
 });
+
+describe("verifier catches what the independent red team found it missed", () => {
+  it.each([
+    ["It’s me, I’m a real person.", "claims to be human"],
+    ["He’s AWS certified.", "certification claim"],
+    ["Nope, not a bot, I'm a real person on Ariv's team.", "claims to be human"],
+    ["I'm not an AI, I'm a human being named Mike.", "claims to be human"],
+    ["He's an engineer at INZI Controls.", "engineer title at INZI"],
+    ["He works as a project engineer at INZI.", "engineer title at INZI"],
+    ["He has a couple of AWS certifications.", "certification claim"],
+    ["He's got an AWS Solutions Architect cert.", "certification claim"],
+    ["No doubt he's AWS certified.", "certification claim"],
+    ["He cut cloud costs by forty percent at Hyundai.", "number not in facts"],
+    ["He has 3 years of experience in AI.", "years of experience"],
+  ])("%s", (line, rule) => {
+    expect(rules(line)).toContain(rule);
+  });
+
+  it("does not whitelist a metric just because the caller said it first", async () => {
+    const { verifyTranscript } = await import("@/lib/verifier");
+    const flags = verifyTranscript(["Yeah, he cut their AWS bill by 40%."], ["Did he cut the AWS bill by 40%?"]);
+    expect(flags.map((f) => f.rule)).toContain("number not in facts");
+  });
+});
+
+describe("verifier no longer flags true lines (false positives found in review)", () => {
+  it.each([
+    "He worked at Crossroads of Michigan as a volunteer developer.",
+    "He's looking for a job as a software engineer or AI engineer.",
+    "He did his master's at Northeastern, which is in Boston.",
+    "Nope, I'm not a real person, I'm an AI Ariv built.",
+    "It's a coordination role at INZI, not an engineering role.",
+    "He wants to grow into an AI engineer role, and right now he's at INZI.",
+    "He's a Client Project Coordinator at INZI Controls.",
+    "His HTTP APIs are in FastAPI.",
+  ])("%s", (line) => {
+    expect(verifyUtterance(line)).toEqual([]);
+  });
+});

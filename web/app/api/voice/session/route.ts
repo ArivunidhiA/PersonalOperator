@@ -49,17 +49,18 @@ export async function POST(req: Request) {
     }
   }
 
-  const global = await checkLimit("sessionGlobal", "all");
-  if (!global.ok) {
-    return NextResponse.json(
-      { error: "The agent has hit its limit for today. Try again tomorrow, or book a call with Ariv below.", code: "busy" },
-      { status: 429 },
-    );
-  }
+  // Per-caller limit first, so one IP can't burn the shared daily cap for everyone.
   const perCaller = uid ? await checkLimit("sessionUser", uid) : await checkLimit("sessionAnon", clientIp(req));
   if (!perCaller.ok) {
     return NextResponse.json(
       { error: "You've started a lot of calls in the last hour. Give it a bit and try again.", code: "rate_limited" },
+      { status: 429 },
+    );
+  }
+  const global = await checkLimit("sessionGlobal", "all");
+  if (!global.ok) {
+    return NextResponse.json(
+      { error: "The agent has hit its limit for today. Try again tomorrow, or book a call with Ariv below.", code: "busy" },
       { status: 429 },
     );
   }

@@ -58,7 +58,7 @@ export const FACTS: Fact[] = [
   {
     id: "current-job",
     topic: "Current job",
-    text: "Right now Ariv works full-time as a Client Project Coordinator at INZI Controls, an automotive parts supplier. He started in June 2026. It's a coordination role, not an engineering role: he runs the weekly follow-up loop on projects (meeting notes, action items, owners, due dates), chases open issues across engineering, quality, production and sales until they close, and keeps project documents and status updates current. He keeps who INZI's clients are and what programs he works on confidential.",
+    text: "Right now Ariv works full-time as a Client Project Coordinator at INZI Controls, an automotive parts supplier. He started in June 2026. It's a coordination role, not an engineering role: he runs the weekly follow-up loop on projects (meeting notes, action items, owners, due dates), chases open issues across engineering, quality, production and sales until they close, and keeps project documents and status updates current.",
     keywords: ["job", "work", "current", "currently", "now", "today", "inzi", "controls", "coordinator", "client", "project", "day", "role", "employer", "company", "automotive"],
   },
   {
@@ -82,7 +82,7 @@ export const FACTS: Fact[] = [
   {
     id: "voice-agent",
     topic: "This voice agent",
-    text: `This voice agent at arivsai.app is one of Ariv's projects. It runs on ${AGENT_STACK}. He built it end to end: the voice pipeline, the tools, rate limiting, tests and CI.`,
+    text: `This voice agent is one of Ariv's projects. It runs on ${AGENT_STACK}. He built it, using AI coding tools along the way, like he does for most things he builds: the voice pipeline, the tools, rate limiting, tests and CI.`,
     keywords: ["you", "this", "agent", "voice", "built", "build", "made", "how", "llm", "model", "platform", "stack", "architecture", "operator", "arivsai", "openai", "gemini", "ai"],
   },
   {
@@ -118,7 +118,7 @@ export const FACTS: Fact[] = [
   {
     id: "skills",
     topic: "Skills",
-    text: "Ariv's strongest technical skills: Python, TypeScript, FastAPI, Next.js, PostgreSQL with pgvector, realtime voice APIs, and building AI agents with tool calling and RAG. Also comfortable with React, Node.js, Supabase, Docker, AWS (S3, EC2, Lambda), GitHub Actions CI, LangChain and Stripe webhooks. On the non-technical side he's good at project coordination: running follow-ups, keeping owners and due dates straight, and working with non-technical teams. He has no AWS certification. If a skill isn't listed here, say you don't think he's used it much.",
+    text: "Ariv's strongest technical skills: Python, TypeScript, FastAPI, Next.js, PostgreSQL with pgvector, realtime voice APIs, and building AI agents with tool calling and RAG. Also comfortable with React, Node.js, Supabase, Docker, AWS (S3, EC2, Lambda), GitHub Actions CI, LangChain and Stripe webhooks. On the non-technical side he's good at project coordination: running follow-ups, keeping owners and due dates straight, and working with non-technical teams. He has no AWS certification. If a skill isn't mentioned anywhere in FACTS, say you don't think he's used it much.",
     keywords: ["skills", "skill", "good", "strong", "strongest", "stack", "languages", "python", "typescript", "react", "aws", "cloud", "docker", "sql", "postgres", "certified", "certification", "tech", "technical", "know"],
   },
   {
@@ -130,8 +130,14 @@ export const FACTS: Fact[] = [
   {
     id: "role-fit-fde",
     topic: "Fit for forward-deployed and applied AI roles",
-    text: "Why Ariv fits forward-deployed and applied AI roles: his day job is client-facing coordination, keeping projects moving across engineering, quality and sales teams, so he's used to working with non-technical people and chasing things to done. On the side he builds the technical half himself: this voice agent, forecost, and bug fixes in agent frameworks like Agno. He's early in his career, so the honest pitch is a builder who ships small real things and learns fast.",
+    text: "Why Ariv fits forward-deployed and applied AI roles: his day job is cross-team coordination, keeping projects moving across engineering, quality and sales teams, so he's used to working with non-technical people and chasing things to done. On the side he builds the technical half himself: this voice agent, forecost, and bug fixes in agent frameworks like Agno. He's early in his career, so the honest pitch is a builder who ships small real things and learns fast.",
     keywords: ["forward", "deployed", "deployment", "fde", "applied", "solutions", "customer", "facing", "fit", "hire", "why"],
+  },
+  {
+    id: "role-fit-coordination",
+    topic: "Fit for program, project, product and analyst roles",
+    text: "Why Ariv fits program, project, product and analyst roles: coordination is literally his day job, running follow-ups, owners and due dates across engineering, quality, production and sales. He has a master's in Business Analytics, and he's technical enough to build his own tools and agents, so he can talk to engineers in their language. He's early in his career, so it's a fit for roles that value range and follow-through over years of experience.",
+    keywords: ["program", "project", "product", "manager", "pm", "tpm", "analyst", "analytics", "business", "operations", "ops", "coordinator", "coordination", "fit", "hire", "why"],
   },
   {
     id: "role-fit-swe",
@@ -180,7 +186,8 @@ export function searchFacts(query: string, k = 3): Fact[] {
     }
     return { f, score };
   })
-    .filter((x) => x.score > 0)
+    // At least one real keyword hit; a single overlapping common word isn't a match.
+    .filter((x) => x.score >= 3)
     .sort((a, b) => b.score - a.score);
   return scored.slice(0, k).map((x) => x.f);
 }

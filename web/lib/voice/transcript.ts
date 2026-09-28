@@ -25,6 +25,9 @@ export type TranscriptAction =
   | { type: "card"; card: UiCard }
   | { type: "reset" };
 
+/** An open agent line shorter than this was probably started after the caller finished. */
+const LATE_STT_CHARS = 80;
+
 export const initialTranscript: TranscriptState = { items: [], openUser: null, openAgent: null, seq: 0 };
 
 function update(items: TranscriptItem[], id: string, fn: (it: TextItem) => TextItem): TranscriptItem[] {
@@ -41,9 +44,12 @@ export function transcriptReducer(s: TranscriptState, a: TranscriptAction): Tran
       const id = `u${s.seq}`;
       const item: TextItem = { id, role: "user", text: a.text.trimStart(), final: false };
       const items = [...s.items];
-      // The agent already started replying to this turn: put the caller's words before it.
+      // Speech-to-text often lands just after the agent starts its reply: put the
+      // caller's words first. But if the agent was well into its reply, the
+      // caller is interrupting it (barge-in), so their words go after.
       const agentIdx = s.openAgent ? items.findIndex((x) => x.id === s.openAgent) : -1;
-      if (agentIdx >= 0) items.splice(agentIdx, 0, item);
+      const agent = agentIdx >= 0 ? items[agentIdx] : null;
+      if (agent && agent.role !== "card" && agent.text.length <= LATE_STT_CHARS) items.splice(agentIdx, 0, item);
       else items.push(item);
       return { ...s, items, openUser: id, seq: s.seq + 1 };
     }

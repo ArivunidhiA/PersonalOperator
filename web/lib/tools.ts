@@ -65,12 +65,11 @@ export const AGENT_TOOLS: AgentTool[] = [
   {
     name: "schedule_meeting",
     description:
-      "Put a booking link for the slot the caller picked in the chat. It doesn't book anything by itself: the caller confirms on the booking page. Only use a start_time returned by check_availability.",
+      "Put Ariv's booking page for the day of the slot the caller picked in the chat. It doesn't book anything by itself: the caller picks that time and confirms on the page. Only use a start_time returned by check_availability.",
     parameters: {
       type: "object",
       properties: {
         start_time: { type: "string", description: "Exact slot start in ISO 8601 UTC, from check_availability." },
-        notes: { type: "string", description: "Optional short topic for the chat, e.g. 'FDE role at Acme'." },
       },
       required: ["start_time"],
     },

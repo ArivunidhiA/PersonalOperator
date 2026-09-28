@@ -51,9 +51,18 @@ export async function startVoiceCall(h: VoiceHandlers): Promise<{ session: Voice
     throw new StartError("Network issue. Check your connection and try again.", "network");
   }
 
-  if (info.provider === "openai") {
+  try {
+    if (info.provider === "openai") {
+      void prepared.ctx.close().catch(() => {});
+      return { session: await startOpenAI(info, prepared.mic, h), info };
+    }
+    return { session: await startGemini(info, prepared, h), info };
+  } catch (err) {
+    // Setup failed after the mic was granted: release it and the audio context.
+    prepared.mic.getTracks().forEach((t) => t.stop());
     void prepared.ctx.close().catch(() => {});
-    return { session: await startOpenAI(info, prepared.mic, h), info };
+    throw err instanceof StartError
+      ? err
+      : new StartError(err instanceof Error && err.message.startsWith("This browser") ? err.message : "Couldn't start the call. Try again in a minute.", "setup");
   }
-  return { session: await startGemini(info, prepared, h), info };
 }

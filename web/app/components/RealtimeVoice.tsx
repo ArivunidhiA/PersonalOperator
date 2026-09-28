@@ -11,6 +11,9 @@ import { detectAgentTransition, AGENT_MODES } from "@/lib/agents";
 import { cardToText, isSafeUrl, type UiCard } from "@/lib/ui-cards";
 import { initialTranscript, toMessages, transcriptReducer, type TranscriptItem } from "@/lib/voice/transcript";
 import type { EndReason, SessionInfo, VoiceSession } from "@/lib/voice/types";
+// Static on purpose: iOS only allows audio if the AudioContext is created inside the tap,
+// and a dynamic import here would put a network wait before it.
+import { startVoiceCall, StartError } from "@/lib/voice/start";
 
 type Phase = "idle" | "connecting" | "live" | "ending" | "ended";
 
@@ -43,7 +46,7 @@ export default function RealtimeVoice() {
   const [mode, setMode] = useState<string>("greeter");
   const [muted, setMuted] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(0);
-  const [post, setPost] = useState<{ shareToken?: string; summary?: string; saving: boolean; emailed?: string; emailError?: string } | null>(null);
+  const [post, setPost] = useState<{ shareToken?: string; summary?: string; saving: boolean; failed?: boolean; emailed?: string; emailError?: string } | null>(null);
   const [copied, setCopied] = useState(false);
 
   const sessionRef = useRef<VoiceSession | null>(null);
@@ -51,6 +54,7 @@ export default function RealtimeVoice() {
   const itemsRef = useRef<TranscriptItem[]>([]);
   const finishedRef = useRef(false);
   const modeRef = useRef("greeter");
+  const cancelRef = useRef(false);
   const logRef = useRef<HTMLDivElement | null>(null);
   itemsRef.current = transcript.items;
 
@@ -72,10 +76,13 @@ export default function RealtimeVoice() {
     setPost({ saving: true });
     try {
       const res = await fetch("/api/calls/finish", { method: "POST", headers: { "Content-Type": "application/json" }, body });
-      const data = (await res.json().catch(() => ({}))) as { share_token?: string; summary?: string; skipped?: boolean };
-      setPost(data.skipped ? null : { saving: false, shareToken: data.share_token, summary: data.summary });
+      const data = (await res.json().catch(() => ({}))) as { ok?: boolean; share_token?: string | null; summary?: string; skipped?: boolean };
+      if (data.skipped) return setPost(null);
+      if (!res.ok || !data.ok) throw new Error("save failed");
+      setPost({ saving: false, shareToken: data.share_token ?? undefined, summary: data.summary });
     } catch {
-      setPost({ saving: false });
+      finishedRef.current = false; // allow Retry
+      setPost({ saving: false, failed: true });
     }
   }, []);
 
@@ -97,13 +104,13 @@ export default function RealtimeVoice() {
     setPost(null);
     dispatch({ type: "reset" });
     finishedRef.current = false;
+    infoRef.current = null;
+    cancelRef.current = false;
     modeRef.current = "greeter";
     setMode("greeter");
     setMuted(false);
     setPhase("connecting");
     try {
-      const { startVoiceCall, StartError } = await import("@/lib/voice/start");
-      try {
         const { session, info } = await startVoiceCall({
           onLive: () => setPhase("live"),
           onUserDelta: (text) => dispatch({ type: "userDelta", text }),
@@ -128,6 +135,7 @@ export default function RealtimeVoice() {
         sessionRef.current = session;
         infoRef.current = info;
         setSecondsLeft(info.maxCallSeconds);
+        if (cancelRef.current) session.stop("hangup"); // Cancel was pressed while connecting
       } catch (err) {
         setPhase("idle");
         const e = err instanceof StartError ? err : null;
@@ -136,16 +144,17 @@ export default function RealtimeVoice() {
           tone: "error",
           showLinks: !!e && ["region", "offline", "busy", "unsupported", "quota"].includes(e.code),
         });
-      }
-    } catch {
-      setPhase("idle");
-      setNotice({ text: "Couldn't load the voice client. Refresh and try again.", tone: "error" });
     }
   }, [phase, onEnded]);
 
   const hangUp = useCallback(() => {
+    if (!sessionRef.current) {
+      // Still setting up: cancel as soon as the session exists.
+      cancelRef.current = true;
+      return;
+    }
     setPhase("ending");
-    sessionRef.current?.stop("hangup");
+    sessionRef.current.stop("hangup");
   }, []);
 
   // Call timer: warn near the end, then wrap up.
@@ -163,7 +172,9 @@ export default function RealtimeVoice() {
     return () => clearInterval(id);
   }, [phase]);
 
-  // Leaving the page ends the call and still saves the transcript.
+  // Leaving or backgrounding the page ends the call and still saves the transcript
+  // (mobile browsers suspend background tabs and kill the socket anyway; pagehide
+  // often never fires when iOS discards a tab).
   useEffect(() => {
     const onHide = () => {
       if (sessionRef.current) {
@@ -171,9 +182,16 @@ export default function RealtimeVoice() {
         sessionRef.current.stop("hidden");
       }
     };
+    // Only on phones/tablets: desktop keeps background calls alive (e.g. while the
+    // caller opens a link from the chat in a new tab).
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden" && window.matchMedia?.("(pointer: coarse)").matches) onHide();
+    };
     window.addEventListener("pagehide", onHide);
+    document.addEventListener("visibilitychange", onVisibility);
     return () => {
       window.removeEventListener("pagehide", onHide);
+      document.removeEventListener("visibilitychange", onVisibility);
       sessionRef.current?.stop("hidden");
     };
   }, [finish]);
@@ -225,7 +243,6 @@ export default function RealtimeVoice() {
 
   const shareUrl = post?.shareToken && typeof window !== "undefined" ? `${window.location.origin}/call/${post.shareToken}` : null;
   const live = phase === "live";
-  const busy = phase === "connecting" || phase === "ending";
   const status = !live
     ? phase === "connecting"
       ? "Connecting…"
@@ -246,17 +263,29 @@ export default function RealtimeVoice() {
         <h1 className="text-sm font-medium tracking-wide text-white/70">Ariv&apos;s AI</h1>
         <div className="flex items-center gap-3">
           <AuthHeader />
-          {live || phase === "ending" ? (
-            <Button onClick={hangUp} disabled={phase === "ending"} variant="destructive" className="rounded-full px-5 text-sm">
-              <PhoneOff className="mr-2 h-4 w-4" aria-hidden />
-              End call
-            </Button>
-          ) : (
-            <Button onClick={() => void start()} disabled={busy} className="rounded-full px-5 text-sm">
-              <Mic className="mr-2 h-4 w-4" aria-hidden />
-              {phase === "connecting" ? "Connecting…" : phase === "ended" ? "Talk again" : "Start talking"}
-            </Button>
-          )}
+          {/* One persistent button (label/action change) so keyboard focus isn't lost. */}
+          <Button
+            onClick={live || phase === "connecting" ? hangUp : () => void start()}
+            disabled={phase === "ending"}
+            variant={live || phase === "connecting" ? "destructive" : "default"}
+            className="rounded-full px-5 text-sm"
+          >
+            {live ? (
+              <>
+                <PhoneOff className="mr-2 h-4 w-4" aria-hidden />
+                End call
+              </>
+            ) : phase === "connecting" ? (
+              "Cancel"
+            ) : phase === "ending" ? (
+              "Ending…"
+            ) : (
+              <>
+                <Mic className="mr-2 h-4 w-4" aria-hidden />
+                {phase === "ended" ? "Talk again" : "Start talking"}
+              </>
+            )}
+          </Button>
         </div>
       </header>
 
@@ -292,10 +321,17 @@ export default function RealtimeVoice() {
               <VoicePoweredOrb hue={orbHue} getLevel={getLevel} />
             </div>
           </div>
-          <div className="mt-3 flex h-6 items-center gap-3 text-xs text-white/50" aria-live="polite">
-            <span>{status}</span>
+          <div className="mt-3 flex h-6 items-center gap-3 text-xs text-white/50">
+            <span aria-live="polite">{status}</span>
             {live && modeName && <span className="text-emerald-300/50">{modeName}</span>}
-            {live && <span className={secondsLeft <= 60 ? "text-amber-300" : "text-white/30"}>{fmt(secondsLeft)} left</span>}
+            {live && (
+              <span aria-hidden className={secondsLeft <= 60 ? "text-amber-300" : "text-white/30"}>
+                {fmt(secondsLeft)} left
+              </span>
+            )}
+            <span className="sr-only" aria-live="polite">
+              {live && secondsLeft <= 60 && secondsLeft > 55 ? "One minute left in this call." : ""}
+            </span>
           </div>
           {live && (
             <Button
@@ -328,7 +364,7 @@ export default function RealtimeVoice() {
                 it.role === "card" ? (
                   <CardView key={it.id} card={it.card} />
                 ) : (
-                  <div key={it.id} className="text-sm leading-6">
+                  <div key={it.id} className="text-sm leading-6" aria-hidden={!it.final || undefined}>
                     <span className="mr-2 text-[11px] font-medium uppercase tracking-wider text-white/35">
                       {it.role === "user" ? "You" : "Ariv's AI"}
                     </span>
@@ -341,9 +377,16 @@ export default function RealtimeVoice() {
 
           {phase === "ended" && post && (
             <div className="mt-4 rounded-2xl border border-white/15 bg-white/5 p-5">
-              <h2 className="text-base font-semibold">{post.saving ? "Saving your transcript…" : "Your transcript"}</h2>
+              <h2 className="text-base font-semibold">
+                {post.saving ? "Saving your transcript…" : post.failed ? "Couldn't save the transcript" : "Your transcript"}
+              </h2>
+              {post.failed && (
+                <Button variant="secondary" size="sm" className="mt-2" onClick={() => void finish()}>
+                  Retry
+                </Button>
+              )}
               {post.summary && <p className="mt-1 text-sm text-white/60">{post.summary}</p>}
-              {!post.saving && (
+              {!post.saving && !post.failed && (
                 <div className="mt-4 flex flex-wrap gap-2">
                   {shareUrl && (
                     <Button

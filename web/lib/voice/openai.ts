@@ -25,9 +25,7 @@ export async function startOpenAI(info: SessionInfo, mic: MediaStream, h: VoiceH
   // with a single response.create (avoids double or cut-off answers).
   const pending: { callId: string; name: string; args: string }[] = [];
 
-  const end = (reason: Parameters<VoiceHandlers["onEnded"]>[0], message?: string) => {
-    if (ended) return;
-    ended = true;
+  const teardown = () => {
     try {
       dc.close();
       pc.close();
@@ -36,6 +34,11 @@ export async function startOpenAI(info: SessionInfo, mic: MediaStream, h: VoiceH
     }
     mic.getTracks().forEach((t) => t.stop());
     audio.srcObject = null;
+  };
+  const end = (reason: Parameters<VoiceHandlers["onEnded"]>[0], message?: string) => {
+    if (ended) return;
+    ended = true;
+    teardown();
     h.onAgentFinal();
     h.onEnded(reason, message);
   };
@@ -105,8 +108,10 @@ export async function startOpenAI(info: SessionInfo, mic: MediaStream, h: VoiceH
     }
   };
   pc.onconnectionstatechange = () => {
-    if (pc.connectionState === "failed") end("dropped", "The call dropped. You can start a new one.");
+    if (pc.connectionState === "failed" || pc.connectionState === "closed") end("dropped", "The call dropped. You can start a new one.");
   };
+  // The server can end the session (time limit, errors): the data channel closes.
+  dc.onclose = () => end("dropped", "The call ended. You can start a new one.");
 
   const offer = await pc.createOffer();
   await pc.setLocalDescription(offer);
@@ -116,7 +121,9 @@ export async function startOpenAI(info: SessionInfo, mic: MediaStream, h: VoiceH
     body: offer.sdp,
   });
   if (!res.ok) {
-    end("error", "Couldn't connect to the voice service. Try again in a minute.");
+    // Setup failed: clean up without reporting a finished call (nothing to save).
+    ended = true;
+    teardown();
     throw new Error("sdp exchange failed");
   }
   await pc.setRemoteDescription({ type: "answer", sdp: await res.text() });

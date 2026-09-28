@@ -49,3 +49,17 @@ describe("transcript ordering", () => {
     expect(run([{ type: "agentDelta", text: "x" }, { type: "reset" }])).toEqual(initialTranscript);
   });
 });
+
+describe("barge-in ordering", () => {
+  it("puts an interruption after an agent line that was well underway", () => {
+    const s = run([
+      { type: "agentDelta", text: "So at INZI he runs the weekly follow-up loop on projects, chasing open issues across engineering, quality and" },
+      { type: "userDelta", text: "Wait, what about his open source?" },
+      { type: "agentFinal" },
+    ]);
+    expect(texts(s)).toEqual([
+      "assistant:So at INZI he runs the weekly follow-up loop on projects, chasing open issues across engineering, quality and",
+      "user:Wait, what about his open source?",
+    ]);
+  });
+});
