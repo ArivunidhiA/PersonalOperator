@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Ariv's AI Operator",
-  description: "Live voice agent powered by OpenAI Realtime",
+  title: "Ariv's AI",
+  description: "Talk to an AI voice agent that knows Ariv's work: what he's building, where he works, and how to book time with him.",
   icons: {
     icon: "/favicon-frame-1.svg",
   },
@@ -31,7 +31,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const content = (
-    <html lang="en">
+    <html lang="en" className="bg-black">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

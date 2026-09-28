@@ -1,22 +1,25 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-  --primary: #171717;
-  --primary-foreground: #ffffff;
-  --muted: #f4f4f5;
-  --muted-foreground: #71717a;
-  --accent: #f4f4f5;
-  --accent-foreground: #18181b;
-  --secondary: #f4f4f5;
-  --secondary-foreground: #18181b;
+  /* The site is dark-only (black page, orb). Light-mode tokens used to turn the
+     Connect button dark gray on black, so there is a single dark palette. */
+  color-scheme: dark;
+  --background: #000000;
+  --foreground: #ededed;
+  --primary: #ededed;
+  --primary-foreground: #0a0a0a;
+  --muted: rgba(255, 255, 255, 0.08);
+  --muted-foreground: rgba(255, 255, 255, 0.7);
+  --accent: rgba(255, 255, 255, 0.12);
+  --accent-foreground: #ededed;
+  --secondary: rgba(255, 255, 255, 0.1);
+  --secondary-foreground: #ededed;
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
-  --border: rgba(0, 0, 0, 0.12);
-  --input: rgba(0, 0, 0, 0.12);
-  --ring: #18181b;
-  --ring-offset-background: #ffffff;
+  --border: rgba(255, 255, 255, 0.12);
+  --input: rgba(255, 255, 255, 0.16);
+  --ring: #a855f7;
+  --ring-offset-background: #000000;
   --radius: 0.5rem;
 }
 
@@ -41,29 +44,16 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-    --primary: #ededed;
-    --primary-foreground: #0a0a0a;
-    --muted: rgba(255, 255, 255, 0.08);
-    --muted-foreground: rgba(255, 255, 255, 0.7);
-    --accent: rgba(255, 255, 255, 0.12);
-    --accent-foreground: #ededed;
-    --secondary: rgba(255, 255, 255, 0.08);
-    --secondary-foreground: #ededed;
-    --destructive: #ef4444;
-    --destructive-foreground: #ffffff;
-    --border: rgba(255, 255, 255, 0.12);
-    --input: rgba(255, 255, 255, 0.16);
-    --ring: #a855f7;
-    --ring-offset-background: #0a0a0a;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+.sr-only-focusable:not(:focus) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
 }

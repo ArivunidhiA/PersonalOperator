@@ -23,8 +23,10 @@ const LEVEL_PRIORITY: Record<LogLevel, number> = {
   error: 3,
 };
 
+// An unknown LOG_LEVEL used to silence every log line; fall back to the default instead.
+const envLevel = process.env.LOG_LEVEL as LogLevel | undefined;
 const MIN_LEVEL: LogLevel =
-  (process.env.LOG_LEVEL as LogLevel) || (process.env.NODE_ENV === "production" ? "info" : "debug");
+  envLevel && envLevel in LEVEL_PRIORITY ? envLevel : process.env.NODE_ENV === "production" ? "info" : "debug";
 
 function emit(entry: LogEntry) {
   const json = JSON.stringify(entry);

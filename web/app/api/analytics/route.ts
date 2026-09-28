@@ -8,14 +8,16 @@ const OWNER_USER_IDS = (process.env.ANALYTICS_OWNER_IDS || "").split(",").filter
 const clerkEnabled = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
 export async function GET() {
-  if (clerkEnabled) {
-    const session = await auth();
-    if (!session.userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    if (OWNER_USER_IDS.length > 0 && !OWNER_USER_IDS.includes(session.userId)) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+  // Caller data is Ariv's only: fail closed unless an owner list is configured.
+  if (!clerkEnabled) {
+    return NextResponse.json({ error: "Sign-in is not configured" }, { status: 503 });
+  }
+  const session = await auth();
+  if (!session.userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  if (OWNER_USER_IDS.length === 0 || !OWNER_USER_IDS.includes(session.userId)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const supabase = getSupabase();
