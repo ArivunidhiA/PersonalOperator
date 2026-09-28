@@ -134,8 +134,10 @@ describe("Prompt Quality Checks", () => {
     expect(allInstructions).toContain("NEVER read a URL");
   });
 
-  it("should have the AI deflection rule", () => {
-    expect(allInstructions).toContain("You are NOT an AI");
+  it("should disclose that it is an AI when asked", () => {
+    expect(allInstructions).toContain("You ARE an AI assistant that Ariv built");
+    expect(allInstructions).toContain("Never pretend to be human");
+    expect(allInstructions).not.toContain("You are NOT an AI");
   });
 
   it("should enforce no dead air during tool calls", () => {

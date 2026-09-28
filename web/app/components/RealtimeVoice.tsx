@@ -685,6 +685,12 @@ export default function RealtimeVoice() {
         </Button>
       </div>
 
+      {!isActive && !isLoading && (
+        <p className="px-4 pt-2 text-center text-sm text-white/60 sm:px-6">
+          Talk to my AI. It knows my work, it can book time with me, and yes, it&apos;s an AI.
+        </p>
+      )}
+
       {error && (
         <div className="mx-4 mb-2 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm text-red-200 sm:mx-6">
           {toFriendlyError(error)}
