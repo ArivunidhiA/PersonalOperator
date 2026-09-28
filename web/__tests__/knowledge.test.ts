@@ -19,8 +19,10 @@ describe("fact registry", () => {
     const job = FACTS.find((f) => f.id === "current-job")!.text;
     expect(job).toMatch(/INZI Controls.*Client Project Coordinator/);
     expect(job).toContain("June 2026");
-    // Ariv, 2026-09-28: coordination is part of the job, not all of it.
-    expect(job).toMatch(/isn't the whole job/);
+    // Ariv, 2026-09-28: the work is basically forward-deployed (bridging companies), minus building their software.
+    expect(job).toMatch(/basically forward-deployed/);
+    expect(job).toMatch(/bridge between INZI and the other companies/);
+    expect(job).toMatch(/doesn't go into the other company to build or fix their software/);
     expect(allFactText).not.toMatch(/not an engineering role/);
   });
 
@@ -30,7 +32,8 @@ describe("fact registry", () => {
     expect(d).toMatch(/product management/);
     expect(d).toMatch(/software engineering/);
     expect(d).toMatch(/every day/);
-    expect(SYSTEM_PROMPT).toMatch(/Never reduce him to "a coordinator"/);
+    expect(SYSTEM_PROMPT).toMatch(/never reduce him to "a coordinator"/i);
+    expect(SYSTEM_PROMPT).toMatch(/Don't claim his title is forward-deployed engineer/);
   });
 
   it("keeps volunteer work framed as volunteer work", () => {

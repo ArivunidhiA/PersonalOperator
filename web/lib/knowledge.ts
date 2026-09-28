@@ -64,8 +64,8 @@ export const FACTS: Fact[] = [
   {
     id: "current-job",
     topic: "Current job",
-    text: "Right now Ariv works full-time at INZI Controls, an automotive parts supplier, as a Client Project Coordinator. He started in June 2026. Coordination is a big part of it, running the weekly follow-up loop on projects (meeting notes, action items, owners, due dates) and chasing open issues across engineering, quality, production and sales until they close, but it isn't the whole job, and it isn't where he's headed: he's most drawn to AI engineering, product management and software engineering.",
-    keywords: ["job", "work", "current", "currently", "now", "today", "inzi", "controls", "coordinator", "client", "project", "day", "role", "employer", "company", "automotive"],
+    text: "Right now Ariv works full-time at INZI Controls, an automotive parts supplier, as a Client Project Coordinator. He started in June 2026. The title says coordinator, but the work is basically forward-deployed: he's the bridge between INZI and the other companies on a project, translating what each side needs, keeping engineering, quality, production and sales aligned across companies, and driving open issues until they close. The one difference from a forward-deployed engineer is that he doesn't go into the other company to build or fix their software.",
+    keywords: ["job", "work", "current", "currently", "now", "today", "inzi", "controls", "coordinator", "client", "project", "day", "role", "employer", "company", "automotive", "forward", "deployed", "bridge"],
   },
   {
     id: "builder",
@@ -136,7 +136,7 @@ export const FACTS: Fact[] = [
   {
     id: "role-fit-fde",
     topic: "Fit for forward-deployed and applied AI roles",
-    text: "Why Ariv fits forward-deployed and applied AI roles: his day job is cross-team coordination, keeping projects moving across engineering, quality and sales teams, so he's used to working with non-technical people and chasing things to done. On the side he builds the technical half himself: this voice agent, forecost, and bug fixes in agent frameworks like Agno. He's early in his career, so the honest pitch is a builder who ships small real things and learns fast.",
+    text: "Why Ariv fits forward-deployed and applied AI roles: his day job already works like a forward-deployed role, being the bridge between his company and the other companies on a project and keeping engineering, quality and sales aligned across them, so he's used to translating between teams and chasing things to done. On the side he builds the technical half himself: this voice agent, forecost, and bug fixes in agent frameworks like Agno. He's early in his career, so the honest pitch is a builder who ships small real things and learns fast.",
     keywords: ["forward", "deployed", "deployment", "fde", "applied", "solutions", "customer", "facing", "fit", "hire", "why"],
   },
   {

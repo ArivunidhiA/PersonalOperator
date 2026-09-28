@@ -28,7 +28,8 @@ const HUMAN_CLAIMS: RegExp[] = [
 const FALSE_HISTORY: [string, RegExp, RegExp?][] = [
   // [rule, pattern, exemption tested on the same sentence]
   ["software engineer title", /\b(?:was|is|he's|worked as|title is) (?:a |an )?(?:software|senior|lead|staff) engineer\b/i, /\blooking for|roles? as|wants to be|aiming\b/i],
-  ["engineer title at INZI", /\b(?:engineer|developer)(?: (?:job|role|position))? (?:at|for|with) inzi\b|\binzi\b[^.]{0,20}\bas an? (?:\w+ )?(?:engineer|developer)\b/i],
+  // "basically forward-deployed" framing is fine (Ariv's own description); a plain engineer title isn't.
+  ["engineer title at INZI", /\b(?:engineer|developer)(?: (?:job|role|position))? (?:at|for|with) inzi\b|\binzi\b[^.]{0,20}\bas an? (?:\w+ )?(?:engineer|developer)\b/i, /forward[- ]deploy|basically|kind of|like an?\b/i],
   ["volunteer called a job", /\b(?:works?|working|worked|job|employed) (?:as an? \w+ )?at (?:bright ?mind|crossroads)\b/i, /volunteer/i],
   ["wrong location", /\b(?:lives|based|he's|he is) in boston\b/i],
   ["old project", /\bllm ?lab\b|\bjob copilot\b/i],
