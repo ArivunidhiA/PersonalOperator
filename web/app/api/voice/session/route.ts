@@ -5,6 +5,24 @@ import { mintTicket, newSessionId } from "@/lib/session-ticket";
 import { createLogger } from "@/lib/logger";
 import { GREETING_NUDGE, MAX_CALL_SECONDS, chooseProvider, geminiAllowedIn } from "@/lib/voice-config";
 import { GEMINI_WS_URL, mintGeminiToken } from "@/lib/gemini-token";
+import { isOwnerUser, recordEvent } from "@/lib/analytics-store";
+import { later } from "@/lib/later";
+import { requestContext } from "@/lib/visitor";
+import { strictPrivacyRegion } from "@/lib/voice-config";
+
+const VID = /^v_[A-Za-z0-9_-]{12,40}$/;
+
+/** Optional analytics hints from the page: its visitor id and whether it's Ariv's own browser. */
+async function readHints(req: Request): Promise<{ vid: string | null; own: boolean }> {
+  try {
+    const raw = await req.text();
+    if (!raw || raw.length > 512) return { vid: null, own: false };
+    const b = JSON.parse(raw) as { vid?: unknown; own?: unknown };
+    return { vid: typeof b.vid === "string" && VID.test(b.vid) ? b.vid : null, own: b.own === true };
+  } catch {
+    return { vid: null, own: false };
+  }
+}
 
 export const runtime = "nodejs";
 export const maxDuration = 15;
@@ -64,7 +82,28 @@ export async function POST(req: Request) {
     );
   }
   const sessionId = newSessionId();
-  const ticket = mintTicket({ sid: sessionId, p: provider, uid, em: email });
+  const hints = await readHints(req);
+  const ctx = requestContext(req);
+  const own = hints.own || isOwnerUser(uid);
+  const vid = strictPrivacyRegion(country) ? null : hints.vid;
+  const ticket = mintTicket({ sid: sessionId, p: provider, uid, em: email, vid, own });
+  const logStart = () =>
+    later(() =>
+      recordEvent({
+        type: "call_start",
+        visitor_id: vid,
+        session_id: sessionId,
+        country: ctx.country,
+        region: vid ? ctx.region : null,
+        city: vid ? ctx.city : null,
+        timezone: vid ? ctx.timezone : null,
+        device: ctx.device,
+        browser: ctx.browser,
+        os: ctx.os,
+        is_owner: own,
+        is_bot: ctx.bot,
+      }),
+    );
 
   const busy = () =>
     NextResponse.json(
@@ -75,6 +114,7 @@ export async function POST(req: Request) {
   if (provider === "openai") {
     if (!(await checkLimit("sessionGlobal", "all")).ok) return busy();
     log.info("session started", { sessionId, provider, signedIn: !!uid, country });
+    logStart();
     return NextResponse.json({ provider, sessionId, ticket, maxCallSeconds: MAX_CALL_SECONDS });
   }
 
@@ -83,6 +123,7 @@ export async function POST(req: Request) {
     // Count against the shared daily cap only once a session is really granted.
     if (!(await checkLimit("sessionGlobal", "all")).ok) return busy();
     log.info("session started", { sessionId, provider, signedIn: !!uid, country });
+    logStart();
     return NextResponse.json({
       provider,
       sessionId,

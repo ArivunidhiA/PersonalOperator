@@ -45,21 +45,36 @@ describe("executeTool", () => {
     expect(r.result).not.toMatch(/https?:/);
   });
 
+  it("share_links tags the booking link with the call, so a booking can be traced to it", async () => {
+    const { executeTool } = await import("@/lib/tool-executor");
+    const r = await executeTool("share_links", { links: ["calendly", "email"] }, ctx);
+    const urls = r.card && r.card.kind === "links" ? r.card.links.map((l) => l.url) : [];
+    expect(urls[0]).toBe("https://calendly.com/annaarivan-a-northeastern/15-min-coffee-chat?utm_source=arivsai&utm_medium=voice_agent&utm_content=s_test");
+    expect(urls[1]).toBe("mailto:annaarivan.a@northeastern.edu");
+  });
+
   it("share_links defaults to LinkedIn + GitHub", async () => {
     const { executeTool } = await import("@/lib/tool-executor");
     const r = await executeTool("share_links", {}, ctx);
     expect(r.card && r.card.kind === "links" && r.card.links.map((l) => l.label)).toEqual(["LinkedIn", "GitHub"]);
   });
 
-  it("schedule_meeting makes a Calendly link for the slot's Eastern date and never books anything", async () => {
+  it("schedule_meeting links to the picked slot's exact Eastern time and never books anything (F-01)", async () => {
     const { executeTool } = await import("@/lib/tool-executor");
     const slot = new Date(Date.now() + 2 * 86400_000);
-    slot.setUTCHours(15, 0, 0, 0);
+    slot.setUTCHours(19, 30, 0, 0); // 3:30pm EDT or 2:30pm EST: inside his 9-6 window either way
     const r = await executeTool("schedule_meeting", { start_time: slot.toISOString(), notes: "FDE role" }, ctx);
     expect(r.card?.kind).toBe("booking");
     const url = r.card && r.card.kind === "booking" ? r.card.url : "";
     const ymd = new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York" }).format(slot);
-    expect(url).toBe(`https://calendly.com/annaarivan-a-northeastern/15-min-coffee-chat/${ymd}?month=${ymd.slice(0, 7)}&date=${ymd}`);
+    const hm = new Intl.DateTimeFormat("en-GB", { timeZone: "America/New_York", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(slot);
+    const gmt = new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", timeZoneName: "shortOffset" }).formatToParts(slot).find((p) => p.type === "timeZoneName")!.value; // "GMT-4"
+    const offset = `-0${gmt.replace("GMT-", "")}:00`;
+    expect(url).toBe(
+      `https://calendly.com/annaarivan-a-northeastern/15-min-coffee-chat/${ymd}T${hm}:00${offset}?month=${ymd.slice(0, 7)}&date=${ymd}&utm_source=arivsai&utm_medium=voice_agent&utm_content=s_test`,
+    );
+    // A bare date in the path makes Calendly open its booking form for 12:00am (F-01).
+    expect(url).not.toMatch(/coffee-chat\/\d{4}-\d{2}-\d{2}\?/);
     expect(url).not.toMatch(/email|name=/);
     expect(r.result).toMatch(/Don't read the link/);
   });

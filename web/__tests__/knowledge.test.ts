@@ -44,6 +44,8 @@ describe("fact registry", () => {
 
   it("contains none of the old inflated or false claims", () => {
     const stale = [/based in Boston/i, /lives in Boston/i, /LLMLab/i, /Job Copilot/i, /1,?000\+? volunteers/i, /12 states/i, /\$90/, /87\.5/, /99\.8/, /40%/, /50M/i, /10,000/, /published research/i, /AWS certified/i, /production systems at scale/i];
+    // The 2026-09-29 answer sheet re-introduced resume metrics Ariv had asked to drop; they stay out.
+    stale.push(/12,?000/, /50 million/i, /data points a day/i, /80\+? model/i, /95\+? tests/i, /thousands of (?:volunteer )?assignments/i, /only engineer/i, /multiple states/i, /(?:30|thirty) seconds/i, /computer.vision/i);
     for (const re of stale) expect(allFactText).not.toMatch(re);
   });
 
@@ -104,7 +106,11 @@ describe("system prompt", () => {
     expect(SYSTEM_PROMPT).toMatch(/Only say numbers that appear in FACTS/);
     expect(SYSTEM_PROMPT).toMatch(/Never say a URL/);
     expect(SYSTEM_PROMPT).toMatch(/call share_links/);
-    expect(SYSTEM_PROMPT).toMatch(/Never ask for the caller's name or email/);
+    // Ariv, 2026-09-29: the agent may ask once who it's talking to, but never for contact details.
+    expect(SYSTEM_PROMPT).toMatch(/Never ask for an email address or phone number/);
+    expect(SYSTEM_PROMPT).toMatch(/If they'd rather not say, drop it/);
+    expect(SYSTEM_PROMPT).toMatch(/No fake urgency, no invented competing offers/);
+    expect(SYSTEM_PROMPT).toMatch(/never say he's the best candidate/);
   });
   it("stays compact enough for free-tier token limits", () => {
     // ~4 chars per token; keep the whole prompt under ~5k tokens.

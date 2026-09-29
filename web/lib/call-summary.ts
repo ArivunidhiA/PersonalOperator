@@ -6,7 +6,11 @@ export type Analysis = {
   topics: string[];
   outcome: "booking_link_shared" | "info_provided" | "dropped_off";
   company: string | null;
+  /** The role they're hiring for or asking about. */
   role: string | null;
+  /** Only what the caller clearly said about themselves; never guessed. */
+  caller_name?: string | null;
+  caller_role?: string | null;
 };
 
 /** When every free model is busy: a plain summary from what the caller actually asked. */
@@ -27,6 +31,8 @@ export function fallbackAnalysis(messages: Msg[]): Analysis {
     outcome: booking ? "booking_link_shared" : asked.length ? "info_provided" : "dropped_off",
     company: null,
     role: null,
+    caller_name: null,
+    caller_role: null,
   };
 }
 

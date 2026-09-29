@@ -4,6 +4,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
 import { FaviconAnimator } from "./components/FaviconAnimator";
+import { VisitTracker } from "./components/VisitTracker";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,6 +37,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <FaviconAnimator />
+        <VisitTracker />
         {children}
         <Analytics />
       </body>

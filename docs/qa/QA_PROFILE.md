@@ -34,6 +34,10 @@ Product-specific facts for the universal rules in `/AGENTS.md`. Promises come fr
 | P-06 | Voice runs on free tiers; paid providers only if explicitly enabled | Ariv ("only free tools") | Yes |
 | P-07 | Tone: casual "chill guy who builds a lot", short answers, no corporate/AI-slop phrasing | Ariv | No (quality) |
 | P-08 | Ariv is presented as inclined toward AI engineering, product management and software engineering, building every day; his INZI title (Client Project Coordinator) is never reduced to "just coordination" | Ariv (2026-09-28) | Yes |
+| P-09 | Every link the agent or page shares works: LinkedIn, GitHub, X, email, Calendly (booking page and the exact slot the caller picked), forecost repo and PyPI, the agent's repo | Ariv ("make sure calendar, messaging, etc. links are all connected and working", 2026-09-29) | Yes |
+| P-10 | Ariv can see who uses the site: visits, calls, what they asked, rough location, network owner, source, device, clicks, bookings; names/companies only as volunteered (said on a call, sign-in, Calendly booking) | Ariv (2026-09-29) | Yes |
+| P-11 | Analytics privacy: no raw IPs or referrer query strings stored; EEA/UK/CH visitors anonymous; Global Privacy Control / Do Not Track not tracked; disclosed on the page | Claude's design, pending Ariv's review (ORACLE GAP: no privacy policy page) | Yes |
+| P-12 | The agent closes for an interview like Harvey Specter (one sharp question, evidence, offers his calendar once) without hype, fake urgency or invented facts; answer sheet tone (answer, evidence, personality, stop) | Ariv (2026-09-29 answer sheet) | No (quality) |
 
 ## 4. Release-blocking journeys
 
@@ -41,9 +45,10 @@ Product-specific facts for the universal rules in `/AGENTS.md`. Promises come fr
 |---|---|---|---|
 | J-01 | Start call → greeting discloses AI → ask current job → correct INZI answer | Fresh visitor, mic allowed | Correct spoken answer + transcript |
 | J-02 | Ask for LinkedIn/GitHub | Live call | Links card with working https links; no URL spoken |
-| J-03 | Name a company + role, then ask to book | Live call | Honest fit answer; open slots offered; booking card links to Calendly |
+| J-03 | Name a company + role, then ask to book | Live call | Honest fit answer; open slots offered; booking card opens Calendly at the exact slot picked (tagged with the call) |
 | J-04 | End call (button or tab close) | Live call with ≥1 caller line | Transcript + summary saved once; share link works |
 | J-05 | Visitor from EEA/UK/CH or quota exhausted | Any | Friendly message + links; no broken call |
+| J-06 | Visit, call, click a shared link, end call | Fresh visitor | `site_events` has visit, call_start, click; `call_summaries` row has visitor_id, questions, duration, context; Ariv's email and dashboard show it |
 
 ## 5. Critical invariants
 
@@ -55,13 +60,16 @@ Product-specific facts for the universal rules in `/AGENTS.md`. Promises come fr
 | I-04 | The prompt and tools can't be changed by the browser | Locked Gemini ephemeral token | Token probe (override ignored) |
 | I-05 | Facts in prompt == facts in Supabase mirror | `npm run kb:verify` | Command output |
 | I-06 | Confidential names never appear in the public repo | BANNED_TERMS env only | grep of tracked files + history |
+| I-07 | Analytics never store a raw IP or a referrer query string; EEA/UK/CH events carry no visitor id or city | `/api/track`, `lib/visitor.ts` | Route tests + DB rows |
+| I-08 | Analytics are owner-only: `/api/analytics` needs Ariv's Clerk account; `site_events` has RLS on | Clerk + RLS | Route tests + E2E probe |
 
 ## 6. Roles, ownership, permissions, privacy
 
 - Roles: anonymous visitor; signed-in visitor (Clerk, optional); owner (Ariv, `ANALYTICS_OWNER_IDS`)
 - Tenant model: single owner; visitors are not tenants
 - Sensitive data: caller voice/transcripts, verified emails of signed-in callers, Ariv's contact info
-- Privacy: Gemini free tier may use calls to improve Google products (disclosed in UI); transcripts stored in Supabase; retention via `RETENTION_DAYS` (UNKNOWN: Ariv hasn't chosen a period)
+- Privacy: Gemini free tier may use calls to improve Google products (disclosed in UI); transcripts stored in Supabase; retention `RETENTION_DAYS=90` (calls, callers, site events)
+- Visitor analytics (2026-09-29): first-party `site_events` (visit, click, call_start) with rough location from Vercel headers, device, source, and network owner from IPinfo (IP sent to IPinfo, never stored). Disclosed on the home page. ORACLE GAP: no formal privacy policy page; legal review not done
 - Test accounts: UNKNOWN (no dedicated Clerk test user); agents must not sign in as Ariv
 - Prohibited actions: sending real emails to third parties, booking real Calendly events, deleting non-test data
 - Secrets never in output: all keys in `.env.local`; BANNED_TERMS values
@@ -76,7 +84,7 @@ Product-specific facts for the universal rules in `/AGENTS.md`. Promises come fr
 
 ## 8. State and compatibility
 
-- Stores: Supabase tables `conversations`, `call_summaries`, `share_tokens`, `callers`, `knowledge_base` (mirror), `caller_memories` (legacy, unused)
+- Stores: Supabase tables `conversations`, `call_summaries` (+ analytics columns, `scripts/migrate-v4.sql`), `site_events`, `share_tokens`, `callers`, `knowledge_base` (mirror), `caller_memories` (legacy, unused)
 - Cache: Upstash Redis (rate limits, role-research cache, finish lock)
 - Share links from before this release keep working (same table/columns)
 - Reconnect: a dropped call ends gracefully and is saved; no mid-call resume
@@ -88,7 +96,8 @@ Product-specific facts for the universal rules in `/AGENTS.md`. Promises come fr
 |---|---|---:|---:|---|
 | Gemini Live API | Voice (critical path) | Real free tier | No (evals/E2E use real) | Friendly error + links |
 | Gemini text API | Role research, summaries | Real free tier | Yes in unit tests | Deterministic fallback text |
-| Calendly API | Open slots | Real (read-only) | Yes in unit tests | Share booking link instead |
+| Calendly API | Open slots; recent bookings for the dashboard | Real (read-only) | Yes in unit tests | Share booking link instead; dashboard shows "n/a" |
+| IPinfo | Network owner of a visitor's IP (optional `IPINFO_TOKEN`) | Real (keyless endpoint is rate limited) | Yes | No network info; visit still recorded |
 | Supabase | Storage | Production DB only | Yes in unit tests | Call works; save may fail with message |
 | Upstash | Rate limits | Real | Yes | Fail closed in prod if unconfigured |
 | Resend | Emails to Ariv / opt-in transcript | Real | E2E disables | Silent skip |

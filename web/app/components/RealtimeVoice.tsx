@@ -6,7 +6,8 @@ import { Mic, MicOff, PhoneOff, Copy, Check, Download, Mail, ExternalLink, Calen
 import { Button } from "@/components/ui/button";
 import { VoicePoweredOrb } from "@/components/ui/voice-powered-orb";
 import { AuthHeader } from "./AuthHeader";
-import { LINKS } from "@/lib/knowledge";
+import { LINKS, tagBookingUrl } from "@/lib/knowledge";
+import { trackClick } from "@/lib/track-client";
 import { detectAgentTransition, AGENT_MODES } from "@/lib/agents";
 import { cardToText, isSafeUrl, type UiCard } from "@/lib/ui-cards";
 import { initialTranscript, toMessages, transcriptReducer, type TranscriptItem } from "@/lib/voice/transcript";
@@ -59,6 +60,7 @@ export default function RealtimeVoice() {
     emailError?: string;
   } | null>(null);
   const [copied, setCopied] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
 
   const sessionRef = useRef<VoiceSession | null>(null);
   const infoRef = useRef<SessionInfo | null>(null);
@@ -120,6 +122,7 @@ export default function RealtimeVoice() {
     dispatch({ type: "reset" });
     finishedRef.current = false;
     infoRef.current = null;
+    setSessionId(null);
     cancelRef.current = false;
     abortRef.current = new AbortController();
     modeRef.current = "greeter";
@@ -150,6 +153,7 @@ export default function RealtimeVoice() {
         }, abortRef.current?.signal);
         sessionRef.current = session;
         infoRef.current = info;
+        setSessionId(info.sessionId);
         setSecondsLeft(info.maxCallSeconds);
         if (cancelRef.current) session.stop("hangup"); // Cancel was pressed while connecting
       } catch (err) {
@@ -320,7 +324,9 @@ export default function RealtimeVoice() {
           </p>
           <p className="mt-2 text-xs leading-5 text-white/40">
             Voice runs on Google&apos;s Gemini API (free tier), which may use calls to improve Google&apos;s models, so don&apos;t share
-            anything sensitive. Transcripts are saved so I can read them.
+            anything sensitive. Transcripts are saved so I can read them, and I log basic visit info (rough location, network,
+            device, where you came from, what you click) to see how people use this. Your browser&apos;s Do Not Track or Global
+            Privacy Control setting turns that off.
           </p>
         </div>
       )}
@@ -386,7 +392,7 @@ export default function RealtimeVoice() {
             ) : (
               transcript.items.map((it) =>
                 it.role === "card" ? (
-                  <CardView key={it.id} card={it.card} />
+                  <CardView key={it.id} card={it.card} onLink={(label, href) => trackClick(label, href, sessionId)} />
                 ) : (
                   <div key={it.id} className="text-sm leading-6" aria-hidden={!it.final || undefined}>
                     <span className="mr-2 text-[11px] font-medium uppercase tracking-wider text-white/35">
@@ -448,9 +454,10 @@ export default function RealtimeVoice() {
                     </Button>
                   )}
                   <a
-                    href={LINKS.calendly}
+                    href={tagBookingUrl(LINKS.calendly, sessionId)}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={(e) => trackClick("Book time with Ariv (after call)", e.currentTarget.href, sessionId)}
                     className="inline-flex h-9 items-center gap-2 rounded-md border border-white/15 px-3 text-sm text-white/85 hover:bg-white/10"
                   >
                     <CalendarDays className="h-4 w-4" aria-hidden />
@@ -469,7 +476,7 @@ export default function RealtimeVoice() {
   );
 }
 
-function CardView({ card }: { card: UiCard }) {
+function CardView({ card, onLink }: { card: UiCard; onLink: (label: string, href: string) => void }) {
   if (card.kind === "links") {
     return (
       <div className="rounded-xl border border-white/10 bg-white/5 p-3">
@@ -477,7 +484,7 @@ function CardView({ card }: { card: UiCard }) {
         <ul className="mt-2 space-y-1">
           {card.links.filter((l) => isSafeUrl(l.url) || l.url.startsWith("mailto:")).map((l) => (
             <li key={l.url}>
-              <a href={l.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-sky-300 hover:text-sky-200 hover:underline">
+              <a href={l.url} target="_blank" rel="noopener noreferrer" onClick={() => onLink(l.label, l.url)} className="inline-flex items-center gap-1.5 text-sm text-sky-300 hover:text-sky-200 hover:underline">
                 {l.label}
                 <ExternalLink className="h-3 w-3" aria-hidden />
               </a>
@@ -497,6 +504,7 @@ function CardView({ card }: { card: UiCard }) {
             href={card.url}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => onLink("Confirm on Calendly", card.url)}
             className="mt-2 inline-flex items-center gap-1.5 rounded-md bg-sky-500/90 px-3 py-1.5 text-sm font-medium text-white hover:bg-sky-500"
           >
             Confirm on Calendly
@@ -519,11 +527,18 @@ function CardView({ card }: { card: UiCard }) {
 }
 
 function FallbackLinks() {
+  const links = [
+    { label: "LinkedIn", href: LINKS.linkedin },
+    { label: "GitHub", href: LINKS.github },
+    { label: "Book a 15-min chat", href: tagBookingUrl(LINKS.calendly) },
+  ];
   return (
     <div className="mt-2 flex flex-wrap gap-3 text-sm">
-      <a className="text-sky-300 hover:underline" href={LINKS.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn</a>
-      <a className="text-sky-300 hover:underline" href={LINKS.github} target="_blank" rel="noopener noreferrer">GitHub</a>
-      <a className="text-sky-300 hover:underline" href={LINKS.calendly} target="_blank" rel="noopener noreferrer">Book a 15-min chat</a>
+      {links.map((l) => (
+        <a key={l.label} className="text-sky-300 hover:underline" href={l.href} target="_blank" rel="noopener noreferrer" onClick={() => trackClick(l.label, l.href)}>
+          {l.label}
+        </a>
+      ))}
     </div>
   );
 }

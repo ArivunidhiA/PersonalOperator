@@ -12,6 +12,8 @@ export type SessionTicket = {
   p: "gemini" | "openai"; // voice provider
   uid: string | null; // Clerk user id
   em: string | null; // Clerk-verified primary email
+  vid?: string | null; // analytics visitor id (browser-generated; only links a call to its visits)
+  own?: boolean; // Ariv's own browser or account (his test calls are filtered out)
   iat: number; // issued at (s)
   exp: number; // expires at (s)
 };

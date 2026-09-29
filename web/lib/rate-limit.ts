@@ -73,6 +73,7 @@ const LIMITS = {
     make: () => Ratelimit.fixedWindow(Number(process.env.OPENAI_DAILY_SESSION_CAP || 30), "1 d"),
   },
   shareView: { max: 60, windowMs: 600_000, make: () => Ratelimit.slidingWindow(60, "10 m") }, // per IP
+  track: { max: 120, windowMs: 600_000, make: () => Ratelimit.slidingWindow(120, "10 m") }, // analytics events per IP
 } satisfies Record<string, Spec>;
 
 export type LimitName = keyof typeof LIMITS;
