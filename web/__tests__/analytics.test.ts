@@ -45,6 +45,11 @@ describe("visitor context", () => {
     expect(networkKind("T-Mobile USA, Inc.")).toBe("isp");
     expect(networkKind("Zscaler, Inc.")).toBe("hosting");
     expect(networkKind("Stripe, Inc.")).toBe("org");
+    // F-04: small regional ISPs (production smoke: "Troy Cablevision, Inc.") are ISPs, not employers.
+    expect(networkKind("Troy Cablevision, Inc.")).toBe("isp");
+    expect(networkKind("Point Broadband Fiber Holding, LLC")).toBe("isp");
+    expect(networkKind("Farmers Telephone Cooperative, Inc.")).toBe("isp");
+    expect(networkKind("Rise Broadband")).toBe("isp");
   });
 
   it("never looks up private or missing IPs", async () => {

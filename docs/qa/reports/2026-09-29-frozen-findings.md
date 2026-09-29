@@ -48,3 +48,29 @@ Recorded before any fix, per `AGENTS.md` §11. Baseline = production as deployed
 | forecost on PyPI | PyPI JSON | forecost 0.1.1 by Arivunidhi A |
 | Calendly event (`15-min-coffee-chat`) | API + headless Chromium | active, 15 min, 146 open slots in 7 days; page renders |
 | Email (`mailto:`) | format | valid |
+
+---
+
+# Findings from the production smoke (deployment `d3wrgm8um`, main `1798ea4`), recorded before fixing
+
+## F-04: Regional cable ISPs are labeled "possibly their company"
+
+- Severity: minor (dashboard and email wording; hedged, but misleading)
+- Confidence: confirmed; Reproducibility: always for ISP names outside the built-in list
+- Affected promise: P-10 (network owner shown to Ariv)
+- Steps: `POST https://www.arivsai.app/api/track` from a home connection in Dothan, AL (production smoke, 2026-09-29 18:00Z).
+- Expected: a consumer ISP is labeled "home/mobile ISP".
+- Actual: `network_org = "Troy Cablevision, Inc."`, `network_kind = "org"`, so the dashboard would say "possibly their company".
+- Suspected boundary (hypothesis): `networkKind()` in `web/lib/visitor.ts` only knows big-brand ISPs; small ISPs are named "Cablevision", "Broadband", "Telephone", "Wireless", "Fiber".
+- Blocks further testing: no.
+
+## F-05: No durable evidence that Ariv's call email was sent
+
+- Severity: major (the "messaging" promise can't be verified after the fact)
+- Confidence: confirmed; Reproducibility: always
+- Affected promise: P-10 / owner notification (QA_PROFILE §9 Resend)
+- Steps: production E2E call `s_mumze1lx_E1uwsnsdAY5T` finished with HTTP 200 and a saved row, then `vercel logs --expand/--json` and the Vercel logs UI were searched for "notified" and "call saved".
+- Expected: an operator can see that Resend accepted the email (its id).
+- Actual: Vercel surfaces only the first log line per request ("llm call"); later lines, including `notified {emailId}`, never show up, and the Resend key is send-only, so no delivery record can be read either.
+- Suspected boundary (hypothesis): log surfacing on the Hobby plan; the app keeps no durable record of the send.
+- Blocks further testing: no.

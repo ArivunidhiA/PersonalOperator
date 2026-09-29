@@ -75,8 +75,9 @@ export function requestContext(req: Request): RequestContext {
 }
 
 // Consumer ISPs and mobile carriers: the network says nothing about the visitor's employer.
+// Small regional ISPs rarely have famous names, so generic ISP words count too (F-04).
 const ISP =
-  /comcast|charter|spectrum|at&t|\bat ?& ?t\b|verizon|cellco|t-mobile|tmobile|sprint|cox comm|frontier|centurylink|lumen|windstream|altice|optimum|mediacom|suddenlink|\brcn\b|wideopenwest|google fiber|starlink|space exploration|us cellular|brightspeed|ziply|astound|bell canada|rogers|telus|shaw|vodafone|british telecom|\bbt\b|virgin media|sky uk|reliance jio|jio|bharti|airtel|bsnl|act fibernet|hathway|claro|telmex|movistar|telefonica|orange|deutsche telekom|telstra|optus|singtel|kddi|softbank|ntt|korea telecom|sk broadband|lg (uplus|powercomm)|chinanet|china (telecom|unicom|mobile)/i;
+  /cable|broadband|telecom|telephone|wireless|cellular|fiber|fibre|\bdsl\b|satellite|internet service|comcast|charter|spectrum|at&t|\bat ?& ?t\b|verizon|cellco|t-mobile|tmobile|sprint|cox comm|frontier|centurylink|lumen|windstream|altice|optimum|mediacom|suddenlink|\brcn\b|wideopenwest|google fiber|starlink|space exploration|us cellular|brightspeed|ziply|astound|bell canada|rogers|telus|shaw|vodafone|british telecom|\bbt\b|virgin media|sky uk|reliance jio|jio|bharti|airtel|bsnl|act fibernet|hathway|claro|telmex|movistar|telefonica|orange|deutsche telekom|telstra|optus|singtel|kddi|softbank|ntt|korea telecom|sk broadband|lg (uplus|powercomm)|chinanet|china (telecom|unicom|mobile)/i;
 // Clouds, proxies and VPNs: likely not where the person works (Zscaler & co. front many companies).
 const HOSTING =
   /digitalocean|linode|akamai|cloudflare|ovh|hetzner|vultr|choopa|contabo|leaseweb|m247|datacamp|packethub|zscaler|netskope|palo alto|forcepoint|nordvpn|expressvpn|mullvad|proton ?(ag|vpn)|private internet access|hostinger|scaleway|oracle cloud|alibaba|tencent/i;

@@ -110,6 +110,11 @@ test("voice call: greeting, facts, links card, saved transcript", async ({ page,
     expect((row!.questions as string[]).join(" ")).toMatch(/work/i);
     expect(row!.duration_s).toBeGreaterThan(20);
     expect((row!.context as { clicks?: string[] }).clicks ?? []).toEqual(expect.arrayContaining(["Book a 15-min chat"]));
+    // Against a deployment (email on), Resend's id for Ariv's call email is kept on the call (F-05).
+    // Locally the test server runs with email off.
+    if (process.env.E2E_BASE_URL) {
+      expect((row!.context as { notified?: { emailId?: string } }).notified?.emailId).toMatch(/^[\w-]{8,}$/);
+    }
     // Evidence for the QA report (printed before the rows are deleted).
     const { data: evidence } = await db.from("site_events").select("type, label, target, country, region, city, device, browser, os, is_bot, is_owner").or(`visitor_id.eq.${vid},session_id.eq.${sid}`);
     console.log("E2E_ANALYTICS_EVIDENCE", JSON.stringify({ sid, vid, events: evidence, call: { ...row, questions: row!.questions } }));
