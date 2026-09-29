@@ -1,194 +1,92 @@
-<div align="center">
+# Ariv's AI
 
-# 🤖 Ariv's AI — Personal Voice Agent
+A voice agent that talks to people about me (Ariv). Recruiters and curious visitors open [arivsai.app](https://arivsai.app), hit **Start talking**, and have a real conversation: what I'm working on, what I've built, whether I'd fit a role, and a link to book 15 minutes with me. It says it's an AI, it only says true things, and it runs on free tiers.
 
-[![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org)
-[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)](https://react.dev)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript)](https://typescriptlang.org)
-[![Deployed on Vercel](https://img.shields.io/badge/Vercel-Live-000?logo=vercel)](https://arivsai.app)
-[![License](https://img.shields.io/badge/License-MIT-green)](#license)
-
-**A real-time AI voice agent that speaks on behalf of Ariv to recruiters and visitors.**
-Powered by OpenAI's Realtime API over WebRTC with tool calling, RAG, and Calendly integration.
-
-[Live Demo](https://arivsai.app) · [Report Bug](https://github.com/ArivunidhiA/PersonalOperator/issues)
-
-</div>
-
-## 📑 Table of Contents
-
-[Overview](#-overview) · [Features](#-features) · [Architecture](#-architecture) · [Tech Stack](#-tech-stack) · [Quick Start](#-quick-start) · [Configuration](#-configuration) · [API Endpoints](#-api-endpoints) · [Deployment](#-deployment) · [Development](#-development) · [Troubleshooting](#-troubleshooting)
-
-## 🔍 Overview
-
-Ariv's AI is a voice-first personal agent deployed at [arivsai.app](https://arivsai.app). Recruiters call in, and the AI answers questions about Ariv's experience, researches role fit in real-time, shares clickable links, schedules meetings via Calendly, and sends confirmation emails — all through natural conversation.
-
-**Key Highlights:**
-- 🎙️ Real-time voice via OpenAI's WebRTC Realtime API (sub-second latency)
-- 🧠 RAG-powered knowledge retrieval from Supabase vector store
-- 📅 Calendly integration with pre-filled booking links
-- 📧 Automated confirmation emails via Resend
-- 🔒 Clerk authentication with rate limiting via Upstash Redis
-- 💬 Live transcript with clickable hyperlinks and post-call recaps
-
-## ✨ Features
-
-| Category | Features |
-|----------|----------|
-| **Voice** | WebRTC streaming, voice activity detection, connection quality monitoring, auto-reconnect |
-| **Intelligence** | Role-specific research, RAG knowledge retrieval, caller memory, dynamic system prompt |
-| **Scheduling** | Calendly availability check, pre-filled booking links (name/email/date), multi-day slot presentation |
-| **Communication** | Resend email confirmations, clickable links in transcript, post-call summary injection |
-| **UX** | Animated orb visualization, real-time transcript, system activity feed, mobile responsive |
-
-## 🏗 Architecture
+## How it works
 
 ```
-┌─────────────┐    WebRTC     ┌──────────────────┐
-│   Browser    │◄────────────►│  OpenAI Realtime  │
-│  (React UI)  │   Audio +    │    API (GPT-4o)   │
-│              │  DataChannel  │                   │
-└──────┬───────┘              └────────┬──────────┘
-       │ REST                    Tool Calls │
-       ▼                                   ▼
-┌──────────────────────────────────────────────────┐
-│              Next.js API Routes                  │
-├──────────┬───────────┬──────────┬────────────────┤
-│ /token   │ /rag      │/schedule │ /research-role │
-│ /avail   │ /send-email│/post-call│ /caller-memory│
-└────┬─────┴─────┬─────┴────┬─────┴───────┬───────┘
-     │           │          │             │
-  Clerk      Supabase   Calendly      OpenAI
-  + Redis    (vectors)    API        (GPT-4o)
-             + Resend
+Browser (Next.js page)
+  │ 1. POST /api/voice/session  → rate limits, region check, signed call ticket
+  │                              + single-use Gemini token with the prompt/tools locked in
+  │ 2. WebSocket (audio) ───────────────────────────────►  Gemini Live (gemini-3.8-live)
+  │      mic 16 kHz PCM  ─►        ◄─ 24 kHz speech + transcripts + tool calls
+  │ 3. tool calls → POST /api/tools/execute (ticket required)
+  │      retrieve_knowledge · research_role · check_availability
+  │      schedule_meeting · share_links · generate_summary
+  │ 4. call ends → POST /api/calls/finish (ticket) → Supabase + summary + email to me
+  │    (optional) POST /api/calls/share → opt-in, fact-checked, unverified-labeled share link
+  ▼
+Vercel (Hobby) · Supabase (Postgres) · Upstash (rate limits) · Clerk (optional sign-in)
+Resend (my notification + "email me the transcript") · Calendly (open slots)
 ```
 
-## 🛠 Tech Stack
+- **One source of truth for facts.** Everything the agent may say about me lives in [`web/lib/knowledge.ts`](web/lib/knowledge.ts). The prompt inlines it, so most answers need no tool call and no retrieval round trip. `retrieve_knowledge` searches the same registry in memory, and `npm run kb:seed` mirrors it into Supabase.
+- **Fast by default, checked afterwards** (the "System 1" idea from TypeSafe's Jev). The realtime model answers straight from the fact card, and plain code in [`web/lib/verifier.ts`](web/lib/verifier.ts) checks every line it said, including invented numbers, wrong titles, "I'm human", spoken URLs and confidential names. Flags show up in the call notification.
+- **Locked session.** The browser gets a single-use Gemini token whose prompt and tools are fixed on the server, so a visitor can't rewrite the agent.
+- **Least privilege.** No tool can email anyone or read another caller's data. Personal data never goes through the model. Links reach the chat as structured cards, so the agent never reads a URL aloud.
+- **Four call modes** (greeter, role researcher, scheduler, closer) live in one prompt, so no rule or tool disappears mid-call. The UI shows the active mode.
 
-| Layer | Technology |
-|-------|-----------|
-| **Frontend** | React 19, Next.js 16 (App Router), TailwindCSS 4, Radix UI, OGL (WebGL orb) |
-| **Backend** | Next.js API Routes, OpenAI Realtime API (WebRTC), OpenAI GPT-4o |
-| **Database** | Supabase (pgvector for RAG embeddings) |
-| **Auth** | Clerk (session management + middleware) |
-| **Rate Limiting** | Upstash Redis |
-| **Email** | Resend (transactional emails from `ai@arivsai.app`) |
-| **Scheduling** | Calendly API (availability + pre-filled booking links) |
-| **Deployment** | Vercel (auto-deploy from `main`) |
-| **Testing** | Vitest, Testing Library, Playwright |
+## Cost
 
-## 🚀 Quick Start
+$0 at current traffic: Gemini API free tier (voice, role research, summaries), Vercel Hobby, and the free tiers of Supabase, Upstash, Clerk, Resend and Calendly.
 
-**Prerequisites:** Node.js 18+, npm, accounts for OpenAI, Supabase, Clerk, Calendly, Resend, Upstash
+The Gemini free tier has some catches:
+- Google may use free-tier calls to improve its models. The page tells visitors this.
+- It can't serve the EEA, the UK or Switzerland. Those visitors see my links instead, unless the paid OpenAI fallback is enabled.
+- Its rate limits aren't published. `DAILY_SESSION_CAP` protects them.
+
+Optional paid paths, both off by default:
+- OpenAI Realtime (`VOICE_FALLBACK=openai`, `gpt-realtime-2.1-mini`).
+- Claude via [Vercel AI Gateway's Anthropic Messages API](https://vercel.com/docs/ai-gateway/sdks-and-apis/anthropic-messages-api) (`AI_GATEWAY_API_KEY`, `LLM_PROVIDER=gateway`).
+
+## Personality
+
+It's meant to sound like a chill, funny friend who knows me, not an assistant. `web/lib/system-prompt.ts` sets the persona, the spoken style (short spoken sentences, react-then-answer, varied openers, callbacks) and the humor rules (answer first, joke second, never at anyone's expense, a straight face for visa, salary and confidential stuff). It still says it's an AI whenever asked, and the evals fail any reply that sounds like a generic assistant ("great question", "I'd be happy to", "anything else?"). The voice is Gemini's prebuilt `Umbriel`; you can change it with `GEMINI_VOICE`.
+
+## Run it
 
 ```bash
-# Clone
-git clone https://github.com/ArivunidhiA/PersonalOperator.git
-cd PersonalOperator/web
-
-# Install
-npm install
-
-# Configure (see Configuration section)
-cp .env.example .env
-
-# Run
+cd web
+npm ci
+vercel env pull .env.local        # or copy .env.example and fill it in
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) — click the orb to start a voice session.
+Node 22+ (Vercel uses 24). Env vars are documented in [`web/.env.example`](web/.env.example).
 
-## ⚙️ Configuration
+**Database:** run [`web/scripts/migrate-v3.sql`](web/scripts/migrate-v3.sql) once in the Supabase SQL editor. It turns on row-level security, creates `conversations`, adds a unique index per call, and drops the unused vector indexes.
 
-Create a `.env` file in `/web` with the following:
+## Tests
 
-```env
-# Auth (Clerk)
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
-CLERK_SECRET_KEY=sk_test_...
+| Command | What it proves |
+|---|---|
+| `npm test` | 90+ unit/route tests. Facts registry, prompt rules, verifier (seeded with lines the old agent really said), tickets, tool least-privilege, transcript ordering, provider/region choice, route auth. |
+| `npm run eval:live` | Red-team evals on the **real** voice model through the production token path (AI disclosure, prompt injection, confidentiality, false premises, invented numbers, URL reading, email/memory abuse, visa, scheduling after role research). Repeats each case; deterministic checks only. Costs nothing on the Gemini free tier. |
+| `npm run test:e2e` | A real browser call. Chrome's fake microphone plays a scripted caller (`e2e/make-audio.sh`). The test checks the greeting, the correct answer, the links card, the saved transcript and the share link, plus security probes and headers. |
+| `npm run kb:verify` | Read-only check that Supabase `knowledge_base` matches `lib/knowledge.ts`. |
 
-# AI
-OPENAI_API_KEY=sk-proj-...
+CI runs lint, typecheck, tests, `npm audit` (prod, high+) and a production build on Node 24.
 
-# Database (Supabase)
-NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=sb_secret_...
+## Updating what the agent knows
 
-# Rate Limiting (Upstash)
-UPSTASH_REDIS_REST_URL=https://xxx.upstash.io
-UPSTASH_REDIS_REST_TOKEN=AZ...
-
-# Scheduling (Calendly)
-CALENDLY_API_KEY=eyJ...
-
-# Email (Resend — requires verified domain)
-RESEND_API_KEY=re_...
-```
-
-## 📡 API Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/api/realtime/token` | Generate ephemeral OpenAI Realtime session token |
-| `POST` | `/api/tools/rag` | RAG knowledge retrieval from Supabase vectors |
-| `POST` | `/api/tools/research-role` | GPT-4o role-fit analysis for a specific company/role |
-| `POST` | `/api/tools/availability` | Fetch Calendly availability (10am–5pm EST, 7-day window) |
-| `POST` | `/api/tools/schedule` | Generate pre-filled Calendly booking link |
-| `POST` | `/api/tools/send-email` | Send confirmation email via Resend |
-| `POST` | `/api/tools/caller-memory` | Lookup/store caller context by email |
-| `POST` | `/api/tools/post-call` | Save conversation transcript + summary to Supabase |
-| `POST` | `/api/conversations` | Persist/retrieve conversation history |
-
-## 🌐 Deployment
-
-Deployed on **Vercel** with auto-deploy from `main`. Domain: [`arivsai.app`](https://arivsai.app)
+Edit [`web/lib/knowledge.ts`](web/lib/knowledge.ts). Only add true things, and add any new number to `ALLOWED_NUMBERS`. Then:
 
 ```bash
-# Build check
-npm run build
-
-# Push to deploy
-git push origin main  # Vercel auto-deploys
+npm test && npm run eval:live && npm run kb:seed
 ```
 
-**Required Vercel env vars:** All variables from the Configuration section must be added in Vercel → Settings → Environment Variables.
+## Repo map
 
-## 💻 Development
-
-```bash
-npm run dev          # Start dev server (http://localhost:3000)
-npm run build        # Production build
-npm run lint         # ESLint
-npm run typecheck    # TypeScript check
-npm run test         # Run Vitest
-npm run test:watch   # Watch mode
-```
-
-**Project Structure:**
-```
-web/
-├── app/
-│   ├── components/    # RealtimeVoice (main), UI components
-│   ├── api/           # 9 API routes (tools, auth, conversations)
-│   └── page.tsx       # Landing page
-├── lib/
-│   ├── system-prompt.ts   # AI persona + rules
-│   └── supabase.ts        # DB client
-├── components/ui/     # Radix/shadcn primitives
-└── public/            # Static assets
-```
-
-## 🔧 Troubleshooting
-
-| Issue | Fix |
-|-------|-----|
-| No audio / WebRTC fails | Check browser mic permissions, ensure HTTPS in production |
-| Calendly returns no slots | Verify `CALENDLY_API_KEY` is valid, check event type URI |
-| Emails fail to send | Verify domain in [Resend dashboard](https://resend.com/domains), check DNS records |
-| Clerk auth errors on build | Ensure `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` is set in Vercel env vars |
-| Rate limited | Upstash Redis limits — check quota at [console.upstash.com](https://console.upstash.com) |
-| Links not clickable | URLs must include `https://` prefix to be auto-linkified in transcript |
-
-## 📄 License
-
-MIT © [Arivunidhi Anna Arivan](https://arivfolio.tech)
+- `web/lib/knowledge.ts`: facts, links, search
+- `web/lib/system-prompt.ts`: the one prompt
+- `web/lib/agents.ts`: call modes
+- `web/lib/tools.ts`: tool schemas
+- `web/lib/tool-executor.ts`: tool logic, all input untrusted
+- `web/lib/voice-config.ts`: engines, models, voice, VAD, region rules
+- `web/lib/voice/`: browser clients (Gemini WebSocket plus worklets, OpenAI WebRTC fallback), transcript reducer
+- `web/app/api/voice/session`: starts a call
+- `web/app/api/tools/execute`: runs tools
+- `web/app/api/calls/*`: finish (save-or-update), share (opt-in), [token] (share view), email
+- `web/app/api/cron/maintenance`: daily housekeeping
+- `web/evals/`, `web/e2e/`: live evals and the browser call test
+- `docs/qa/`: QA profile and release reports

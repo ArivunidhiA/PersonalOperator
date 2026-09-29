@@ -80,6 +80,9 @@ export default function SharedCallPage() {
             </div>
           </div>
           <p className="mt-4 text-sm text-white/40">{formattedDate}</p>
+          <p className="mt-2 rounded-lg border border-amber-400/20 bg-amber-400/5 px-3 py-2 text-xs leading-5 text-amber-100/70">
+            This transcript was recorded by the caller&apos;s browser and shared by them. It hasn&apos;t been checked by Ariv, so treat it as unverified.
+          </p>
 
           {/* Metadata badges */}
           <div className="mt-4 flex flex-wrap gap-2">

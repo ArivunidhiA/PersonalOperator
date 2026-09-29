@@ -1,877 +1,529 @@
 "use client";
 
+import { useCallback, useEffect, useReducer, useRef, useState } from "react";
+import { useUser as useClerkUser } from "@clerk/nextjs";
+import { Mic, MicOff, PhoneOff, Copy, Check, Download, Mail, ExternalLink, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { VoicePoweredOrb } from "@/components/ui/voice-powered-orb";
-import { Mic, MicOff, Copy, Download, Check } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useUser as useClerkUser } from "@clerk/nextjs";
 import { AuthHeader } from "./AuthHeader";
-import { jsPDF } from "jspdf";
+import { LINKS } from "@/lib/knowledge";
+import { detectAgentTransition, AGENT_MODES } from "@/lib/agents";
+import { cardToText, isSafeUrl, type UiCard } from "@/lib/ui-cards";
+import { initialTranscript, toMessages, transcriptReducer, type TranscriptItem } from "@/lib/voice/transcript";
+import type { EndReason, SessionInfo, VoiceSession } from "@/lib/voice/types";
+// Static on purpose: iOS only allows audio if the AudioContext is created inside the tap,
+// and a dynamic import here would put a network wait before it.
+import { startVoiceCall, StartError } from "@/lib/voice/start";
 
-const APP_URL = typeof window !== "undefined" ? window.location.origin : "https://arivsai.app";
+type Phase = "idle" | "connecting" | "live" | "ending" | "ended";
 
-function toFriendlyError(raw: string): string {
-  const lower = raw.toLowerCase();
-  if (lower.includes("unauthorized") || lower.includes("401")) return "Please sign in to continue.";
-  if (lower.includes("rate limit") || lower.includes("429")) return "You've reached the limit for now. Try again in a bit, or sign in for more sessions.";
-  if (lower.includes("microphone") || lower.includes("getusermedia") || lower.includes("permission")) return "Microphone access is needed. Check your browser settings and allow microphone access for this site.";
-  if (lower.includes("failed to establish") || lower.includes("webrtc") || lower.includes("connection")) return "We couldn't connect. Check your internet and try again.";
-  if (lower.includes("max reconnection") || lower.includes("reconnection attempts")) return "Connection was lost. Tap Connect to start a new conversation.";
-  if (lower.includes("network") || lower.includes("fetch")) return "Network issue. Check your connection and try again.";
-  return raw;
-}
-
-type Role = "user" | "assistant";
-
-type TranscriptMessage = {
-  id: string;
-  role: Role;
-  text: string;
-  final: boolean;
+const TOOL_LABELS: Record<string, string> = {
+  retrieve_knowledge: "Checking his notes",
+  research_role: "Looking into that role",
+  check_availability: "Checking his calendar",
+  schedule_meeting: "Making a booking link",
+  share_links: "Grabbing links",
+  generate_summary: "Writing a recap",
 };
-
-const MAX_RECONNECT_ATTEMPTS = 5;
-const TOKEN_REFRESH_BUFFER_MS = 30_000;
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
-}
-
-function SkeletonLine({ className = "" }: { className?: string }) {
-  return (
-    <div
-      className={`animate-pulse rounded bg-white/10 ${className}`}
-    />
-  );
-}
 
 function useSafeUser() {
   try {
     return useClerkUser();
   } catch {
-    return { user: null, isLoaded: true, isSignedIn: false };
+    return { user: null, isSignedIn: false, isLoaded: true };
   }
 }
 
+// The speech transcriber adds em dashes as punctuation; show them as commas.
+const displayText = (t: string) => t.replace(/\s*\u2014\s*/g, ", ");
+
+const fmt = (s: number) => `${Math.floor(s / 60)}:${String(Math.max(0, s) % 60).padStart(2, "0")}`;
+
 export default function RealtimeVoice() {
-  const { user } = useSafeUser();
-  const callerName = user ? `${user.firstName || ""} ${user.lastName || ""}`.trim() : "";
-  const callerEmail = user?.primaryEmailAddress?.emailAddress || "";
-
-  const callerNameRef = useRef(callerName);
-  const callerEmailRef = useRef(callerEmail);
-  callerNameRef.current = callerName;
-  callerEmailRef.current = callerEmail;
-
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const pcRef = useRef<RTCPeerConnection | null>(null);
-  const dcRef = useRef<RTCDataChannel | null>(null);
-  const localStreamRef = useRef<MediaStream | null>(null);
-  const sseRef = useRef<EventSource | null>(null);
-  const sidebandActiveRef = useRef(false);
-
-  const reconnectAttemptRef = useRef(0);
-  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const intentionalDisconnectRef = useRef(false);
-
-  const tokenExpiresAtRef = useRef<number>(0);
-  const tokenTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const sessionIdRef = useRef<string>("");
-  const callIdRef = useRef<string>("");
-  const postCallFiredRef = useRef(false);
-  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const voiceQuietTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  interface SystemActivity {
-    id: string;
-    intent: string;
-    action: string;
-    status: "running" | "done" | "error";
-    timestamp: number;
-  }
-
-  const [status, setStatus] = useState<
-    "disconnected" | "connecting" | "connected" | "error" | "reconnecting"
-  >("disconnected");
-  const [error, setError] = useState<string | null>(null);
-  const [messages, setMessages] = useState<TranscriptMessage[]>([]);
-  const [voiceDetected, setVoiceDetected] = useState(false);
-  const [sessionWarning, setSessionWarning] = useState<string | null>(null);
-  const [activities, setActivities] = useState<SystemActivity[]>([]);
-  const [connectionQuality, setConnectionQuality] = useState<"good" | "fair" | "poor" | "">("");
-  const [activeAgent, setActiveAgent] = useState<string>("Greeter");
-  const [postCallData, setPostCallData] = useState<{ shareToken: string; summary?: string } | null>(null);
+  const { isSignedIn } = useSafeUser();
+  const [phase, setPhase] = useState<Phase>("idle");
+  const [transcript, dispatch] = useReducer(transcriptReducer, initialTranscript);
+  const [notice, setNotice] = useState<{ text: string; tone: "error" | "info"; showLinks?: boolean } | null>(null);
+  const [agentSpeaking, setAgentSpeaking] = useState(false);
+  const [activeTool, setActiveTool] = useState<string | null>(null);
+  const [mode, setMode] = useState<string>("greeter");
+  const [muted, setMuted] = useState(false);
+  const [secondsLeft, setSecondsLeft] = useState(0);
+  const [post, setPost] = useState<{
+    shareToken?: string;
+    shareError?: string;
+    summary?: string;
+    saving: boolean;
+    failed?: boolean;
+    emailed?: string;
+    emailError?: string;
+  } | null>(null);
   const [copied, setCopied] = useState(false);
-  const latencyRef = useRef<number[]>([]);
-  const pingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const mobileTranscriptRef = useRef<HTMLDivElement | null>(null);
 
-  const toolLabels: Record<string, { intent: string; action: string }> = {
-    check_availability: { intent: "Scheduling", action: "Checking calendar" },
-    schedule_meeting: { intent: "Scheduling", action: "Booking meeting" },
-    send_confirmation_email: { intent: "Email", action: "Sending confirmation" },
-    retrieve_knowledge: { intent: "Knowledge", action: "Searching knowledge base" },
-    lookup_caller: { intent: "Memory", action: "Looking up caller" },
-    research_role: { intent: "Role Research", action: "Researching role fit" },
-    generate_summary: { intent: "Summary", action: "Generating recap" },
-  };
+  const sessionRef = useRef<VoiceSession | null>(null);
+  const infoRef = useRef<SessionInfo | null>(null);
+  const itemsRef = useRef<TranscriptItem[]>([]);
+  const finishedRef = useRef(false);
+  const modeRef = useRef("greeter");
+  const cancelRef = useRef(false);
+  const abortRef = useRef<AbortController | null>(null);
+  const logRef = useRef<HTMLDivElement | null>(null);
+  itemsRef.current = transcript.items;
 
-  const handleVoiceDetected = useCallback((detected: boolean) => {
-    if (detected) {
-      if (voiceQuietTimerRef.current) {
-        clearTimeout(voiceQuietTimerRef.current);
-        voiceQuietTimerRef.current = null;
-      }
-      setVoiceDetected(true);
-    } else {
-      if (!voiceQuietTimerRef.current) {
-        voiceQuietTimerRef.current = setTimeout(() => {
-          setVoiceDetected(false);
-          voiceQuietTimerRef.current = null;
-        }, 3000);
-      }
+  // Keep the newest line in view.
+  useEffect(() => {
+    const el = logRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [transcript.items]);
+
+  const finish = useCallback(async (viaBeacon = false) => {
+    const info = infoRef.current;
+    if (!info || finishedRef.current) return;
+    const body = JSON.stringify({ ticket: info.ticket, messages: toMessages(itemsRef.current) });
+    if (viaBeacon) {
+      // Snapshot while the page may be going away. The server is save-or-update, so the
+      // final save (if the page comes back) still updates it.
+      const sent = navigator.sendBeacon?.("/api/calls/finish", new Blob([body], { type: "text/plain" }));
+      if (!sent) void fetch("/api/calls/finish", { method: "POST", body, keepalive: true, headers: { "Content-Type": "text/plain" } }).catch(() => {});
+      return;
+    }
+    finishedRef.current = true;
+    setPost({ saving: true });
+    try {
+      const res = await fetch("/api/calls/finish", { method: "POST", headers: { "Content-Type": "application/json" }, body });
+      const data = (await res.json().catch(() => ({}))) as { ok?: boolean; summary?: string; skipped?: boolean };
+      if (data.skipped) return setPost(null);
+      if (!res.ok || !data.ok) throw new Error("save failed");
+      setPost({ saving: false, summary: data.summary });
+    } catch {
+      finishedRef.current = false; // allow Retry
+      setPost({ saving: false, failed: true });
     }
   }, []);
 
-  const upsertDelta = useCallback((id: string, role: Role, delta: string) => {
-    setMessages((prev) => {
-      const index = prev.findIndex((m) => m.id === id);
-      if (index === -1) return [...prev, { id, role, text: delta, final: false }];
-      const next = [...prev];
-      next[index] = { ...next[index], text: next[index].text + delta };
-      return next;
-    });
-  }, []);
+  const onEnded = useCallback(
+    (reason: EndReason, message?: string) => {
+      sessionRef.current = null;
+      setAgentSpeaking(false);
+      setActiveTool(null);
+      setPhase("ended");
+      if (message) setNotice({ text: message, tone: reason === "hangup" || reason === "time" ? "info" : "error", showLinks: reason === "quota" });
+      if (reason !== "hidden") void finish();
+    },
+    [finish],
+  );
 
-  const finalize = useCallback((id: string, role: Role, transcript: string) => {
-    setMessages((prev) => {
-      const index = prev.findIndex((m) => m.id === id);
-      if (index === -1) return [...prev, { id, role, text: transcript, final: true }];
-      const next = [...prev];
-      next[index] = { ...next[index], text: transcript, final: true };
-      return next;
-    });
-  }, []);
-
-  const saveConversation = useCallback((msgs: TranscriptMessage[]) => {
-    const sid = sessionIdRef.current;
-    if (!sid) return;
-    const finalized = msgs.filter((m) => m.final);
-    if (finalized.length === 0) return;
-    void fetch("/api/conversations", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ session_id: sid, messages: finalized }),
-    }).catch(() => null);
-  }, []);
-
-  const clearTimers = useCallback(() => {
-    if (reconnectTimerRef.current) { clearTimeout(reconnectTimerRef.current); reconnectTimerRef.current = null; }
-    if (tokenTimerRef.current) { clearTimeout(tokenTimerRef.current); tokenTimerRef.current = null; }
-    if (saveTimerRef.current) { clearTimeout(saveTimerRef.current); saveTimerRef.current = null; }
-  }, []);
-
-  const teardownConnection = useCallback(() => {
-    clearTimers();
-    try { dcRef.current?.close(); } catch { /* */ }
-    dcRef.current = null;
-    try { pcRef.current?.close(); } catch { /* */ }
-    pcRef.current = null;
-    const local = localStreamRef.current;
-    localStreamRef.current = null;
-    local?.getTracks().forEach((t) => t.stop());
-    if (audioRef.current) audioRef.current.srcObject = null;
-    if (pingIntervalRef.current) { clearInterval(pingIntervalRef.current); pingIntervalRef.current = null; }
-    latencyRef.current = [];
-
-    // Close sideband SSE
-    if (sseRef.current) {
-      sseRef.current.close();
-      sseRef.current = null;
-    }
-    sidebandActiveRef.current = false;
-
-    setVoiceDetected(false);
-    setSessionWarning(null);
-    setConnectionQuality("");
-  }, [clearTimers]);
-
-  const disconnect = useCallback(() => {
-    intentionalDisconnectRef.current = true;
-    reconnectAttemptRef.current = 0;
-    setPostCallData(null);
-    setMessages((prev) => {
-      saveConversation(prev);
-      const finalized = prev.filter((m) => m.final && m.text.trim());
-      if (finalized.length > 0 && !postCallFiredRef.current) {
-        postCallFiredRef.current = true;
-        fetch("/api/tools/post-call", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            session_id: sessionIdRef.current,
-            messages: finalized,
-            caller_name: callerNameRef.current || undefined,
-            caller_email: callerEmailRef.current || undefined,
-          }),
-        })
-          .then((r) => r.json())
-          .then((d) => {
-            if (d?.share_token) {
-              setPostCallData({ shareToken: d.share_token, summary: d.summary });
+  const start = useCallback(async () => {
+    if (phase === "connecting" || phase === "live") return;
+    setNotice(null);
+    setPost(null);
+    dispatch({ type: "reset" });
+    finishedRef.current = false;
+    infoRef.current = null;
+    cancelRef.current = false;
+    abortRef.current = new AbortController();
+    modeRef.current = "greeter";
+    setMode("greeter");
+    setMuted(false);
+    setPhase("connecting");
+    try {
+        const { session, info } = await startVoiceCall({
+          onLive: () => setPhase("live"),
+          onUserDelta: (text) => dispatch({ type: "userDelta", text }),
+          onUserFinal: (text) => dispatch({ type: "userFinal", text }),
+          onAgentDelta: (text) => dispatch({ type: "agentDelta", text }),
+          onAgentFinal: (text) => dispatch({ type: "agentFinal", text }),
+          onAgentSpeaking: setAgentSpeaking,
+          onToolStart: (name) => {
+            setActiveTool(name);
+            const next = detectAgentTransition(modeRef.current, name);
+            if (next) {
+              modeRef.current = next.id;
+              setMode(next.id);
             }
-          })
-          .catch(() => null);
-      }
-      return prev;
-    });
-    teardownConnection();
-    setActivities([]);
-    setStatus("disconnected");
-  }, [teardownConnection, saveConversation]);
-
-  // Handle transcript events from DataChannel (primary) or sideband SSE (redundant)
-  const handleTranscriptEvent = useCallback(
-    (evt: Record<string, unknown>) => {
-      const type = evt.type as string;
-
-      if (type === "conversation.item.input_audio_transcription.delta") {
-        const { item_id, content_index, delta } = evt;
-        if (typeof item_id !== "string" || typeof content_index !== "number" || typeof delta !== "string") return;
-        upsertDelta(`user:${item_id}:${content_index}`, "user", delta);
-      } else if (type === "conversation.item.input_audio_transcription.completed") {
-        const { item_id, content_index, transcript } = evt;
-        if (typeof item_id !== "string" || typeof content_index !== "number" || typeof transcript !== "string") return;
-        finalize(`user:${item_id}:${content_index}`, "user", transcript);
-      } else if (type === "response.output_audio_transcript.delta") {
-        const { item_id, content_index, delta } = evt;
-        if (typeof item_id !== "string" || typeof content_index !== "number" || typeof delta !== "string") return;
-        upsertDelta(`assistant:${item_id}:${content_index}`, "assistant", delta);
-      } else if (type === "response.output_audio_transcript.done") {
-        const { item_id, content_index, transcript } = evt;
-        if (typeof item_id !== "string" || typeof content_index !== "number" || typeof transcript !== "string") return;
-        finalize(`assistant:${item_id}:${content_index}`, "assistant", transcript);
-      }
-    },
-    [upsertDelta, finalize],
-  );
-
-  // Client-side tool execution fallback (used when sideband is not active)
-  const handleFunctionCallFallback = useCallback(
-    async (dc: RTCDataChannel, callId: string, name: string, argsStr: string) => {
-      let args: Record<string, unknown> = {};
-      try { args = JSON.parse(argsStr); } catch { args = {}; }
-
-      const activityId = `${name}_${Date.now()}`;
-      const labels = toolLabels[name] || { intent: "Processing", action: name };
-
-      setActivities((prev) => [
-        ...prev.slice(-4),
-        { id: activityId, intent: labels.intent, action: labels.action, status: "running", timestamp: Date.now() },
-      ]);
-
-      let result: string;
-      let uiMessage: { id: string; text: string } | undefined;
-
-      try {
-        const res = await fetch(`/api/tools/${name === "check_availability" ? "availability" : name === "schedule_meeting" ? "schedule" : name === "send_confirmation_email" ? "send-email" : name === "retrieve_knowledge" ? "rag" : name === "lookup_caller" ? "caller-memory" : name === "research_role" ? "research-role" : name}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(args),
-        });
-        const data = await res.json();
-
-        // Map responses
-        if (name === "generate_summary") {
-          const company = (args.company as string) || "Unknown";
-          const role = (args.role as string) || "General Inquiry";
-          const summaryStatus = (args.status as string) || "Exploring";
-          const meeting = (args.meeting as string) || "Not Scheduled";
-          uiMessage = {
-            id: `summary-${Date.now()}`,
-            text: `📋 Recap\n\nCompany: ${company}\nRole: ${role}\nStatus: ${summaryStatus}\nMeeting: ${meeting}`,
-          };
-          result = "Summary displayed. Do NOT read it out loud. Say something brief and wait.";
-        } else if (name === "schedule_meeting" && data.success) {
-          uiMessage = {
-            id: `booking-${Date.now()}`,
-            text: `📅 Book your meeting\n\n${data.suggested_time}\n\n${data.booking_link}`,
-          };
-          result = "Booking link displayed. Do NOT read the URL. Say you dropped a link in the chat.";
-        } else if (name === "retrieve_knowledge" || name === "check_availability" || name === "research_role") {
-          result = JSON.stringify(data);
-        } else {
-          result = data.result || data.error || JSON.stringify(data);
-        }
+          },
+          onToolEnd: (_name, _ok, card) => {
+            setActiveTool(null);
+            if (card) dispatch({ type: "card", card });
+          },
+          onEnded,
+        }, abortRef.current?.signal);
+        sessionRef.current = session;
+        infoRef.current = info;
+        setSecondsLeft(info.maxCallSeconds);
+        if (cancelRef.current) session.stop("hangup"); // Cancel was pressed while connecting
       } catch (err) {
-        result = `Error executing ${name}: ${err instanceof Error ? err.message : "unknown"}`;
-        setActivities((prev) => prev.map((a) => a.id === activityId ? { ...a, status: "error" as const } : a));
-      }
+        setPhase("idle");
+        const e = err instanceof StartError ? err : null;
+        if (e?.code === "cancelled") return;
+        setNotice({
+          text: e?.message ?? "Couldn't start the call. Try again in a minute.",
+          tone: "error",
+          showLinks: !!e && ["region", "offline", "busy", "unsupported", "quota"].includes(e.code),
+        });
+    }
+  }, [phase, onEnded]);
 
-      if (uiMessage) {
-        setMessages((prev) => [...prev, { id: uiMessage!.id, role: "assistant", text: uiMessage!.text, final: true }]);
-      }
-
-      if (dc.readyState === "open") {
-        dc.send(JSON.stringify({
-          type: "conversation.item.create",
-          item: { type: "function_call_output", call_id: callId, output: result },
-        }));
-        dc.send(JSON.stringify({ type: "response.create" }));
-      }
-
-      setActivities((prev) =>
-        prev.map((a) =>
-          a.id === activityId && a.status === "running"
-            ? { ...a, status: "done" as const, action: labels.action.replace("ing ", "ed ").replace("Checking", "Checked").replace("Searching", "Searched").replace("Looking up", "Found").replace("Sending", "Sent").replace("Booking", "Booked") }
-            : a,
-        ),
-      );
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
-  );
-
-  const setupDataChannel = useCallback(
-    (dc: RTCDataChannel) => {
-      dc.addEventListener("open", () => {
-        dc.send(JSON.stringify({ type: "response.create" }));
-      });
-      dc.addEventListener("message", (e) => {
-        if (typeof e.data !== "string") return;
-        let evt: unknown;
-        try { evt = JSON.parse(e.data); } catch { return; }
-        if (!isRecord(evt) || typeof evt.type !== "string") return;
-
-        // Transcript events: always handled on client
-        if (
-          evt.type === "conversation.item.input_audio_transcription.delta" ||
-          evt.type === "conversation.item.input_audio_transcription.completed" ||
-          evt.type === "response.output_audio_transcript.delta" ||
-          evt.type === "response.output_audio_transcript.done"
-        ) {
-          handleTranscriptEvent(evt as Record<string, unknown>);
-          return;
-        }
-
-        // Tool calls: only handle client-side if sideband is NOT active
-        if (evt.type === "response.function_call_arguments.done") {
-          if (sidebandActiveRef.current) return; // Sideband handles it
-
-          const { call_id, name, arguments: argsStr } = evt;
-          if (typeof call_id !== "string" || typeof name !== "string" || typeof argsStr !== "string") return;
-          void handleFunctionCallFallback(dc, call_id, name, argsStr);
-        }
-      });
-    },
-    [handleTranscriptEvent, handleFunctionCallFallback],
-  );
-
-  // Connect the sideband SSE stream
-  const connectSideband = useCallback((callId: string) => {
-    if (sseRef.current) sseRef.current.close();
-
-    const url = `/api/realtime/sideband?call_id=${encodeURIComponent(callId)}`;
-    const sse = new EventSource(url);
-    sseRef.current = sse;
-
-    sse.addEventListener("connected", () => {
-      sidebandActiveRef.current = true;
-    });
-
-    sse.addEventListener("tool_start", (e) => {
-      const data = JSON.parse(e.data);
-      const labels = toolLabels[data.tool] || { intent: "Processing", action: data.tool };
-      setActivities((prev) => [
-        ...prev.slice(-4),
-        { id: `${data.tool}_${Date.now()}`, intent: labels.intent, action: labels.action, status: "running", timestamp: Date.now() },
-      ]);
-    });
-
-    sse.addEventListener("tool_done", (e) => {
-      const data = JSON.parse(e.data);
-      const labels = toolLabels[data.tool] || { intent: "Processing", action: data.tool };
-      setActivities((prev) => {
-        const running = prev.find((a) => a.intent === labels.intent && a.status === "running");
-        if (running) {
-          return prev.map((a) =>
-            a.id === running.id
-              ? { ...a, status: "done" as const, action: labels.action.replace("ing ", "ed ").replace("Checking", "Checked").replace("Searching", "Searched").replace("Looking up", "Found").replace("Sending", "Sent").replace("Booking", "Booked") }
-              : a,
-          );
-        }
-        return prev;
-      });
-    });
-
-    sse.addEventListener("tool_error", (e) => {
-      const data = JSON.parse(e.data);
-      const labels = toolLabels[data.tool] || { intent: "Processing", action: data.tool };
-      setActivities((prev) => {
-        const running = prev.find((a) => a.intent === labels.intent && a.status === "running");
-        if (running) {
-          return prev.map((a) => a.id === running.id ? { ...a, status: "error" as const } : a);
-        }
-        return prev;
-      });
-    });
-
-    sse.addEventListener("ui_message", (e) => {
-      const data = JSON.parse(e.data);
-      setMessages((prev) => [...prev, { id: data.id, role: "assistant", text: data.text, final: true }]);
-    });
-
-    sse.addEventListener("agent_switch", (e) => {
-      const data = JSON.parse(e.data);
-      setActiveAgent(data.agentName);
-    });
-
-    sse.addEventListener("error", () => {
-      sidebandActiveRef.current = false;
-      // Falls back to client-side tool handling automatically
-    });
-
-    sse.addEventListener("closed", () => {
-      sidebandActiveRef.current = false;
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  const hangUp = useCallback(() => {
+    if (!sessionRef.current) {
+      // Still setting up: abort the setup (releases the mic), or cancel once the session exists.
+      cancelRef.current = true;
+      abortRef.current?.abort();
+      return;
+    }
+    setPhase("ending");
+    sessionRef.current.stop("hangup");
   }, []);
 
-  const connect = useCallback(
-    async (isReconnect = false) => {
-      if (!isReconnect) {
-        intentionalDisconnectRef.current = false;
-        reconnectAttemptRef.current = 0;
-        postCallFiredRef.current = false;
-        setMessages([]);
-        sessionIdRef.current = `session_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-        setActiveAgent("Greeter");
-      }
-
-      setStatus(isReconnect ? "reconnecting" : "connecting");
-      setError(null);
-      setSessionWarning(null);
-
-      try {
-        // Step 1: Get microphone access + create peer connection
-        const pc = new RTCPeerConnection();
-        pcRef.current = pc;
-
-        pc.addEventListener("connectionstatechange", () => {
-          const state = pc.connectionState;
-          if (state === "connected") {
-            reconnectAttemptRef.current = 0;
-            setStatus("connected");
-            setConnectionQuality("good");
-          }
-          if (state === "failed" || state === "disconnected") {
-            setConnectionQuality("");
-            if (!intentionalDisconnectRef.current) scheduleReconnect();
-          }
-        });
-
-        pc.addEventListener("iceconnectionstatechange", () => {
-          const iceState = pc.iceConnectionState;
-          if (iceState === "checking") setConnectionQuality("fair");
-          if (iceState === "connected" || iceState === "completed") setConnectionQuality("good");
-          if (iceState === "disconnected" || iceState === "failed") setConnectionQuality("poor");
-        });
-
-        const statsInterval = setInterval(async () => {
-          if (pc.connectionState !== "connected") return;
-          try {
-            const stats = await pc.getStats();
-            stats.forEach((report) => {
-              if (report.type === "candidate-pair" && report.state === "succeeded") {
-                const rtt = report.currentRoundTripTime;
-                if (typeof rtt === "number") {
-                  latencyRef.current = [...latencyRef.current.slice(-9), rtt * 1000];
-                  const avg = latencyRef.current.reduce((a, b) => a + b, 0) / latencyRef.current.length;
-                  if (avg < 150) setConnectionQuality("good");
-                  else if (avg < 400) setConnectionQuality("fair");
-                  else setConnectionQuality("poor");
-                }
-              }
-            });
-          } catch { /* */ }
-        }, 3000);
-        pingIntervalRef.current = statsInterval;
-
-        pc.ontrack = (e) => {
-          const el = audioRef.current;
-          if (!el) return;
-          el.srcObject = e.streams[0];
-          void el.play().catch(() => null);
-        };
-
-        const localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        localStreamRef.current = localStream;
-        localStream.getTracks().forEach((track) => pc.addTrack(track, localStream));
-
-        const dc = pc.createDataChannel("oai-events");
-        dcRef.current = dc;
-        setupDataChannel(dc);
-
-        // Step 2: Create SDP offer
-        const offer = await pc.createOffer();
-        await pc.setLocalDescription(offer);
-
-        // Step 3: Send to our server (proxied SDP exchange)
-        const connectRes = await fetch("/api/realtime/connect", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            caller_name: callerNameRef.current || undefined,
-            caller_email: callerEmailRef.current || undefined,
-            sdp_offer: offer.sdp,
-          }),
-        });
-
-        if (!connectRes.ok) {
-          const text = await connectRes.text();
-          throw new Error(text || "Failed to establish connection");
-        }
-
-        const { sdp_answer, call_id, expires_at } = await connectRes.json();
-        callIdRef.current = call_id;
-        tokenExpiresAtRef.current = (expires_at || 0) * 1000;
-
-        // Step 4: Set remote description
-        await pc.setRemoteDescription({ type: "answer", sdp: sdp_answer });
-        setStatus("connected");
-
-        // Step 5: Connect sideband for server-side tool handling
-        if (call_id) {
-          connectSideband(call_id);
-        }
-
-        scheduleTokenRefresh();
-      } catch (err) {
-        teardownConnection();
-        if (!intentionalDisconnectRef.current && isReconnect) {
-          scheduleReconnect();
-        } else {
-          setStatus("error");
-          setError(toFriendlyError(err instanceof Error ? err.message : "Unknown error"));
-        }
-      }
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
-  );
-
-  const scheduleReconnect = useCallback(() => {
-    if (intentionalDisconnectRef.current) return;
-    if (reconnectAttemptRef.current >= MAX_RECONNECT_ATTEMPTS) {
-      setStatus("error");
-      setError("Connection was lost. Tap Connect to start a new conversation.");
-      return;
-    }
-    const attempt = reconnectAttemptRef.current;
-    reconnectAttemptRef.current = attempt + 1;
-    const delayMs = Math.min(1000 * Math.pow(2, attempt), 16000);
-    setStatus("reconnecting");
-    setError(`Reconnecting in ${Math.round(delayMs / 1000)}s (attempt ${attempt + 1}/${MAX_RECONNECT_ATTEMPTS})...`);
-    teardownConnection();
-    reconnectTimerRef.current = setTimeout(() => { void connect(true); }, delayMs);
-  }, [teardownConnection, connect]);
-
-  const scheduleTokenRefresh = useCallback(() => {
-    if (tokenTimerRef.current) clearTimeout(tokenTimerRef.current);
-    const expiresAt = tokenExpiresAtRef.current;
-    if (!expiresAt) return;
-    const msUntilExpiry = expiresAt - Date.now();
-    const refreshAt = msUntilExpiry - TOKEN_REFRESH_BUFFER_MS;
-    if (refreshAt <= 0) {
-      setSessionWarning("Refreshing connection — you can keep talking.");
-      teardownConnection();
-      void connect(true);
-      return;
-    }
-    const warnAt = refreshAt - 30_000;
-    if (warnAt > 0) {
-      tokenTimerRef.current = setTimeout(() => {
-        setSessionWarning("Connection refreshing soon — no action needed.");
-        tokenTimerRef.current = setTimeout(() => {
-          setSessionWarning("Refreshing connection — one moment.");
-          teardownConnection();
-          void connect(true);
-        }, 30_000);
-      }, warnAt);
-    } else {
-      tokenTimerRef.current = setTimeout(() => {
-        setSessionWarning("Refreshing connection — one moment.");
-        teardownConnection();
-        void connect(true);
-      }, refreshAt);
-    }
-  }, [teardownConnection, connect]);
-
+  // Call timer: warn near the end, then wrap up.
   useEffect(() => {
-    return () => {
-      intentionalDisconnectRef.current = true;
-      teardownConnection();
-    };
-  }, [teardownConnection]);
-
-  const { userMessages, assistantMessages } = useMemo(() => {
-    const u: TranscriptMessage[] = [];
-    const a: TranscriptMessage[] = [];
-    for (const m of messages) {
-      if (m.role === "user") u.push(m);
-      else a.push(m);
-    }
-    return { userMessages: u, assistantMessages: a };
-  }, [messages]);
-
-  useEffect(() => {
-    const finalized = messages.filter((m) => m.final);
-    if (finalized.length === 0) return;
-    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-    saveTimerRef.current = setTimeout(() => { saveConversation(messages); }, 3000);
-    return () => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current); };
-  }, [messages, saveConversation]);
-
-  const cleanText = (text: string): React.ReactNode => {
-    let cleaned = text.replace(/\u2014/g, ", ").replace(/\u2013/g, ", ").replace(/, ,/g, ",");
-    cleaned = cleaned.replace(/[\u3000-\u9FFF\uAC00-\uD7AF\uF900-\uFAFF]/g, "").trim();
-    const final = cleaned || text;
-    const lines = final.split("\n");
-    const elements: React.ReactNode[] = [];
-    // Match URLs but exclude trailing punctuation (period, comma, etc.) so only the URL is linkified
-    const splitPattern = /(https?:\/\/[^\s,)]+?|(?:[a-zA-Z0-9-]+\.)+(?:com|org|net|io|dev|tech|app|co|me|ai)(?:\/[^\s,)]*)?)(?=[.,!?)\]\s,]|$)/g;
-    const testPattern = /^(https?:\/\/[^\s,)]+?|(?:[a-zA-Z0-9-]+\.)+(?:com|org|net|io|dev|tech|app|co|me|ai)(?:\/[^\s,)]*)?)$/;
-    lines.forEach((line, lineIdx) => {
-      if (lineIdx > 0) elements.push(<br key={`br-${lineIdx}`} />);
-      const parts = line.split(splitPattern);
-      parts.forEach((part, partIdx) => {
-        if (testPattern.test(part)) {
-          const href = part.startsWith("http") ? part : `https://${part}`;
-          elements.push(
-            <a key={`${lineIdx}-${partIdx}`} href={href} target="_blank" rel="noopener noreferrer" className="text-blue-400 underline hover:text-blue-300 break-all">{part}</a>,
-          );
-        } else if (part) {
-          elements.push(<span key={`${lineIdx}-${partIdx}`}>{part}</span>);
+    if (phase !== "live") return;
+    const id = setInterval(() => {
+      setSecondsLeft((s) => {
+        if (s <= 1) {
+          sessionRef.current?.stop("time");
+          return 0;
         }
+        return s - 1;
       });
-    });
-    return elements;
+    }, 1000);
+    return () => clearInterval(id);
+  }, [phase]);
+
+  // Leaving the page ends the call and still saves the transcript. Backgrounding
+  // (e.g. tapping a link in the chat on a phone) keeps the call going but saves a
+  // snapshot, since mobile browsers may kill a background tab without pagehide.
+  useEffect(() => {
+    const onHide = () => {
+      if (sessionRef.current) {
+        void finish(true);
+        sessionRef.current.stop("hidden");
+      }
+    };
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden" && sessionRef.current) void finish(true);
+    };
+    window.addEventListener("pagehide", onHide);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      window.removeEventListener("pagehide", onHide);
+      document.removeEventListener("visibilitychange", onVisibility);
+      sessionRef.current?.stop("hidden");
+    };
+  }, [finish]);
+
+  const toggleMute = () => {
+    const next = !muted;
+    setMuted(next);
+    sessionRef.current?.setMuted(next);
   };
 
-  const orbHue = useMemo(() => {
-    if (status === "connecting" || status === "reconnecting") return 280;
-    if (status === "error") return 0;
-    if (status === "connected") return voiceDetected ? 205 : 235;
-    return 240;
-  }, [status, voiceDetected]);
+  const getLevel = useCallback(() => {
+    const l = sessionRef.current?.levels();
+    return l ? Math.max(l.mic, l.agent) : 0;
+  }, []);
 
-  const isLoading = status === "connecting" || status === "reconnecting";
-  const isActive = status === "connected";
+  const downloadPdf = async () => {
+    const { jsPDF } = await import("jspdf");
+    const doc = new jsPDF();
+    const pageH = doc.internal.pageSize.getHeight();
+    let y = 20;
+    doc.setFontSize(14);
+    doc.text("Conversation with Ariv's AI", 20, y);
+    y += 12;
+    doc.setFontSize(10);
+    for (const it of itemsRef.current) {
+      const text = it.role === "card" ? cardToText(it.card) : `${it.role === "user" ? "You" : "Ariv's AI"}: ${it.text}`;
+      // jsPDF's built-in font is Latin-1 only; keep the text readable instead of garbled.
+      const safe = text.normalize("NFKD").replace(/[^\x20-\x7E\n]/g, "");
+      for (const line of doc.splitTextToSize(safe, 170) as string[]) {
+        if (y > pageH - 15) {
+          doc.addPage();
+          y = 20;
+        }
+        doc.text(line, 20, y);
+        y += 6;
+      }
+      y += 3;
+    }
+    doc.save("ariv-ai-conversation.pdf");
+  };
+
+  const createShareLink = async () => {
+    const info = infoRef.current;
+    if (!info) return;
+    const res = await fetch("/api/calls/share", { method: "POST", headers: { "x-session-ticket": info.ticket } }).catch(() => null);
+    const data = (await res?.json().catch(() => ({}))) as { share_token?: string; error?: string } | undefined;
+    setPost((p) => (p ? { ...p, shareToken: res?.ok ? data?.share_token : undefined, shareError: res?.ok ? undefined : data?.error || "Couldn't make a link." } : p));
+  };
+
+  const emailTranscript = async () => {
+    const info = infoRef.current;
+    if (!info) return;
+    const res = await fetch("/api/calls/email", { method: "POST", headers: { "x-session-ticket": info.ticket } }).catch(() => null);
+    const data = (await res?.json().catch(() => ({}))) as { to?: string; error?: string } | undefined;
+    setPost((p) => (p ? { ...p, emailed: res?.ok ? data?.to : undefined, emailError: res?.ok ? undefined : data?.error || "Couldn't send it." } : p));
+  };
+
+  const shareUrl = post?.shareToken && typeof window !== "undefined" ? `${window.location.origin}/call/${post.shareToken}` : null;
+  const live = phase === "live";
+  const status = !live
+    ? phase === "connecting"
+      ? "Connecting…"
+      : ""
+    : activeTool
+      ? `${TOOL_LABELS[activeTool] ?? "Working"}…`
+      : agentSpeaking
+        ? "Speaking"
+        : muted
+          ? "Muted"
+          : "Listening";
+  const orbHue = phase === "connecting" ? 280 : agentSpeaking ? 205 : live ? 235 : 240;
+  const modeName = AGENT_MODES.find((m) => m.id === mode)?.name;
 
   return (
     <div className="flex min-h-screen flex-col bg-black text-white">
-      <audio ref={audioRef} autoPlay className="hidden" />
-
-      <div className="flex items-center justify-end gap-3 px-4 py-3 sm:px-6">
-        <AuthHeader />
-        <Button
-          onClick={isActive || status === "reconnecting" ? disconnect : () => void connect()}
-          disabled={status === "connecting"}
-          variant={isActive ? "destructive" : "default"}
-          className="rounded-full px-5 text-sm"
-        >
-          {isActive ? (<><MicOff className="mr-2 h-4 w-4" />Disconnect</>) : (<><Mic className="mr-2 h-4 w-4" />{isLoading ? "Connecting..." : "Connect"}</>)}
-        </Button>
-      </div>
-
-      {error && (
-        <div className="mx-4 mb-2 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm text-red-200 sm:mx-6">
-          {toFriendlyError(error)}
-          <Button variant="ghost" size="sm" className="mt-2 text-red-200 hover:text-white" onClick={() => { setError(null); void connect(); }}>
-            Try again
-          </Button>
-        </div>
-      )}
-      {sessionWarning && (
-        <div className="mx-4 mb-2 rounded-xl border border-yellow-500/30 bg-yellow-500/10 px-4 py-2 text-sm text-yellow-200 sm:mx-6">{sessionWarning}</div>
-      )}
-
-      {/* Post-call: Your transcript is ready */}
-      {status === "disconnected" && postCallData && (
-        <div className="mx-4 mb-4 rounded-2xl border border-white/20 bg-white/5 p-6 sm:mx-6">
-          <h3 className="text-lg font-semibold text-white">Your transcript is ready</h3>
-          <p className="mt-1 text-sm text-white/60">Share the link or download as PDF.</p>
-          <div className="mt-4 flex flex-wrap gap-3">
-            <Button
-              variant="secondary"
-              size="sm"
-              className="gap-2"
-              onClick={async () => {
-                const url = `${APP_URL}/call/${postCallData.shareToken}`;
-                await navigator.clipboard.writeText(url);
-                setCopied(true);
-                setTimeout(() => setCopied(false), 2000);
-              }}
-            >
-              {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-              {copied ? "Copied!" : "Copy link"}
-            </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              className="gap-2"
-              onClick={() => {
-                const doc = new jsPDF();
-                let y = 20;
-                doc.setFontSize(14);
-                doc.text("Conversation with Ariv's AI", 20, y);
-                y += 15;
-                doc.setFontSize(10);
-                for (const m of messages) {
-                  const label = m.role === "user" ? "You" : "Ariv's AI";
-                  const text = `${label}: ${m.text}`;
-                  const lines = doc.splitTextToSize(text, 170);
-                  doc.text(lines, 20, y);
-                  y += lines.length * 6 + 4;
-                  if (y > 270) { doc.addPage(); y = 20; }
-                }
-                doc.save("ariv-conversation.pdf");
-              }}
-            >
-              <Download className="h-4 w-4" />
-              Download PDF
-            </Button>
-            <a
-              href={`/call/${postCallData.shareToken}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-lg border border-white/20 bg-white/5 px-4 py-2 text-sm text-white hover:bg-white/10"
-            >
-              View full transcript
-            </a>
-          </div>
+      <header className="flex items-center justify-between gap-3 px-4 py-3 sm:px-6">
+        <h1 className="text-sm font-medium tracking-wide text-white/70">Ariv&apos;s AI</h1>
+        <div className="flex items-center gap-3">
+          <AuthHeader />
+          {/* One persistent button (label/action change) so keyboard focus isn't lost. */}
           <Button
-            variant="ghost"
-            size="sm"
-            className="mt-4 text-white/60 hover:text-white"
-            onClick={() => {
-              setPostCallData(null);
-              setError(null);
-              void connect();
-            }}
+            onClick={live || phase === "connecting" ? hangUp : () => void start()}
+            disabled={phase === "ending"}
+            variant={live || phase === "connecting" ? "destructive" : "default"}
+            className="rounded-full px-5 text-sm"
           >
-            Start another conversation
+            {live ? (
+              <>
+                <PhoneOff className="mr-2 h-4 w-4" aria-hidden />
+                End call
+              </>
+            ) : phase === "connecting" ? (
+              "Cancel"
+            ) : phase === "ending" ? (
+              "Ending…"
+            ) : (
+              <>
+                <Mic className="mr-2 h-4 w-4" aria-hidden />
+                {phase === "ended" ? "Talk again" : "Start talking"}
+              </>
+            )}
           </Button>
+        </div>
+      </header>
+
+      {phase === "idle" && (
+        <div className="mx-auto max-w-xl px-4 pt-2 text-center sm:px-6">
+          <p className="text-base text-white/80">
+            Talk to my AI. It knows what I work on, it can find time on my calendar, and yes, it&apos;s an AI.
+          </p>
+          <p className="mt-2 text-xs leading-5 text-white/40">
+            Voice runs on Google&apos;s Gemini API (free tier), which may use calls to improve Google&apos;s models, so don&apos;t share
+            anything sensitive. Transcripts are saved so I can read them.
+          </p>
         </div>
       )}
 
-      <div className="flex flex-1 flex-col items-center justify-center px-4 pb-8 lg:px-6">
-        <div className="flex w-full max-w-6xl items-start justify-center gap-12">
-          {/* Left: User transcript */}
-          <div className="hidden w-64 shrink-0 lg:block">
-            <div className="text-xs font-medium uppercase tracking-widest text-white/40">You</div>
-            <div className="mt-4 max-h-[65vh] space-y-5 overflow-auto pr-2">
-              {isLoading ? (
-                <div className="space-y-3"><SkeletonLine className="h-3 w-3/4" /><SkeletonLine className="h-3 w-1/2" /></div>
-              ) : userMessages.length === 0 ? (
-                <div className="text-sm text-white/30">Your words will appear here.</div>
-              ) : (
-                userMessages.map((m) => (
-                  <div key={m.id} className={`text-sm leading-6 ${m.final ? "text-white/80" : "text-white/40"}`}>{cleanText(m.text)}</div>
-                ))
-              )}
+      {notice && (
+        <div
+          role={notice.tone === "error" ? "alert" : "status"}
+          className={`mx-auto mt-3 w-[calc(100%-2rem)] max-w-xl rounded-xl border px-4 py-3 text-sm ${
+            notice.tone === "error" ? "border-red-500/30 bg-red-500/10 text-red-100" : "border-white/15 bg-white/5 text-white/80"
+          }`}
+        >
+          {notice.text}
+          {notice.showLinks && <FallbackLinks />}
+        </div>
+      )}
+
+      <main className="flex flex-1 flex-col items-center gap-6 px-4 pb-8 pt-4 lg:flex-row lg:items-start lg:justify-center lg:gap-12 lg:px-6">
+        <section className="flex flex-col items-center" aria-label="Call">
+          <div className="relative h-60 w-60 sm:h-72 sm:w-72 lg:h-[26rem] lg:w-[26rem]">
+            <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-blue-500/15 via-purple-500/15 to-fuchsia-500/15 blur-3xl" />
+            <div className="relative h-full w-full overflow-hidden rounded-full">
+              <VoicePoweredOrb hue={orbHue} getLevel={getLevel} />
             </div>
           </div>
-
-          {/* Center: Orb */}
-          <div className="flex flex-col items-center">
-            <div className="relative h-64 w-64 sm:h-80 sm:w-80 lg:h-[28rem] lg:w-[28rem]">
-              <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-blue-500/15 via-purple-500/15 to-fuchsia-500/15 blur-3xl" />
-              <div className="relative h-full w-full overflow-hidden rounded-full">
-                <VoicePoweredOrb
-                  enableVoiceControl={isActive}
-                  hue={orbHue}
-                  onVoiceDetected={handleVoiceDetected}
-                  mediaStream={localStreamRef.current}
-                />
-              </div>
-            </div>
-
-            <div className="mt-3 flex items-center justify-center gap-2 text-xs text-white/40 sm:mt-4">
-              <span>
-                {isActive ? voiceDetected ? "Listening..." : "Ready" : isLoading ? "Connecting..." : ""}
+          <div className="mt-3 flex h-6 items-center gap-3 text-xs text-white/50">
+            <span aria-live="polite">{status}</span>
+            {live && modeName && <span className="text-emerald-300/50">{modeName}</span>}
+            {live && (
+              <span aria-hidden className={secondsLeft <= 60 ? "text-amber-300" : "text-white/30"}>
+                {fmt(secondsLeft)} left
               </span>
-              {isActive && connectionQuality && (
-                <span className="flex items-center gap-1">
-                  <span className={`h-1.5 w-1.5 rounded-full ${connectionQuality === "good" ? "bg-green-400" : connectionQuality === "fair" ? "bg-yellow-400" : "bg-red-400 animate-pulse"}`} />
-                  <span className="text-[10px] text-white/25">{connectionQuality === "good" ? "Strong" : connectionQuality === "fair" ? "Fair" : "Weak"}</span>
-                </span>
-              )}
-              {isActive && sidebandActiveRef.current && (
-                <span className="text-[10px] text-emerald-400/40">{activeAgent}</span>
-              )}
-            </div>
+            )}
+            <span className="sr-only" aria-live="polite">
+              {live && secondsLeft <= 60 && secondsLeft > 55 ? "One minute left in this call." : ""}
+            </span>
+          </div>
+          {live && (
+            <Button
+              onClick={toggleMute}
+              variant="secondary"
+              size="sm"
+              className="mt-3 rounded-full"
+              aria-pressed={muted}
+              aria-label={muted ? "Unmute microphone" : "Mute microphone"}
+            >
+              {muted ? <MicOff className="mr-2 h-4 w-4" aria-hidden /> : <Mic className="mr-2 h-4 w-4" aria-hidden />}
+              {muted ? "Unmute" : "Mute"}
+            </Button>
+          )}
+        </section>
 
-            {activities.length > 0 && (
-              <div className="mt-4 w-full max-w-xs px-4">
-                <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-white/25">System</div>
-                <div className="space-y-1">
-                  {activities.slice(-3).map((a) => (
-                    <div key={a.id} className="flex items-center gap-2 text-xs">
-                      {a.status === "running" ? <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-blue-400" />
-                        : a.status === "done" ? <span className="h-1.5 w-1.5 rounded-full bg-green-400" />
-                        : <span className="h-1.5 w-1.5 rounded-full bg-red-400" />}
-                      <span className="font-medium text-white/40">{a.intent}</span>
-                      <span className="text-white/25">{a.action}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+        <section className="flex w-full max-w-md flex-col lg:mt-8" aria-label="Conversation">
+          <div
+            ref={logRef}
+            role="log"
+            aria-live="polite"
+            className="max-h-[45vh] min-h-[6rem] space-y-3 overflow-y-auto overscroll-contain rounded-2xl border border-white/10 bg-white/[0.03] p-4 lg:max-h-[60vh]"
+          >
+            {transcript.items.length === 0 ? (
+              <p className="text-sm text-white/30">
+                {live ? "Say hi, or ask what Ariv's working on." : "The conversation will show up here."}
+              </p>
+            ) : (
+              transcript.items.map((it) =>
+                it.role === "card" ? (
+                  <CardView key={it.id} card={it.card} />
+                ) : (
+                  <div key={it.id} className="text-sm leading-6" aria-hidden={!it.final || undefined}>
+                    <span className="mr-2 text-[11px] font-medium uppercase tracking-wider text-white/35">
+                      {it.role === "user" ? "You" : "Ariv's AI"}
+                    </span>
+                    <span className={it.final ? "text-white/85" : "text-white/50"}>{displayText(it.text)}</span>
+                  </div>
+                ),
+              )
             )}
           </div>
 
-          {/* Right: Assistant responses */}
-          <div className="hidden w-64 shrink-0 lg:block">
-            <div className="text-xs font-medium uppercase tracking-widest text-white/40">Ariv&apos;s AI</div>
-            <div className="mt-4 max-h-[65vh] space-y-5 overflow-auto pr-2">
-              {isLoading ? (
-                <div className="space-y-3"><SkeletonLine className="h-3 w-3/4" /><SkeletonLine className="h-3 w-1/2" /></div>
-              ) : assistantMessages.length === 0 ? (
-                <div className="text-sm text-white/30">{isActive ? "Ask anything about Ariv." : ""}</div>
-              ) : (
-                assistantMessages.map((m) => (
-                  <div key={m.id} className={`text-sm leading-6 ${m.final ? "text-white/80" : "text-white/40"}`}>{cleanText(m.text)}</div>
-                ))
+          {phase === "ended" && post && (
+            <div className="mt-4 rounded-2xl border border-white/15 bg-white/5 p-5">
+              <h2 className="text-base font-semibold">
+                {post.saving ? "Saving your transcript…" : post.failed ? "Couldn't save the transcript" : "Your transcript"}
+              </h2>
+              {post.failed && (
+                <Button variant="secondary" size="sm" className="mt-2" onClick={() => void finish()}>
+                  Retry
+                </Button>
               )}
+              {post.summary && <p className="mt-1 text-sm text-white/60">{post.summary}</p>}
+              {!post.saving && !post.failed && (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {!shareUrl && (
+                    <Button variant="secondary" size="sm" className="gap-2" onClick={() => void createShareLink()}>
+                      <Copy className="h-4 w-4" aria-hidden />
+                      Create share link
+                    </Button>
+                  )}
+                  {shareUrl && (
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="gap-2"
+                      onClick={async () => {
+                        try {
+                          await navigator.clipboard.writeText(shareUrl);
+                          setCopied(true);
+                          setTimeout(() => setCopied(false), 2000);
+                        } catch {
+                          window.prompt("Copy this link:", shareUrl);
+                        }
+                      }}
+                    >
+                      {copied ? <Check className="h-4 w-4" aria-hidden /> : <Copy className="h-4 w-4" aria-hidden />}
+                      {copied ? "Copied" : "Copy share link"}
+                    </Button>
+                  )}
+                  <Button variant="secondary" size="sm" className="gap-2" onClick={() => void downloadPdf()}>
+                    <Download className="h-4 w-4" aria-hidden />
+                    Download PDF
+                  </Button>
+                  {isSignedIn && (
+                    <Button variant="secondary" size="sm" className="gap-2" onClick={() => void emailTranscript()} disabled={!!post.emailed}>
+                      <Mail className="h-4 w-4" aria-hidden />
+                      {post.emailed ? "Sent" : "Email it to me"}
+                    </Button>
+                  )}
+                  <a
+                    href={LINKS.calendly}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex h-9 items-center gap-2 rounded-md border border-white/15 px-3 text-sm text-white/85 hover:bg-white/10"
+                  >
+                    <CalendarDays className="h-4 w-4" aria-hidden />
+                    Book time with Ariv
+                  </a>
+                </div>
+              )}
+              {post.shareError && <p className="mt-2 text-xs text-red-200">{post.shareError}</p>}
+              {post.emailed && <p className="mt-2 text-xs text-white/50">Sent to {post.emailed}.</p>}
+              {post.emailError && <p className="mt-2 text-xs text-red-200">{post.emailError}</p>}
             </div>
-          </div>
-        </div>
+          )}
+        </section>
+      </main>
+    </div>
+  );
+}
 
-        {/* Mobile: transcripts below orb — larger scroll area, auto-scroll */}
-        <div ref={mobileTranscriptRef} className="mt-6 w-full max-w-md space-y-3 lg:hidden">
-          {(userMessages.length > 0 || assistantMessages.length > 0) && (
-            <div className="max-h-[38vh] space-y-4 overflow-y-auto overscroll-contain rounded-xl border border-white/10 bg-white/5 p-4">
-              <div className="text-xs font-medium uppercase tracking-widest text-white/40">Conversation</div>
-              <div className="mt-2 space-y-3">
-                {userMessages.map((m) => (
-                  <div key={m.id} className={`text-sm leading-6 ${m.final ? "text-white/80" : "text-white/40"}`}>{cleanText(m.text)}</div>
-                ))}
-              </div>
-            </div>
-          )}
-          {assistantMessages.length > 0 && (
-            <div>
-              <div className="text-xs font-medium uppercase tracking-widest text-white/40">Ariv&apos;s AI</div>
-              <div className="mt-2 max-h-[20vh] space-y-3 overflow-auto">
-                {assistantMessages.map((m) => (
-                  <div key={m.id} className={`text-sm leading-6 ${m.final ? "text-white/80" : "text-white/40"}`}>{cleanText(m.text)}</div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
+function CardView({ card }: { card: UiCard }) {
+  if (card.kind === "links") {
+    return (
+      <div className="rounded-xl border border-white/10 bg-white/5 p-3">
+        <div className="text-[11px] font-medium uppercase tracking-wider text-white/40">{card.title}</div>
+        <ul className="mt-2 space-y-1">
+          {card.links.filter((l) => isSafeUrl(l.url) || l.url.startsWith("mailto:")).map((l) => (
+            <li key={l.url}>
+              <a href={l.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-sky-300 hover:text-sky-200 hover:underline">
+                {l.label}
+                <ExternalLink className="h-3 w-3" aria-hidden />
+              </a>
+            </li>
+          ))}
+        </ul>
       </div>
+    );
+  }
+  if (card.kind === "booking") {
+    return (
+      <div className="rounded-xl border border-sky-400/20 bg-sky-400/5 p-3">
+        <div className="text-sm font-medium text-white/90">{card.title}</div>
+        <div className="mt-0.5 text-sm text-white/60">{card.when}</div>
+        {isSafeUrl(card.url) && (
+          <a
+            href={card.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-2 inline-flex items-center gap-1.5 rounded-md bg-sky-500/90 px-3 py-1.5 text-sm font-medium text-white hover:bg-sky-500"
+          >
+            Confirm on Calendly
+            <ExternalLink className="h-3.5 w-3.5" aria-hidden />
+          </a>
+        )}
+      </div>
+    );
+  }
+  return (
+    <div className="rounded-xl border border-white/10 bg-white/5 p-3">
+      <div className="text-[11px] font-medium uppercase tracking-wider text-white/40">{card.title}</div>
+      <ul className="mt-1 space-y-0.5 text-sm text-white/75">
+        {card.lines.map((l) => (
+          <li key={l}>{l}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function FallbackLinks() {
+  return (
+    <div className="mt-2 flex flex-wrap gap-3 text-sm">
+      <a className="text-sky-300 hover:underline" href={LINKS.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn</a>
+      <a className="text-sky-300 hover:underline" href={LINKS.github} target="_blank" rel="noopener noreferrer">GitHub</a>
+      <a className="text-sky-300 hover:underline" href={LINKS.calendly} target="_blank" rel="noopener noreferrer">Book a 15-min chat</a>
     </div>
   );
 }

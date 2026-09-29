@@ -1,8 +1,12 @@
 # Extras directory (private notes/docs)
 extras/
 
-# Environment variables
+# Environment variables (the example file is committed)
 .env*
+!.env.example
 
 # OS
 .DS_Store
+
+# local Claude preview config
+.claude/launch.json
