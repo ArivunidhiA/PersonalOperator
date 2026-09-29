@@ -198,6 +198,15 @@ export async function POST(req: Request) {
   }
 }
 
+/** ARIV_NOTIFY_EMAIL may list several addresses, comma-separated (server config only, never caller input). */
+export function notifyRecipients(): string[] {
+  const list = (process.env.ARIV_NOTIFY_EMAIL || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter((s) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s));
+  return list.length ? list.slice(0, 5) : [LINKS.email];
+}
+
 const fmtDuration = (s: number) => `${Math.floor(s / 60)}m ${String(s % 60).padStart(2, "0")}s`;
 
 async function notifyAriv(p: {
@@ -230,7 +239,7 @@ async function notifyAriv(p: {
   const questions = p.extra.questions.slice(0, 8);
   const { data, error } = await new Resend(key).emails.send({
     from: process.env.EMAIL_FROM || "Ariv's AI <ai@arivsai.app>",
-    to: process.env.ARIV_NOTIFY_EMAIL || LINKS.email,
+    to: notifyRecipients(),
     subject,
     html: `<div style="font-family:sans-serif;line-height:1.6;max-width:640px">
 <p><strong>Summary:</strong> ${escapeHtml(a.summary)}</p>

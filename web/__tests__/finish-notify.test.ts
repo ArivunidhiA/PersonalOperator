@@ -66,3 +66,13 @@ describe("call email bookkeeping (F-05)", () => {
     expect(notified!.filters).toContainEqual(["session_id", "s_notify_AbCdEfGhIjKl"]);
   });
 });
+
+describe("call email recipients", () => {
+  it("sends to every address in ARIV_NOTIFY_EMAIL, ignoring junk, and defaults to Ariv's email", async () => {
+    const { notifyRecipients } = await import("@/app/api/calls/finish/route");
+    process.env.ARIV_NOTIFY_EMAIL = " a@x.edu, b@y.com ,not-an-email";
+    expect(notifyRecipients()).toEqual(["a@x.edu", "b@y.com"]);
+    delete process.env.ARIV_NOTIFY_EMAIL;
+    expect(notifyRecipients()).toEqual(["annaarivan.a@northeastern.edu"]);
+  });
+});
