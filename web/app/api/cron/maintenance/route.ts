@@ -33,6 +33,8 @@ export async function GET(req: Request) {
     // Verified caller emails and legacy memories follow the same retention.
     await supabase.from("callers").delete().lt("last_seen", cutoff);
     await supabase.from("caller_memories").delete().lt("created_at", cutoff);
+    // Visit and click analytics too (the table exists once scripts/migrate-v4.sql has run).
+    await supabase.from("site_events").delete().lt("created_at", cutoff);
     conversations = c.count ?? 0;
     summaries = s.count ?? 0;
   }

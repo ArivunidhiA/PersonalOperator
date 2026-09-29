@@ -1,12 +1,22 @@
 import { test, expect, type Page } from "@playwright/test";
+import { createClient } from "@supabase/supabase-js";
+import { config } from "dotenv";
+import path from "path";
 
 /**
  * The release-blocking journey, through the real product surface:
- * open the site -> start a call -> the agent greets and says it's an AI ->
- * the caller (fake mic) asks where Ariv works -> correct answer -> caller asks
- * for links -> clickable links card -> end call -> transcript saved and
- * shareable (checked through the public share API).
+ * open the site -> start a call -> the agent greets -> the caller (fake mic)
+ * asks where Ariv works -> correct answer -> asks for links -> clickable links
+ * card -> asks for the booking link -> tagged Calendly link, clicked -> end
+ * call -> transcript saved and shareable (public share API) -> analytics rows
+ * (visit, call start, click, call context) checked in the database, then the
+ * test's own rows are deleted.
  */
+config({ path: path.resolve(__dirname, "../.env.local") });
+const db =
+  process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY
+    ? createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
+    : null;
 const errorsOf = (page: Page) => {
   const errors: string[] = [];
   page.on("console", (m) => {
@@ -23,7 +33,10 @@ test("voice call: greeting, facts, links card, saved transcript", async ({ page,
   await expect(page.getByText(/Gemini API \(free tier\)/)).toBeVisible();
 
   const t0 = Date.now();
+  const sessionRes = page.waitForResponse((r) => r.url().includes("/api/voice/session") && r.request().method() === "POST");
   await page.getByRole("button", { name: /start talking/i }).click();
+  const sid: string = (await (await sessionRes).json()).sessionId;
+  expect(sid).toMatch(/^s_/);
   const log = page.getByRole("log");
 
   // A natural greeting arrives (the page itself discloses it's an AI; the agent
@@ -45,6 +58,17 @@ test("voice call: greeting, facts, links card, saved transcript", async ({ page,
   await expect(log.getByRole("link", { name: /GitHub/ })).toBeVisible();
   const agentText = (await log.innerText()).toLowerCase();
   expect(agentText).not.toMatch(/https?:|www\.|dot com/);
+
+  // Third question: the booking link, tagged with this call so a booking can be traced back.
+  const booking = log.getByRole("link", { name: /Book a 15-min chat/ });
+  await expect(booking).toBeVisible({ timeout: 60_000 });
+  await expect(booking).toHaveAttribute(
+    "href",
+    new RegExp(`^https://calendly\\.com/annaarivan-a-northeastern/15-min-coffee-chat\\?utm_source=arivsai&utm_medium=voice_agent&utm_content=${sid}$`),
+  );
+  // Clicking it opens Calendly in a new tab (nothing gets booked) and is recorded for Ariv's dashboard.
+  const [calendly] = await Promise.all([page.waitForEvent("popup"), booking.click()]);
+  await calendly.close();
 
   // End the call; the transcript is saved. Sharing is opt-in.
   const finished = page.waitForResponse((r) => r.url().includes("/api/calls/finish") && r.request().method() === "POST", { timeout: 60_000 });
@@ -69,7 +93,27 @@ test("voice call: greeting, facts, links card, saved transcript", async ({ page,
   expect(JSON.stringify(call.transcript)).toMatch(/INZI/i);
   expect(call.verified).toBe(false);
 
-  test.info().annotations.push({ type: "greeting_ms", description: String(greetMs) }, { type: "share_token", description: saved.share_token });
+  test.info().annotations.push({ type: "greeting_ms", description: String(greetMs) }, { type: "share_token", description: saved.share_token }, { type: "session_id", description: sid });
+
+  // Analytics, checked at the source of truth (Supabase), then this test's rows are removed.
+  if (db) {
+    const vid = await page.evaluate(() => localStorage.getItem("ariv-vid"));
+    expect(vid).toMatch(/^v_[0-9a-f]{24}$/);
+    const types = async () => ((await db.from("site_events").select("type").or(`visitor_id.eq.${vid},session_id.eq.${sid}`)).data ?? []).map((e) => e.type as string);
+    await expect.poll(types, { timeout: 20_000 }).toEqual(expect.arrayContaining(["visit", "call_start", "click"]));
+    const { data: click } = await db.from("site_events").select("label, target, is_bot").eq("session_id", sid).eq("type", "click").limit(1).single();
+    expect(click).toMatchObject({ label: "Book a 15-min chat", target: "calendly.com", is_bot: true });
+    const { data: row, error } = await db.from("call_summaries").select("visitor_id, questions, duration_s, is_bot, context").eq("session_id", sid).single();
+    expect(error).toBeNull();
+    expect(row!.visitor_id).toBe(vid);
+    expect(row!.is_bot).toBe(true); // headless test browsers are kept out of Ariv's numbers
+    expect((row!.questions as string[]).join(" ")).toMatch(/work/i);
+    expect(row!.duration_s).toBeGreaterThan(20);
+    expect((row!.context as { clicks?: string[] }).clicks ?? []).toEqual(expect.arrayContaining(["Book a 15-min chat"]));
+    await db.from("site_events").delete().or(`visitor_id.eq.${vid},session_id.eq.${sid}`);
+    await db.from("share_tokens").delete().eq("session_id", sid);
+    await db.from("call_summaries").delete().eq("session_id", sid);
+  }
   // Off-Vercel, the analytics script 404s and a production Clerk key refuses localhost.
   expect(errors.filter((e) => !/_vercel\/insights|clerk|favicon/i.test(e))).toEqual([]);
 });

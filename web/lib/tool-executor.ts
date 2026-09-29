@@ -1,5 +1,5 @@
 import { createLogger } from "./logger";
-import { FACTS, LINKS, LINK_LABELS, renderFactCard, searchFacts, type LinkKey } from "./knowledge";
+import { FACTS, LINKS, LINK_LABELS, renderFactCard, searchFacts, tagBookingUrl, type LinkKey } from "./knowledge";
 import { completeJSON } from "./llm";
 import { safeRedis } from "./rate-limit";
 import type { UiCard } from "./ui-cards";
@@ -31,7 +31,7 @@ export async function executeTool(name: string, rawArgs: unknown, ctx: ToolConte
     case "schedule_meeting":
       return scheduleMeeting(str(args.start_time, 40), ctx.sessionId);
     case "share_links":
-      return shareLinks(args.links);
+      return shareLinks(args.links, ctx.sessionId);
     case "generate_summary":
       return summary(args);
     default:
@@ -150,6 +150,22 @@ const etHour = (iso: string) =>
 const etDay = (iso: string) =>
   new Date(iso).toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric", timeZone: ET });
 const etTime = (iso: string) => new Date(iso).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: ET });
+/**
+ * The slot as Eastern wall time with its offset, e.g. "2026-09-30T15:30:00-04:00".
+ * Calendly reads the path segment after the event as a start time, so a bare
+ * date there opened its form for 12:00am (F-01); a full time opens the slot.
+ */
+function etSlotPath(iso: string): string {
+  const p = Object.fromEntries(
+    new Intl.DateTimeFormat("en-CA", {
+      timeZone: ET, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23", timeZoneName: "longOffset",
+    })
+      .formatToParts(new Date(iso))
+      .map((x) => [x.type, x.value]),
+  );
+  const offset = p.timeZoneName === "GMT" ? "+00:00" : p.timeZoneName.replace("GMT", "");
+  return `${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}:${p.second}${offset}`;
+}
 
 async function checkAvailability(startDate: string, sessionId: string): Promise<ToolResult> {
   const key = process.env.CALENDLY_API_KEY;
@@ -215,21 +231,21 @@ async function scheduleMeeting(startTime: string, sessionId: string): Promise<To
   const d = new Date(t);
   const ymd = new Intl.DateTimeFormat("en-CA", { timeZone: ET, year: "numeric", month: "2-digit", day: "2-digit" }).format(d);
   const when = `${etDay(iso)}, ${etTime(iso)} ET`;
-  const url = `${LINKS.calendly}/${ymd}?month=${ymd.slice(0, 7)}&date=${ymd}`;
+  const url = tagBookingUrl(`${LINKS.calendly}/${etSlotPath(iso)}?month=${ymd.slice(0, 7)}&date=${ymd}`, sessionId);
   return {
-    result: `His booking page for ${etDay(iso)} is in the chat. Tell them to pick ${etTime(iso)} there and confirm. Nothing is booked until they do. Don't read the link.`,
-    card: { id: cardId("booking"), kind: "booking", title: "Book a chat with Ariv", when: `Pick ${when} on the booking page`, url },
+    result: `A booking link for ${etDay(iso)} at ${etTime(iso)} Eastern is in the chat. Tell them to confirm it there. Nothing is booked until they do. Don't read the link.`,
+    card: { id: cardId("booking"), kind: "booking", title: "Book a chat with Ariv", when: `${when}: confirm it on Calendly`, url },
   };
 }
 
-function shareLinks(raw: unknown): ToolResult {
+function shareLinks(raw: unknown, sessionId: string): ToolResult {
   const wanted = (Array.isArray(raw) ? raw : [])
     .filter((k): k is LinkKey => typeof k === "string" && k in LINKS)
     .slice(0, 6);
   const keys: LinkKey[] = wanted.length ? [...new Set(wanted)] : ["linkedin", "github"];
   const links = keys.map((k) => ({
     label: LINK_LABELS[k],
-    url: k === "email" ? `mailto:${LINKS.email}` : LINKS[k],
+    url: k === "email" ? `mailto:${LINKS.email}` : k === "calendly" ? tagBookingUrl(LINKS.calendly, sessionId) : LINKS[k],
   }));
   return {
     result: `Links are in the chat: ${keys.map((k) => LINK_LABELS[k]).join(", ")}. Say you dropped them in the chat. Never read a URL.`,

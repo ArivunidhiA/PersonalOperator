@@ -10,3 +10,4 @@ extras/
 
 # local Claude preview config
 .claude/launch.json
+.vercel

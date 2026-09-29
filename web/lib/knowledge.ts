@@ -44,6 +44,19 @@ export const LINK_LABELS: Record<LinkKey, string> = {
   ralphLoopArena: "Ralph Loop Arena",
 };
 
+/**
+ * Booking links carry UTM tags. Calendly saves them on the booking
+ * (invitee.tracking), so the dashboard can tie a booking back to the call or
+ * visit it came from. `ref` is a session id (s_...) or visitor id (v_...).
+ */
+export function tagBookingUrl(url: string, ref?: string | null): string {
+  const u = new URL(url);
+  u.searchParams.set("utm_source", "arivsai");
+  u.searchParams.set("utm_medium", "voice_agent");
+  if (ref) u.searchParams.set("utm_content", ref.slice(0, 64));
+  return u.toString();
+}
+
 /** What this agent runs on. Keep in sync with lib/voice-config.ts. */
 export const AGENT_STACK =
   "a realtime speech-to-speech model, a small knowledge base about Ariv, and a few tools for his calendar and links. The site is Next.js and TypeScript on Vercel, with Supabase for storage";
@@ -68,16 +81,46 @@ export const FACTS: Fact[] = [
     keywords: ["job", "work", "current", "currently", "now", "today", "inzi", "controls", "coordinator", "client", "project", "day", "role", "employer", "company", "automotive", "forward", "deployed", "bridge"],
   },
   {
-    id: "builder",
-    topic: "What he builds on the side",
-    text: "Ariv builds every day on his own: AI agents, voice agents and developer tools, mostly in Python and TypeScript. It's not a side interest, it's what he does daily, and this voice agent is one of the things he built. He ships small real things and learns fast.",
-    keywords: ["build", "builds", "side", "projects", "hobby", "free", "time", "ship", "ships", "creative"],
+    id: "current-projects",
+    topic: "What he's building right now",
+    text: "Right now Ariv is building two things on his own. Registrum is an AI design agent. Malbit is a translation app, built to make talking across languages a lot less painful. Same pattern as always: find something annoying, then spend an unreasonable amount of time fixing it. Both are works in progress, so keep it to that and offer a walkthrough with Ariv instead of inventing features.",
+    keywords: ["registrum", "malbit", "design", "translation", "translate", "current", "currently", "now", "working", "building", "projects", "side", "new"],
+  },
+  {
+    id: "free-time",
+    topic: "Free time and schedule",
+    text: "Ariv's day job takes most of his day, so whatever time survives goes to his own engineering projects and his health. Outside work he's basically trying to become a polymath: software, AI, woodworking, art, the gym, and he plays guitar (plays might be generous; he's learning).",
+    keywords: ["free", "time", "hobby", "hobbies", "fun", "weekend", "outside", "personal", "gym", "woodworking", "art", "guitar", "music", "health", "schedule", "busy"],
+  },
+  {
+    id: "engineer-or-coordinator",
+    topic: "Engineer or coordinator?",
+    text: "Ariv is an engineer at heart, with project management skills on top. He joined INZI because the company needed someone to bridge customers, engineering, production and timelines, a gap he could fill from day one. Then he started noticing engineering problems at the firm too and picked those up as well, so now he does a bit of both. He likes finding a problem, digging into why it happens and figuring out the fix, and the project management side gets the right people moving.",
+    keywords: ["engineer", "coordinator", "technical", "both", "which", "really", "heart", "gap", "gaps", "problem", "problems", "solve"],
+  },
+  {
+    id: "how-he-works",
+    topic: "How he works",
+    text: "Ariv's creativity is practical: he doesn't sit around looking for a cool project, he notices something that sucks, asks why, and starts building. His path has been a mix: software, data, AI, automotive manufacturing, project coordination, open source and his own products, so don't judge him only by his job title. He does best when a problem isn't perfectly defined yet. Does he ship fast? This voice agent is one of the things he shipped.",
+    keywords: ["creative", "creativity", "ship", "ships", "fast", "speed", "quick", "how", "works", "think", "thinks", "approach", "style", "messy", "ambiguous", "ambiguity", "title", "else", "know"],
+  },
+  {
+    id: "weakness",
+    topic: "His real weakness",
+    text: "Ariv's real weakness: he takes on too much. If he sees five interesting problems, he wants to solve six. He's gotten better at prioritizing, but saying not now is still a work in progress.",
+    keywords: ["weakness", "weaknesses", "weak", "flaw", "flaws", "bad", "downside", "reason", "not", "hire", "improve", "prioritize", "prioritizing"],
+  },
+  {
+    id: "where-he-wants-to-work",
+    topic: "Where he wants to work",
+    text: "Where Ariv wants to work: he keeps the list to himself, but it has some big names you'd know. What he's aiming for is AI engineering, product and software roles, including applied AI and forward-deployed work, and he's open to relocating for the right opportunity.",
+    keywords: ["where", "want", "wants", "companies", "company", "dream", "target", "list", "looking", "relocate", "relocating", "move", "next"],
   },
   {
     id: "forecost",
     topic: "forecost",
-    text: "forecost is Ariv's open source project (MIT license, Python, on PyPI). It logs what AI coding agents like Claude Code, and apps using LiteLLM, spend into a local SQLite ledger without storing your prompts, and it enforces budgets so an agent can't run away overnight. CI runs on 3 operating systems and 4 Python versions, with a privacy test that checks no prompt content leaks. It's alpha, and Ariv is the main user so far.",
-    keywords: ["forecost", "for cost", "cost", "costs", "budget", "ledger", "spend", "open", "source", "pypi", "python", "package", "claude", "litellm"],
+    text: "forecost is Ariv's open source project (MIT license, Python, on PyPI), a flight recorder for AI agent work. It logs what coding agents like Claude Code, and apps using LiteLLM, actually spend into a local SQLite ledger without storing your prompts, reconciles meters that disagree, and enforces budgets so an agent can't run away overnight. Its burn command projects your spending against your budget: a fuel gauge for your AI bill instead of a receipt at the end. CI runs on 3 operating systems and 4 Python versions, with a privacy test that checks no prompt content leaks. It's alpha, and Ariv is the main user so far.",
+    keywords: ["forecost", "for cost", "cost", "costs", "budget", "ledger", "spend", "open", "source", "pypi", "python", "package", "claude", "litellm", "burn", "bill"],
   },
   {
     id: "forecost-honest",
@@ -88,7 +131,7 @@ export const FACTS: Fact[] = [
   {
     id: "voice-agent",
     topic: "This voice agent",
-    text: `This voice agent is one of Ariv's projects. It runs on ${AGENT_STACK}. He built it, using AI coding tools along the way, like he does for most things he builds: the voice pipeline, the tools, rate limiting, tests and CI.`,
+    text: `This voice agent is one of Ariv's projects. It runs on ${AGENT_STACK}. He built it with AI coding tools along the way: the voice pipeline, the tools, rate limiting, tests and CI. The code is on his GitHub.`,
     keywords: ["you", "this", "agent", "voice", "built", "build", "made", "how", "llm", "model", "platform", "stack", "architecture", "operator", "arivsai", "openai", "gemini", "ai"],
   },
   {
@@ -130,13 +173,13 @@ export const FACTS: Fact[] = [
   {
     id: "limits",
     topic: "What's not true or not known",
-    text: "Things to be straight about: Ariv has not held a software engineer title; his engineering experience is internships, volunteer projects and what he's built himself. He has no AWS or other certifications. For visa or work authorization, salary, start dates or anything personal, the honest answer is to ask Ariv directly.",
+    text: "Things to be straight about: Ariv has not held a software engineer title; his engineering experience is internships, volunteer projects and what he's built himself. He has no AWS or other certifications. He's open to relocating for the right opportunity, especially to work closely with strong engineering and AI teams. For visa or work authorization, salary, start dates, remote preferences or anything personal, the honest answer is to ask Ariv directly.",
     keywords: ["certified", "certification", "aws", "senior", "years", "experience", "title", "engineer", "visa", "h1b", "h-1b", "sponsorship", "authorization", "salary", "relocate", "start"],
   },
   {
     id: "role-fit-fde",
     topic: "Fit for forward-deployed and applied AI roles",
-    text: "Why Ariv fits forward-deployed and applied AI roles: his day job already works like a forward-deployed role, being the bridge between his company and the other companies on a project and keeping engineering, quality and sales aligned across them, so he's used to translating between teams and chasing things to done. On the side he builds the technical half himself: this voice agent, forecost, and bug fixes in agent frameworks like Agno. He's early in his career, so the honest pitch is a builder who ships small real things and learns fast.",
+    text: "Why Ariv fits forward-deployed and applied AI roles: his day job already works like one, bridging his company and the other companies on a project and keeping engineering, quality and sales aligned, so he's used to translating between teams and chasing things to done. On the side he builds the technical half himself: this voice agent, forecost, and bug fixes in agent frameworks like Agno. He's early in his career, so the honest pitch is a builder who ships small real things and learns fast.",
     keywords: ["forward", "deployed", "deployment", "fde", "applied", "solutions", "customer", "facing", "fit", "hire", "why"],
   },
   {
@@ -154,7 +197,7 @@ export const FACTS: Fact[] = [
 ];
 
 /** Numbers the agent may say about Ariv (anything else is invented). */
-export const ALLOWED_NUMBERS = ["2023", "2024", "2026", "601", "2", "3", "4", "15"];
+export const ALLOWED_NUMBERS = ["2023", "2024", "2026", "601", "2", "3", "4", "15", "24"];
 
 export function renderFactCard(): string {
   return FACTS.map((f) => `- ${f.topic}: ${f.text}`).join("\n");

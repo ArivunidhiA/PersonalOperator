@@ -1,5 +1,6 @@
 import { prepareAudio, startGemini } from "./gemini";
 import { startOpenAI } from "./openai";
+import { sessionHints } from "../track-client";
 import type { SessionInfo, VoiceHandlers, VoiceSession } from "./types";
 
 export class StartError extends Error {
@@ -49,7 +50,12 @@ export async function startVoiceCall(h: VoiceHandlers, signal?: AbortSignal): Pr
 
   let info: SessionInfo;
   try {
-    const res = await fetch("/api/voice/session", { method: "POST", headers: { "x-ariv-client": "1" }, signal });
+    const res = await fetch("/api/voice/session", {
+      method: "POST",
+      headers: { "x-ariv-client": "1", "Content-Type": "application/json" },
+      body: JSON.stringify(sessionHints()),
+      signal,
+    });
     const data = (await res.json().catch(() => ({}))) as SessionInfo & { error?: string; code?: string };
     if (!res.ok) throw new StartError(data.error || "Couldn't start the call right now.", data.code || String(res.status));
     info = data;

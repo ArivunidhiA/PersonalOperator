@@ -25,6 +25,14 @@ const PAID_ONLY_COUNTRIES = new Set(
   "AT BE BG HR CY CZ DK EE FI FR DE GR HU IE IT LV LT LU MT NL PL PT RO SK SI ES SE IS LI NO CH GB".split(" "),
 );
 
+/**
+ * EEA, UK and Switzerland: visitor analytics stay anonymous there (no visitor id,
+ * no network lookup), since a persistent identifier would need cookie consent.
+ */
+export function strictPrivacyRegion(country: string | null | undefined): boolean {
+  return !!country && PAID_ONLY_COUNTRIES.has(country.toUpperCase());
+}
+
 export function geminiAllowedIn(country: string | null | undefined): boolean {
   // On Vercel every real request carries a country; if it's missing, don't assume it's allowed.
   if (!country) return !process.env.VERCEL_ENV;
@@ -52,7 +60,7 @@ export function chooseProvider(country: string | null | undefined): VoiceProvide
 }
 
 const GREETING_NUDGE =
-  "(The caller just connected. Greet them in one short, casual line, like a friend picking up the phone, and invite them to ask about Ariv. Then wait.)";
+  "(The caller just connected. In your own words, under 20 words: you're Ariv's AI voice agent, basically the interactive version of his portfolio, ask me anything about him. No \"feel free\", no \"how can I help\". Then wait.)";
 export { GREETING_NUDGE };
 
 /** Gemini Live session config, locked into the ephemeral token server-side. */
