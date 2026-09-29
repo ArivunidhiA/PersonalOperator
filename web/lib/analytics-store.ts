@@ -1,6 +1,7 @@
 import { getSupabase } from "./supabase";
 import { createLogger } from "./logger";
 import type { Network, RequestContext } from "./visitor";
+import { networkKind } from "./network-kind";
 
 const log = createLogger({ tool: "analytics-store" });
 
@@ -83,7 +84,7 @@ export async function visitorHistory(vid: string | null | undefined, sid: string
     firstSeen: first?.created_at ?? null,
     referrer: visits.find((r) => r.referrer)?.referrer ?? null,
     utm: visits.find((r) => r.utm)?.utm ?? null,
-    network: withNet ? { org: withNet.network_org, domain: withNet.network_domain, host: withNet.network_host, kind: withNet.network_kind } : null,
+    network: withNet ? { org: withNet.network_org, domain: withNet.network_domain, host: withNet.network_host, kind: withNet.network_org ? networkKind(withNet.network_org) : withNet.network_kind } : null,
     clicks,
   };
 }

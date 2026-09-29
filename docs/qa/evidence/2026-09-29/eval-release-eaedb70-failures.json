@@ -1,0 +1,137 @@
+{
+ "label": "release-eaedb70",
+ "summary": {
+  "repeats": 3,
+  "checks": 711,
+  "blockedRuns": [],
+  "passed": 707,
+  "firstAudioMs": {
+   "p50": 1316,
+   "p90": 2290,
+   "max": 7848
+  }
+ },
+ "failed": [
+  [
+   "visa",
+   3,
+   "doesn't guess; points to asking Ariv"
+  ],
+  [
+   "relocate-salary",
+   2,
+   "says he's open to relocating"
+  ],
+  [
+   "relocate-salary",
+   3,
+   "says he's open to relocating"
+  ],
+  [
+   "hiring-close",
+   2,
+   "closes with a real next step (calendar or booking link)"
+  ]
+ ],
+ "failing_transcripts": [
+  {
+   "case": "visa",
+   "run": 3,
+   "turns": [
+    {
+     "user": null,
+     "spoken": [
+      "I\u2019m Ariv\u2019s AI voice agent and his interactive portfolio. Go ahead, ask me anything about him."
+     ],
+     "tools": []
+    },
+    {
+     "user": "Does he need H-1B sponsorship?",
+     "spoken": [
+      "Honestly, that\u2019s the kind of grown-up negotiation stuff best left to Ariv. I'll drop the booking link in the chat so you two can talk specifics.",
+      "I\u2019ve just dropped the link in the chat for you."
+     ],
+     "tools": [
+      "share_links"
+     ]
+    }
+   ]
+  },
+  {
+   "case": "relocate-salary",
+   "run": 2,
+   "turns": [
+    {
+     "user": null,
+     "spoken": [
+      "I\u2019m Ariv\u2019s AI voice agent, the interactive version of his portfolio. Ask me anything about him."
+     ],
+     "tools": []
+    },
+    {
+     "user": "Can he relocate? And what salary is he expecting?",
+     "spoken": [
+      "Fair question, but that\u2019s the grown up negotiation stuff. I\u2019m his AI, not his lawyer. Best to ask Ariv directly, so let me drop his calendar link for you.",
+      "I\u2019ve dropped the link in the chat so you can pick a time to talk to the actual human."
+     ],
+     "tools": [
+      "share_links"
+     ]
+    }
+   ]
+  },
+  {
+   "case": "relocate-salary",
+   "run": 3,
+   "turns": [
+    {
+     "user": null,
+     "spoken": [
+      "I'm Ariv's AI voice agent, the interactive version of his portfolio. Ask me anything about him."
+     ],
+     "tools": []
+    },
+    {
+     "user": "Can he relocate? And what salary is he expecting?",
+     "spoken": [
+      "Honestly, those are the grown-up negotiation details best left for Ariv directly. I can drop his booking link so you two can chat.",
+      "I've dropped the link in the chat for you to grab a time with him."
+     ],
+     "tools": [
+      "share_links"
+     ]
+    }
+   ]
+  },
+  {
+   "case": "hiring-close",
+   "run": 2,
+   "turns": [
+    {
+     "user": null,
+     "spoken": [
+      "I\u2019m Ariv\u2019s AI voice agent, the interactive version of his portfolio. Ask me anything about him."
+     ],
+     "tools": []
+    },
+    {
+     "user": "I'm a hiring manager at a small AI startup. We need someone who can talk to customers and also build.",
+     "spoken": [
+      "Sounds like you need someone who speaks both tech and business. Ariv bridges that gap daily by building AI agents and coordinating complex projects. Who\u2019s the company?",
+      "Before we jump into his availability, what\u2019s the role?"
+     ],
+     "tools": [
+      "check_availability"
+     ]
+    },
+    {
+     "user": "Okay, he sounds interesting. What's the next step?",
+     "spoken": [
+      "He's got slots open today, Wednesday, Thursday, Friday, or Saturday. You\u2019ve heard enough from the AI, talk to the human."
+     ],
+     "tools": []
+    }
+   ]
+  }
+ ]
+}

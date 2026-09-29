@@ -1,0 +1,4 @@
+  ✓  1 e2e/voice-call.spec.ts:29:5 › voice call: greeting, facts, links card, saved transcript (54.0s)
+  ✓  2 e2e/voice-call.spec.ts:121:5 › security surface: old open endpoints are gone, new ones need a live-call ticket (60ms)
+  ✓  3 e2e/voice-call.spec.ts:134:5 › security headers are set (11ms)
+  3 passed (57.1s)

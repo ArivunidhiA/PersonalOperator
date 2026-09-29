@@ -1,5 +1,8 @@
 import { createHash } from "crypto";
 import { safeRedis } from "./rate-limit";
+import { networkKind, type NetworkKind } from "./network-kind";
+
+export { networkKind };
 
 /**
  * What a request says about the visitor, for Ariv's analytics: rough location
@@ -18,7 +21,7 @@ export type RequestContext = {
   os: string | null;
   bot: boolean;
 };
-export type Network = { org: string | null; domain: string | null; asn: string | null; host: string | null; kind: "isp" | "hosting" | "org" };
+export type Network = { org: string | null; domain: string | null; asn: string | null; host: string | null; kind: NetworkKind };
 
 const header = (req: Request, name: string, max = 80): string | null => {
   const v = req.headers.get(name);
@@ -74,20 +77,6 @@ export function requestContext(req: Request): RequestContext {
   };
 }
 
-// Consumer ISPs and mobile carriers: the network says nothing about the visitor's employer.
-const ISP =
-  /comcast|charter|spectrum|at&t|\bat ?& ?t\b|verizon|cellco|t-mobile|tmobile|sprint|cox comm|frontier|centurylink|lumen|windstream|altice|optimum|mediacom|suddenlink|\brcn\b|wideopenwest|google fiber|starlink|space exploration|us cellular|brightspeed|ziply|astound|bell canada|rogers|telus|shaw|vodafone|british telecom|\bbt\b|virgin media|sky uk|reliance jio|jio|bharti|airtel|bsnl|act fibernet|hathway|claro|telmex|movistar|telefonica|orange|deutsche telekom|telstra|optus|singtel|kddi|softbank|ntt|korea telecom|sk broadband|lg (uplus|powercomm)|chinanet|china (telecom|unicom|mobile)/i;
-// Clouds, proxies and VPNs: likely not where the person works (Zscaler & co. front many companies).
-const HOSTING =
-  /digitalocean|linode|akamai|cloudflare|ovh|hetzner|vultr|choopa|contabo|leaseweb|m247|datacamp|packethub|zscaler|netskope|palo alto|forcepoint|nordvpn|expressvpn|mullvad|proton ?(ag|vpn)|private internet access|hostinger|scaleway|oracle cloud|alibaba|tencent/i;
-
-export function networkKind(org: string | null): Network["kind"] {
-  if (!org) return "isp";
-  if (ISP.test(org)) return "isp";
-  if (HOSTING.test(org)) return "hosting";
-  return "org";
-}
-
 const PRIVATE_IP = /^(10\.|127\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|::1$|fc|fd|fe80:|unknown$)/i;
 
 /**
@@ -99,7 +88,7 @@ export async function lookupNetwork(ip: string | null): Promise<Network | null> 
   if (!ip || PRIVATE_IP.test(ip) || ip.length > 64) return null;
   const key = `net:v1:${createHash("sha256").update(`${process.env.SESSION_SECRET ?? ""}|${ip}`).digest("hex").slice(0, 32)}`;
   const cached = await safeRedis((r) => r.get<Network>(key), null);
-  if (cached) return cached;
+  if (cached) return { ...cached, kind: networkKind(cached.org) };
   const token = process.env.IPINFO_TOKEN;
   let net: Network | null = null;
   try {

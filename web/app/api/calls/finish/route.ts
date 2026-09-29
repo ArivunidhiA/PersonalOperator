@@ -173,7 +173,16 @@ export async function POST(req: Request) {
       slog.info("owner call; no notification");
     } else if ((await checkLimit("notifyDaily", "all")).ok) {
       await notifyAriv({ sid, analysis: { ...analysis, summary: row.summary, topics }, transcript, flags, signedIn: !!ticket.uid, extra, ctx, history })
-        .then((id) => slog.info("notified", { emailId: id }))
+        .then(async (id) => {
+          slog.info("notified", { emailId: id });
+          // Keep Resend's id on the call: Vercel only surfaces a request's first log line (F-05).
+          if (!id) return;
+          const r = await supabase
+            .from("call_summaries")
+            .update({ context: { ...extra.context, notified: { emailId: id, at: new Date().toISOString() } } })
+            .eq("session_id", sid);
+          if (r.error) slog.warn("couldn't record the notification", { error: r.error.message.slice(0, 200) });
+        })
         .catch((err) => slog.warn("notify failed", { error: err instanceof Error ? err.message : String(err) }));
     } else {
       slog.warn("notification cap reached; call saved without email");

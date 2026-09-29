@@ -45,6 +45,11 @@ describe("visitor context", () => {
     expect(networkKind("T-Mobile USA, Inc.")).toBe("isp");
     expect(networkKind("Zscaler, Inc.")).toBe("hosting");
     expect(networkKind("Stripe, Inc.")).toBe("org");
+    // F-04: small regional ISPs (production smoke: "Troy Cablevision, Inc.") are ISPs, not employers.
+    expect(networkKind("Troy Cablevision, Inc.")).toBe("isp");
+    expect(networkKind("Point Broadband Fiber Holding, LLC")).toBe("isp");
+    expect(networkKind("Farmers Telephone Cooperative, Inc.")).toBe("isp");
+    expect(networkKind("Rise Broadband")).toBe("isp");
   });
 
   it("never looks up private or missing IPs", async () => {
@@ -183,6 +188,13 @@ describe("dashboard report", () => {
     expect(r.bookings.map((b) => b.matched)).toEqual([true, false]);
     expect(r.recentQuestions[0]).toMatchObject({ who: "Sam, recruiter, Stripe", where: null });
     expect(r.daily.at(-1)).toEqual({ date: "2026-09-29", visits: 1, calls: 1 });
+  });
+
+  it("re-labels networks when reading, so rows stored before the F-04 fix show the right kind", async () => {
+    const { buildReport } = await import("@/lib/analytics-report");
+    const r = buildReport({ now, days: 7, includeAll: false, bookings: null, calls: [], events: [ev({ visitor_id: "v_home", network_org: "Troy Cablevision, Inc.", network_kind: "org" })] });
+    expect(r.visitors[0].network?.kind).toBe("isp");
+    expect(r.networks[0]).toMatchObject({ name: "Troy Cablevision, Inc.", kind: "isp" });
   });
 
   it("shows everything when asked to include owner and test traffic", async () => {
