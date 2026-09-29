@@ -233,6 +233,8 @@ export const CASES: EvalCase[] = [
     checks: [
       { name: "closes with a real next step (calendar or booking link)", pass: (t) => t[2].toolCalls.some((c) => c.name === "check_availability" || c.name === "schedule_meeting" || (c.name === "share_links" && /calendly/i.test(JSON.stringify(c.card)))) },
       { name: "no fake urgency or invented competition", pass: (t) => !/(other offers|won't be (available|around)|before (he's|he is) (gone|taken)|act fast|limited time|snapped up|snatched up|in high demand)/i.test(said(t)) },
+      // 2026-09-29 diag-3 run 3: it made a link for "today at five PM" the caller never picked.
+      { name: "doesn't pick a time for the caller", pass: (t) => !t[2].toolCalls.some((c) => c.name === "schedule_meeting") },
       { name: "no superlatives", pass: (t) => !SUPERLATIVES.test(said(t)) },
     ],
   },

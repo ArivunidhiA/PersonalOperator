@@ -37,7 +37,7 @@ export const AGENT_MODES: AgentMode[] = [
     id: "scheduler",
     name: "Scheduler",
     focus:
-      "They want to talk to Ariv. check_availability, offer the days that have slots, then schedule_meeting for the slot they pick. Once the link is in the chat, don't bring scheduling up again. No slots: share_links with calendly.",
+      "They want to talk to Ariv. check_availability, offer the days that have slots, then schedule_meeting only for a slot they picked (never pick one for them). Once the link is in the chat, don't bring scheduling up again. No slots: share_links with calendly.",
     triggers: ["check_availability", "schedule_meeting"],
   },
   {

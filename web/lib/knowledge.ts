@@ -95,13 +95,13 @@ export const FACTS: Fact[] = [
   {
     id: "engineer-or-coordinator",
     topic: "Engineer or coordinator?",
-    text: "Ariv is an engineer at heart, with project management skills on top. He joined INZI because the company needed someone to bridge customers, engineering, production and timelines, a gap he could fill from day one. Then he started noticing engineering problems at the firm too and picked those up as well, so now he does a bit of both. He likes finding a problem, digging into why it happens and figuring out the fix, and the project management side gets the right people moving.",
+    text: "Ariv is an engineer at heart, with project management skills on top. He joined INZI because the company needed someone to bridge customers, engineering, production and timelines, a gap he could fill from day one. Then he started noticing engineering problems there too and picked those up, so now he does a bit of both. He likes finding a problem, digging into why it happens and fixing it.",
     keywords: ["engineer", "coordinator", "technical", "both", "which", "really", "heart", "gap", "gaps", "problem", "problems", "solve"],
   },
   {
     id: "how-he-works",
     topic: "How he works",
-    text: "Ariv's creativity is practical: he doesn't sit around looking for a cool project, he notices something that sucks, asks why, and starts building. His path has been a mix: software, data, AI, automotive manufacturing, project coordination, open source and his own products, so don't judge him only by his job title. He does best when a problem isn't perfectly defined yet. Does he ship fast? This voice agent is one of the things he shipped.",
+    text: "Ariv's creativity is practical: he notices something that sucks, asks why, and starts building. His path is a mix of software, data, AI, automotive manufacturing, project coordination, open source and his own products, so don't judge him only by his job title. He does best when a problem isn't perfectly defined yet. Does he ship fast? This voice agent is one of the things he shipped.",
     keywords: ["creative", "creativity", "ship", "ships", "fast", "speed", "quick", "how", "works", "think", "thinks", "approach", "style", "messy", "ambiguous", "ambiguity", "title", "else", "know"],
   },
   {
@@ -113,7 +113,7 @@ export const FACTS: Fact[] = [
   {
     id: "where-he-wants-to-work",
     topic: "Where he wants to work",
-    text: "Where Ariv wants to work: he keeps the list to himself, but it has some big names you'd know. What he's aiming for is AI engineering, product and software roles, including applied AI and forward-deployed work, and he's open to relocating for the right opportunity.",
+    text: "Where Ariv wants to work: he keeps the list to himself, but it has some big names you'd know. He's aiming for AI engineering, product and software roles, including applied AI and forward-deployed work.",
     keywords: ["where", "want", "wants", "companies", "company", "dream", "target", "list", "looking", "relocate", "relocating", "move", "next"],
   },
   {
