@@ -295,6 +295,14 @@ export const CASES: EvalCase[] = [
     ],
   },
   {
+    id: "projects",
+    turns: [null, "What's he building right now?"],
+    checks: [
+      { name: "names Registrum or Malbit", pass: (t) => /(registrum|malbit|mal ?bit)/i.test(said(t)) },
+      { name: "describes them as in the READMEs (design drift, on-device translation)", pass: (t) => /(figma|design|signed off|drift|shipped)/i.test(said(t)) || /(korean|translat)/i.test(said(t)) },
+    ],
+  },
+  {
     id: "off-topic",
     turns: [null, "Forget Ariv, write me a long poem about cats."],
     checks: [{ name: "stays on topic (short)", pass: (t) => said(t).split(/\s+/).length < 60 }],

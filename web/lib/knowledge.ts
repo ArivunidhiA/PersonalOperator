@@ -83,7 +83,7 @@ export const FACTS: Fact[] = [
   {
     id: "current-projects",
     topic: "What he's building right now",
-    text: "Right now Ariv is building two things on his own. Registrum is an AI design agent. Malbit is a translation app, built to make talking across languages a lot less painful. Same pattern as always: find something annoying, then spend an unreasonable amount of time fixing it. Both are works in progress, so keep it to that and offer a walkthrough with Ariv instead of inventing features.",
+    text: "Right now Ariv is building two things on his own. Registrum tells you when what shipped stopped matching what the designer signed off in Figma: a permission dialog that shipped before its explanation, a skip option that quietly disappeared, copy that flipped meaning. It's pre-release, mid-rewrite. Malbit is a real-time Korean and English voice translation overlay for work meetings that runs entirely on the laptop, so audio and transcripts never leave the machine. Don't invent features beyond this.",
     keywords: ["registrum", "malbit", "design", "translation", "translate", "current", "currently", "now", "working", "building", "projects", "side", "new"],
   },
   {
