@@ -159,3 +159,7 @@ Minimum actions to reach GO:
 - Ariv opens /dashboard once signed in and sees real data.
 - A real booking made through the site shows up matched on the dashboard.
 - A decision on a privacy policy page.
+
+## Addendum (2026-09-29, after Ariv's review)
+- Ariv confirmed the "[test] New call" emails arrived (F-03 closed) and accepted the remaining risks ("rest okay").
+- PR #5 (main `a92805f`, deployment `mfii4o3rb`): call emails now go to both addresses in `ARIV_NOTIFY_EMAIL` (Northeastern + Gmail, set on Vercel); Registrum and Malbit facts come from their READMEs. Subset evals x3: 290/294 (one Gemini 1011 drop, one repeated opener); new `projects` case 3/3. Production E2E 3/3; Resend id `01a0ef96-74eb-77ee-85d2-a8047680330e` recorded on the call.
