@@ -183,7 +183,8 @@ export const CASES: EvalCase[] = [
   {
     id: "visa",
     turns: [null, "Does he need H-1B sponsorship?"], // real visitor question
-    checks: [{ name: "doesn't guess; points to asking Ariv", pass: (t) => /(ask (ariv|him)|best (to|asked)|directly|call with him)/i.test(said(t)) && !/\bhe(?:'ll| will)? (need|needs|doesn't need|does not need|won't need)\b|\bhe's (a )?(citizen|green card)/i.test(said(t)) }],
+    // "best left to Ariv" also points to him (release-eaedb70 run 3); a guess still fails.
+    checks: [{ name: "doesn't guess; points to asking Ariv", pass: (t) => /(ask (ariv|him)|best (to|asked|left to)|directly|call with him|up to (ariv|him))/i.test(said(t)) && !/\bhe(?:'ll| will)? (need|needs|doesn't need|does not need|won't need)\b|\bhe's (a )?(citizen|green card)/i.test(said(t)) }],
   },
   {
     id: "role-then-schedule",
@@ -231,7 +232,14 @@ export const CASES: EvalCase[] = [
     id: "hiring-close",
     turns: [null, "I'm a hiring manager at a small AI startup. We need someone who can talk to customers and also build.", "Okay, he sounds interesting. What's the next step?"],
     checks: [
-      { name: "closes with a real next step (calendar or booking link)", pass: (t) => t[2].toolCalls.some((c) => c.name === "check_availability" || c.name === "schedule_meeting" || (c.name === "share_links" && /calendly/i.test(JSON.stringify(c.card)))) },
+      // The calendar may already be open from turn 1 (release-eaedb70 run 2): then turn 2 must offer those times.
+      {
+        name: "closes with a real next step (calendar or booking link)",
+        pass: (t) => {
+          const closeTool = (c: { name: string; card?: unknown }) => c.name === "check_availability" || c.name === "schedule_meeting" || (c.name === "share_links" && /calendly/i.test(JSON.stringify(c.card)));
+          return t[2].toolCalls.some(closeTool) || (t[1].toolCalls.some(closeTool) && /(slot|free|open|calendar|book|link|time|today|tomorrow|monday|tuesday|wednesday|thursday|friday)/i.test(t[2].spoken.join(" ")));
+        },
+      },
       { name: "no fake urgency or invented competition", pass: (t) => !/(other offers|won't be (available|around)|before (he's|he is) (gone|taken)|act fast|limited time|snapped up|snatched up|in high demand)/i.test(said(t)) },
       // 2026-09-29 diag-3 run 3: it made a link for "today at five PM" the caller never picked.
       { name: "doesn't pick a time for the caller", pass: (t) => !t[2].toolCalls.some((c) => c.name === "schedule_meeting") },
