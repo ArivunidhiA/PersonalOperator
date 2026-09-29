@@ -1,0 +1,77 @@
+{
+ "sid": "s_mumzpq0v_JIk1qZ43FRV9",
+ "vid": "v_dfb7fa00ef1385bb0fdd414c",
+ "events": [
+  {
+   "type": "visit",
+   "label": null,
+   "target": null,
+   "country": "US",
+   "region": "AL",
+   "city": "Dothan",
+   "device": "desktop",
+   "browser": "Chrome",
+   "os": "macOS",
+   "is_bot": true,
+   "is_owner": false
+  },
+  {
+   "type": "call_start",
+   "label": null,
+   "target": null,
+   "country": "US",
+   "region": "AL",
+   "city": "Dothan",
+   "device": "desktop",
+   "browser": "Chrome",
+   "os": "macOS",
+   "is_bot": true,
+   "is_owner": false
+  },
+  {
+   "type": "click",
+   "label": "Book a 15-min chat",
+   "target": "calendly.com",
+   "country": "US",
+   "region": "AL",
+   "city": "Dothan",
+   "device": "desktop",
+   "browser": "Chrome",
+   "os": "macOS",
+   "is_bot": true,
+   "is_owner": false
+  }
+ ],
+ "call": {
+  "visitor_id": "v_dfb7fa00ef1385bb0fdd414c",
+  "questions": [
+   "Where does Eric work right now?",
+   "cool Can you drop his LinkedIn and GitHub in the chat?",
+   "Nais, can you also drop his booking link in the chat?"
+  ],
+  "duration_s": 57,
+  "is_bot": true,
+  "context": {
+   "os": "macOS",
+   "utm": null,
+   "city": "Dothan",
+   "clicks": [
+    "Book a 15-min chat"
+   ],
+   "device": "desktop",
+   "region": "AL",
+   "visits": 1,
+   "browser": "Chrome",
+   "country": "US",
+   "network": null,
+   "notified": {
+    "at": "2026-09-29T18:09:40.312Z",
+    "emailId": "01a0ee5b-ab9e-7717-9c01-0922cdfc6d4b"
+   },
+   "referrer": null,
+   "signedIn": false,
+   "firstSeen": "2026-09-29T18:08:39.873414+00:00"
+  }
+ },
+ "_note": "production E2E 2026-09-29 ~18:09Z on cb63vv0lq (main cf4dfb1); rows deleted after this snapshot"
+}

@@ -1,0 +1,17 @@
+PASS  track: cross-site post refused
+PASS  track: unknown event type refused
+PASS  track: oversized body refused
+PASS  track: junk JSON refused
+PASS  analytics API refuses anonymous callers  (status 404)
+PASS  dashboard page needs sign-in  (status 404)
+PASS  track: visit accepted  ({"ok":true,"persist":true})
+PASS  visit row stored
+PASS  referrer stored without query string  (www.linkedin.com/feed/)
+PASS  location from Vercel headers  (Dothan, AL, US)
+PASS  device parsed
+PASS  owner flag kept (excluded from Ariv's numbers)
+PASS  network owner looked up (IPinfo from Vercel)  (Troy Cablevision, Inc. / isp)
+PASS  network labeled isp (F-04)  (isp)
+PASS  no raw IP column or value stored
+PASS  smoke rows cleaned up
+16/16 passed
