@@ -1,4 +1,5 @@
 import type { Booking } from "./calendly";
+import { networkKind } from "./network-kind";
 
 /**
  * Turns raw site events, saved calls and Calendly bookings into Ariv's
@@ -153,7 +154,7 @@ export function buildReport(input: {
       c.source ??= sourceOf(e.referrer, e.utm);
     }
     c.location = place(e.city, e.region, e.country) ?? c.location;
-    if (e.network_org || e.network_host) c.network = { org: e.network_org, domain: e.network_domain, host: e.network_host, kind: e.network_kind };
+    if (e.network_org || e.network_host) c.network = { org: e.network_org, domain: e.network_domain, host: e.network_host, kind: e.network_org ? networkKind(e.network_org) : e.network_kind };
     c.device = deviceOf(e.device, e.browser, e.os) ?? c.device;
     if (e.type === "click" && e.label && !c.clicks.includes(e.label)) c.clicks.push(e.label);
   }
@@ -177,7 +178,7 @@ export function buildReport(input: {
     c.bot ||= !!call.is_bot;
     const ctx = call.context ?? {};
     c.location ??= place(ctx.city, ctx.region, ctx.country);
-    c.network ??= ctx.network ?? null;
+    c.network ??= ctx.network ? { ...ctx.network, kind: ctx.network.org ? networkKind(ctx.network.org) : ctx.network.kind } : null;
     c.source ??= sourceOf(ctx.referrer, ctx.utm);
     c.device ??= deviceOf(ctx.device, ctx.browser, ctx.os);
     c.calls.push({

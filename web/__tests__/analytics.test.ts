@@ -190,6 +190,13 @@ describe("dashboard report", () => {
     expect(r.daily.at(-1)).toEqual({ date: "2026-09-29", visits: 1, calls: 1 });
   });
 
+  it("re-labels networks when reading, so rows stored before the F-04 fix show the right kind", async () => {
+    const { buildReport } = await import("@/lib/analytics-report");
+    const r = buildReport({ now, days: 7, includeAll: false, bookings: null, calls: [], events: [ev({ visitor_id: "v_home", network_org: "Troy Cablevision, Inc.", network_kind: "org" })] });
+    expect(r.visitors[0].network?.kind).toBe("isp");
+    expect(r.networks[0]).toMatchObject({ name: "Troy Cablevision, Inc.", kind: "isp" });
+  });
+
   it("shows everything when asked to include owner and test traffic", async () => {
     const { buildReport } = await import("@/lib/analytics-report");
     const r = buildReport({ now, days: 7, includeAll: true, bookings: null, calls: [], events: [ev({ visitor_id: "v_me", is_owner: true }), ev({ visitor_id: "v_bot", is_bot: true })] });
