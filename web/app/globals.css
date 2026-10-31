@@ -56,3 +56,28 @@ body {
   overflow: hidden;
   clip: rect(0 0 0 0);
 }
+
+/* Print / Save as PDF: only the transcript, as dark text on white. */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  [data-print="transcript"],
+  [data-print="transcript"] * {
+    visibility: visible;
+    color: #111 !important;
+  }
+  [data-print="transcript"] {
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+    max-height: none !important;
+    overflow: visible !important;
+    border: 0 !important;
+    background: #fff !important;
+  }
+  html,
+  body {
+    background: #fff !important;
+  }
+}

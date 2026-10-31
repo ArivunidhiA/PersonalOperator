@@ -4,11 +4,11 @@ Tick only when done and verified. Item done = all sub-steps ticked. Gate: local 
 Note: child sessions could not be started from a session-initiated turn, so all items are done in this session as stacked PRs.
 
 ## 2. Remove jspdf; print stylesheet + window.print()
-- [ ] code change
-- [ ] test added/updated
+- [x] code change
+- [x] test added/updated
 - [ ] screenshot taken (UI items)
-- [ ] docs updated
-- [ ] verified (how: )
+- [x] docs updated
+- [x] verified (how: jspdf removed; build ok; print CSS keyed on data-print=transcript (visual print check not run))
 
 ## 21. Clerk only in app/dashboard/layout.tsx; drop Email-it button
 - [x] code change
@@ -109,23 +109,23 @@ Note: child sessions could not be started from a session-initiated turn, so all 
 - [ ] verified (how: )
 
 ## 54. Favicon animates only while live (2 s)
-- [ ] code change
+- [x] code change
 - [ ] test added/updated
 - [ ] screenshot taken (UI items)
-- [ ] docs updated
-- [ ] verified (how: )
+- [x] docs updated
+- [x] verified (how: FaviconAnimator enabled={live}, 2s; unit/lint/build only)
 
 ## 55. Open Graph + Twitter meta + opengraph-image
-- [ ] code change
+- [x] code change
 - [ ] test added/updated
 - [ ] screenshot taken (UI items)
-- [ ] docs updated
-- [ ] verified (how: )
+- [x] docs updated
+- [x] verified (how: og tags in HTML; /opengraph-image 200 image/png)
 
 ## 56. robots.ts, sitemap.ts, manifest.ts
-- [ ] code change
+- [x] code change
 - [ ] test added/updated
 - [ ] screenshot taken (UI items)
-- [ ] docs updated
-- [ ] verified (how: )
+- [x] docs updated
+- [x] verified (how: next start: robots 200, sitemap 200, manifest 200)
 

@@ -71,7 +71,7 @@ describe("TranscriptLog", () => {
 });
 
 describe("PostCallPanel", () => {
-  const base = { sessionId: null, onRetry: vi.fn(), onShare: vi.fn(), onDownload: vi.fn() };
+  const base = { sessionId: null, onRetry: vi.fn(), onShare: vi.fn(), onPrint: vi.fn() };
   it("offers retry when saving failed", () => {
     render(<PostCallPanel {...base} post={{ saving: false, failed: true }} shareUrl={null} />);
     fireEvent.click(screen.getByRole("button", { name: /retry/i }));
@@ -81,6 +81,8 @@ describe("PostCallPanel", () => {
     render(<PostCallPanel {...base} post={{ saving: false, summary: "Nice." }} shareUrl={null} />);
     fireEvent.click(screen.getByRole("button", { name: /create share link/i }));
     expect(base.onShare).toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: /print or save as pdf/i }));
+    expect(base.onPrint).toHaveBeenCalled();
     expect(screen.getByText("Nice.")).toBeTruthy();
     expect(screen.getByRole("link", { name: /book time/i })).toBeTruthy();
   });
