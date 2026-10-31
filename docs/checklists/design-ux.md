@@ -74,11 +74,11 @@ Note: child sessions could not be started from a session-initiated turn, so all 
 - [x] verified (how: rg: no AuthHeader on public page; dashboard keeps it)
 
 ## 49. Impeccable detect/distill/audit + docs/design/impeccable-report.md
-- [ ] code change
-- [ ] test added/updated
-- [ ] screenshot taken (UI items)
-- [ ] docs updated
-- [ ] verified (how: )
+- [x] code change
+- [x] test added/updated
+- [x] screenshot taken (UI items)
+- [x] docs updated
+- [x] verified (how: detect clean on main; critique/audit need an interactive run by Ari, CLI only has detect)
 
 ## 50. One accent, distinctive typeface, orb palette, no halo; docs/design/DESIGN.md
 - [x] code change

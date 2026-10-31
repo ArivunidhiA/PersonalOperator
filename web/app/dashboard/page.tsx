@@ -63,7 +63,7 @@ function NetworkLine({ n }: { n: VisitorCard["network"] }) {
   const tag = n.kind === "isp" ? "home/mobile ISP" : n.kind === "hosting" ? "cloud/VPN" : "possibly their company";
   return (
     <span>
-      <span className={n.kind === "org" ? "text-emerald-300/90" : "text-white/60"}>{n.org ?? n.host}</span>
+      <span className={n.kind === "org" ? "text-ivory" : "text-white/60"}>{n.org ?? n.host}</span>
       {n.domain && <span className="text-white/60"> ({n.domain})</span>}
       <span className="text-white/60"> · {tag}</span>
     </span>
@@ -82,8 +82,8 @@ function VisitorItem({ v }: { v: VisitorCard }) {
           {v.identity && <span className="ml-2 text-[11px] text-white/60">({v.identity.via.join(", ")})</span>}
         </div>
         <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
-          {v.booking && <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-emerald-300">booked {when(v.booking.startTime)}</span>}
-          {v.calls.length > 0 && <span className="rounded-full bg-sky-500/20 px-2 py-0.5 text-sky-300">{v.calls.length} call{v.calls.length > 1 ? "s" : ""}</span>}
+          {v.booking && <span className="rounded-full bg-garnet/30 px-2 py-0.5 text-ivory">booked {when(v.booking.startTime)}</span>}
+          {v.calls.length > 0 && <span className="rounded-full bg-white/10 px-2 py-0.5 text-ivory">{v.calls.length} call{v.calls.length > 1 ? "s" : ""}</span>}
           {v.visits > 1 && <span className="rounded-full bg-white/10 px-2 py-0.5 text-white/60">{v.visits} visits</span>}
           {v.owner && <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-amber-300">you</span>}
           {v.bot && <span className="rounded-full bg-white/10 px-2 py-0.5 text-white/60">bot/test</span>}
@@ -140,7 +140,7 @@ function VisitorItem({ v }: { v: VisitorCard }) {
             <span>· {pretty(c.outcome)}</span>
             {c.hiringFor && <span>· hiring for {c.hiringFor}</span>}
             {c.shareToken && (
-              <a className="text-sky-300 hover:underline" href={`/call/${c.shareToken}`}>
+              <a className="text-ivory hover:underline" href={`/call/${c.shareToken}`}>
                 shared transcript
               </a>
             )}
@@ -154,7 +154,7 @@ function VisitorItem({ v }: { v: VisitorCard }) {
                 ))}
               </ul>
               {c.questions.length > 4 && (
-                <button className="mt-1 text-[11px] text-sky-300 hover:underline" onClick={() => setOpen((o) => !o)}>
+                <button className="mt-1 text-[11px] text-ivory hover:underline" onClick={() => setOpen((o) => !o)}>
                   {open ? "show less" : `show all ${c.questions.length} lines`}
                 </button>
               )}
@@ -243,7 +243,7 @@ export default function DashboardPage() {
             <input type="checkbox" checked={all} onChange={(e) => {
                 setLoading(true);
                 setAll(e.target.checked);
-              }} className="accent-sky-400" />
+              }} className="accent-garnet" />
             Include my own visits and automated tests
           </label>
           {loading && <span className="text-xs text-white/60">Refreshing...</span>}
@@ -273,11 +273,11 @@ export default function DashboardPage() {
           <div className="h-44">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={data.daily}>
-                <XAxis dataKey="date" tick={{ fill: "#ffffff40", fontSize: 10 }} tickFormatter={(d: string) => d.slice(5)} minTickGap={20} />
-                <YAxis tick={{ fill: "#ffffff40", fontSize: 10 }} allowDecimals={false} width={28} />
+                <XAxis dataKey="date" tick={{ fill: "#ffffff99", fontSize: 10 }} tickFormatter={(d: string) => d.slice(5)} minTickGap={20} />
+                <YAxis tick={{ fill: "#ffffff99", fontSize: 10 }} allowDecimals={false} width={28} />
                 <Tooltip contentStyle={TOOLTIP} />
-                <Area type="monotone" dataKey="visits" stroke="#60a5fa" fill="#60a5fa22" strokeWidth={2} />
-                <Area type="monotone" dataKey="calls" stroke="#34d399" fill="#34d39922" strokeWidth={2} />
+                <Area type="monotone" dataKey="visits" stroke="#efe7d8" fill="#efe7d822" strokeWidth={2} />
+                <Area type="monotone" dataKey="calls" stroke="#c25a66" fill="#c25a6622" strokeWidth={2} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -294,7 +294,7 @@ export default function DashboardPage() {
                 ))}
               </ul>
               {data.visitors.length > limit && (
-                <button className="mt-3 text-sm text-sky-300 hover:underline" onClick={() => setLimit((l) => l + 25)}>
+                <button className="mt-3 text-sm text-ivory hover:underline" onClick={() => setLimit((l) => l + 25)}>
                   Show more
                 </button>
               )}
@@ -326,10 +326,10 @@ export default function DashboardPage() {
               <div className="h-72">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={data.topTopics.slice(0, 10)} layout="vertical">
-                    <XAxis type="number" tick={{ fill: "#ffffff40", fontSize: 10 }} allowDecimals={false} />
-                    <YAxis dataKey="name" type="category" tick={{ fill: "#ffffff70", fontSize: 11 }} width={140} />
+                    <XAxis type="number" tick={{ fill: "#ffffff99", fontSize: 10 }} allowDecimals={false} />
+                    <YAxis dataKey="name" type="category" tick={{ fill: "#ffffffb3", fontSize: 11 }} width={140} />
                     <Tooltip contentStyle={TOOLTIP} />
-                    <Bar dataKey="count" fill="#8b5cf6" radius={[0, 4, 4, 0]} />
+                    <Bar dataKey="count" fill="#c25a66" radius={[0, 4, 4, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
