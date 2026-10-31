@@ -5,7 +5,7 @@ or 503 `{status:"degraded",...}`. It checks Supabase reachability (one head quer
 (unconfigured Redis is tolerated; configured-but-down is not) and that `GEMINI_API_KEY` is set.
 It never mints a token and never calls Gemini.
 
-## GitHub Actions (`docs/ops/workflows/uptime.yml` (move to `.github/workflows/`; the bot token lacks `workflow` scope))
+## GitHub Actions (`.github/workflows/uptime.yml`)
 Runs every 30 min and on demand; a non-200 fails the run with an `::error` annotation, which
 emails the repo owner via GitHub's failed-workflow notifications.
 
