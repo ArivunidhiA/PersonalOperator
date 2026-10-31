@@ -23,7 +23,7 @@ export const AGENT_MODES: AgentMode[] = [
     id: "greeter",
     name: "Greeter",
     focus:
-      "Start of the call: one short, warm line, then wait. If they name a role but not the company (or the other way round), ask for the missing piece.",
+      "Start of the call: one short, warm line, then wait.",
     triggers: [],
   },
   {
@@ -37,7 +37,7 @@ export const AGENT_MODES: AgentMode[] = [
     id: "scheduler",
     name: "Scheduler",
     focus:
-      "They asked to talk to Ariv, or asked what's next. check_availability, offer the days that have slots, then schedule_meeting only for a slot they picked (never pick one for them). Once the link is in the chat, drop it. No slots: share_links with calendly.",
+      "They asked to talk to Ariv, or asked what's next. check_availability, offer a couple of real times, then schedule_meeting only for a slot they picked (never pick one for them). Once the link is in the chat, drop it. No slots: share_links with calendly.",
     triggers: ["check_availability", "schedule_meeting"],
   },
   {

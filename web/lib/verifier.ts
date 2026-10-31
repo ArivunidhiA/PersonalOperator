@@ -35,14 +35,14 @@ const TIME_OR_DATE =
   /\b\d{1,2}(?::\d{2})?\s?(?:a\.?m\.?|p\.?m\.?)|\b\d{1,2}(?:st|nd|rd|th)\b|\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.? \d{1,2}\b/gi;
 // Small counts are allowed ("two merged fixes") but not as invented metrics ("3 years", "a team of 4").
 const SMALL_COUNT_CLAIM =
-  /\b(?:\d+|two|three|four|five|six|seven|eight|nine|ten|dozen)\+? (?:years?|yrs|internships|products|engineers|people|reports|direct reports|clients|customers|startups|companies|x\b|times)\b|\b\d+(?:\.\d+)?\s?(?:%|percent|x\b)/i;
+  /\b(?:\d+|two|three|four|five|six|seven|eight|nine|ten|dozen)\+? (?:years?(?! old)|yrs|internships|products|engineers|people|reports|direct reports|clients|customers|startups|companies|x\b|times)\b|\b\d+(?:\.\d+)?\s?(?:%|percent|x\b)/i;
 const SPELLED_METRIC =
   /\b(?:(?:twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|million|billion)[- ]?(?:\w+ )?)(?:percent|%|users|people|customers|clients|vehicles|records|volunteers|engineers|states|queries|requests|events)\b/i;
 
 // "Ariv prefers X" is an opinion he never gave: the facts hold no preferences. Asking him about one is fine.
 const INVENTED_PREFERENCE =
   /\b(?:ariv|he)(?: \w+)? (?:prefers|favors|swears by|recommends)\b|\b(?:ariv|he)'?(?:s| is)? (?:\w+ )?(?:favorite|go-to)\b|\bhis (?:favorite|go-to|preferred)\b|\b(?:ariv|he) builds with both\b/i;
-const PREFERENCE_EXEMPT = /\b(?:ask|don't know|not sure|no idea|not in my notes|whether)\b/i;
+const PREFERENCE_EXEMPT = /\b(?:ask|don't know|not sure|no idea|not in my notes|whether|trustworthy)\b/i;
 
 // Ariv's line is "authorized to work". Any status, visa type or sponsorship claim goes past it.
 const WORK_STATUS_CLAIM =

@@ -142,6 +142,8 @@ describe("probe and call failures, 2026-10-31 (items 36)", () => {
     "He's authorized to work.",
     "He has work authorization, so that's not a blocker.",
     "He's 25, and he speaks Tamil and English.",
+    "Ariv is twenty-five years old.",
+    "He prefers trustworthy logs over pretty wrong numbers.",
     "Ariv's an engineer at heart.",
     "He's aiming for software engineer roles.",
     "Not in my notes whether he prefers Rust, so ask him.",
