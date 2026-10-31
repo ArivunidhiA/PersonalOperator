@@ -1,0 +1,72 @@
+# Master checklist (PM-held)
+
+Audit of 2026-10-30. One row per item; ticked only after the PR is merged into `main` and verified by the PM.
+Topic checklists with sub-steps live beside this file: `security.md`, `speed-quality.md`, `design-ux.md`.
+
+## Topic 1: Security, privacy, dependencies (session po-security)
+- [x] 1 Upgrade Next.js to 16.4.3 (merged #17; live check pending)
+- [x] 3 Fix source-map-js advisory (merged #17; live check pending)
+- [x] 4 Clerk v7 migration plan (merged #17; live check pending)
+- [x] 5 Full Content-Security-Policy (merged #13; live check pending)
+- [x] 6 Unspoofable owner flag (merged #7; live check pending)
+- [x] 7 Share tokens expire (merged #14; live check pending)
+- [x] 8 noindex on /call/[token] page (merged #13; live check pending)
+- [x] 9 Turnstile before token mint (merged #7; live check pending)
+- [x] 10 Separate analytics salt (merged #14; live check pending)
+- [x] 11 RETENTION_DAYS default 90 (merged #14; live check pending)
+- [x] 12 /privacy page (merged #14; live check pending)
+- [x] 13 IPINFO_TOKEN warning + docs (merged #14; live check pending)
+- [x] 14 COOP / CORP headers (merged #13; live check pending)
+- [x] 15 /dashboard redirects to sign-in (merged #7; live check pending)
+- [x] 16 security.txt + SECURITY.md (merged #13; live check pending)
+- [x] 17 gitleaks pre-commit + CI (merged #17; live check pending)
+- [x] 18 Renovate (merged #17; live check pending)
+- [x] 19 zod request validation (merged #7; live check pending)
+- [x] 20 Strix workflow + docs (merged #7; live check pending)
+
+## Topic 2: Speed, reliability, quality (session po-speed)
+- [x] 25 Parallel mic + session start (merged #12; live check pending)
+- [x] 26 Prefetch audio worklets (merged #16; live check pending)
+- [ ] 27 Client VAD gating
+- [x] 28 /api/health + uptime schedule (merged #18; live check pending)
+- [x] 29 Error reporting (merged #6; live check pending)
+- [x] 30 Lightpanda smoke (merged #23; live check pending)
+- [ ] 31 axe in Playwright
+- [ ] 32 Lighthouse CI budget
+- [ ] 33 size-limit budget
+- [ ] 34 knip + dead files removed
+- [x] 35 known-risks.md filled (merged #6; live check pending)
+- [ ] 36 Nightly live evals
+- [x] 37 Vitest ESM config + @types/node 24 (merged #11; live check pending)
+- [x] 39 Superpowers + watchdog test (merged #21; live check pending)
+- [x] 40 NeMo SDP corpus (merged #22; live check pending)
+- [x] 41 Number normalization before verifier (merged #15; live check pending)
+- [x] 42 Finish-lock fallback fixed (merged #6/#7; live check pending)
+- [x] 43 Duration from setupComplete (merged #20; live check pending)
+- [x] 44 Strix preview-only note (merged #6; live check pending)
+
+## Topic 3: Design, UX, landing (session po-design)
+- [x] 2 Remove jspdf, print stylesheet (merged #10; live check pending)
+- [x] 21 Clerk only on dashboard (merged #8; live check pending)
+- [x] 22 Static home page (merged #8; live check pending)
+- [x] 23 Remove Geist Mono (merged #8; live check pending)
+- [x] 24 Remove @vercel/analytics (merged #8; live check pending)
+- [x] 38 Split RealtimeVoice (merged #9; live check pending)
+- [x] 45 Landing: orb + one "Ask me" button (merged #19; live check pending)
+- [x] 46 Footer privacy link (merged #19; live check pending)
+- [x] 47 e2e assertions updated (merged #19; live check pending)
+- [x] 48 Sign-in removed from public page (merged #19; live check pending)
+- [x] 49 Impeccable detect/distill/audit (merged #25; live check pending)
+- [x] 50 Palette + typeface (merged #19; live check pending)
+- [x] 51 Contrast fixes (merged #19; live check pending)
+- [x] 52 Countdown hidden until last minute (merged #19; live check pending)
+- [x] 53 Mode labels removed (merged #19; live check pending)
+- [x] 54 Favicon animation only while live (merged #10; live check pending)
+- [x] 55 OG / Twitter image (merged #10; live check pending)
+- [x] 56 robots, sitemap, manifest (merged #10; live check pending)
+
+## Final gate (PM)
+- [ ] All PRs merged in order: speed-ci, security-deps, security-headers/privacy, design-bundle, design-meta, speed-voice, design landing, remaining
+- [ ] `npm run lint && npm run typecheck && npm test` green on main
+- [ ] Production deploy verified: landing minimal, call connects, headers, /privacy, OG unfurl, robots/sitemap
+- [ ] Items needing Ari listed and handed over
