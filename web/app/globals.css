@@ -41,7 +41,6 @@
   --color-ring: var(--ring);
   --color-ring-offset-background: var(--ring-offset-background);
   --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
 }
 
 body {

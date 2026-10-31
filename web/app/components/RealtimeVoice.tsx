@@ -1,11 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
-import { useUser as useClerkUser } from "@clerk/nextjs";
-import { Mic, MicOff, PhoneOff, Copy, Check, Download, Mail, ExternalLink, CalendarDays } from "lucide-react";
+import { Mic, MicOff, PhoneOff, Copy, Check, Download, ExternalLink, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { VoicePoweredOrb } from "@/components/ui/voice-powered-orb";
-import { AuthHeader } from "./AuthHeader";
 import { LINKS, tagBookingUrl } from "@/lib/knowledge";
 import { trackClick } from "@/lib/track-client";
 import { detectAgentTransition, AGENT_MODES } from "@/lib/agents";
@@ -27,21 +25,12 @@ const TOOL_LABELS: Record<string, string> = {
   generate_summary: "Writing a recap",
 };
 
-function useSafeUser() {
-  try {
-    return useClerkUser();
-  } catch {
-    return { user: null, isSignedIn: false, isLoaded: true };
-  }
-}
-
 // The speech transcriber adds em dashes as punctuation; show them as commas.
 const displayText = (t: string) => t.replace(/\s*\u2014\s*/g, ", ");
 
 const fmt = (s: number) => `${Math.floor(s / 60)}:${String(Math.max(0, s) % 60).padStart(2, "0")}`;
 
 export default function RealtimeVoice() {
-  const { isSignedIn } = useSafeUser();
   const [phase, setPhase] = useState<Phase>("idle");
   const [transcript, dispatch] = useReducer(transcriptReducer, initialTranscript);
   const [notice, setNotice] = useState<{ text: string; tone: "error" | "info"; showLinks?: boolean } | null>(null);
@@ -56,8 +45,6 @@ export default function RealtimeVoice() {
     summary?: string;
     saving: boolean;
     failed?: boolean;
-    emailed?: string;
-    emailError?: string;
   } | null>(null);
   const [copied, setCopied] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -261,14 +248,6 @@ export default function RealtimeVoice() {
     setPost((p) => (p ? { ...p, shareToken: res?.ok ? data?.share_token : undefined, shareError: res?.ok ? undefined : data?.error || "Couldn't make a link." } : p));
   };
 
-  const emailTranscript = async () => {
-    const info = infoRef.current;
-    if (!info) return;
-    const res = await fetch("/api/calls/email", { method: "POST", headers: { "x-session-ticket": info.ticket } }).catch(() => null);
-    const data = (await res?.json().catch(() => ({}))) as { to?: string; error?: string } | undefined;
-    setPost((p) => (p ? { ...p, emailed: res?.ok ? data?.to : undefined, emailError: res?.ok ? undefined : data?.error || "Couldn't send it." } : p));
-  };
-
   const shareUrl = post?.shareToken && typeof window !== "undefined" ? `${window.location.origin}/call/${post.shareToken}` : null;
   const live = phase === "live";
   const status = !live
@@ -290,7 +269,6 @@ export default function RealtimeVoice() {
       <header className="flex items-center justify-between gap-3 px-4 py-3 sm:px-6">
         <h1 className="text-sm font-medium tracking-wide text-white/70">Ariv&apos;s AI</h1>
         <div className="flex items-center gap-3">
-          <AuthHeader />
           {/* One persistent button (label/action change) so keyboard focus isn't lost. */}
           <Button
             onClick={live || phase === "connecting" ? hangUp : () => void start()}
@@ -447,12 +425,6 @@ export default function RealtimeVoice() {
                     <Download className="h-4 w-4" aria-hidden />
                     Download PDF
                   </Button>
-                  {isSignedIn && (
-                    <Button variant="secondary" size="sm" className="gap-2" onClick={() => void emailTranscript()} disabled={!!post.emailed}>
-                      <Mail className="h-4 w-4" aria-hidden />
-                      {post.emailed ? "Sent" : "Email it to me"}
-                    </Button>
-                  )}
                   <a
                     href={tagBookingUrl(LINKS.calendly, sessionId)}
                     target="_blank"
@@ -466,8 +438,6 @@ export default function RealtimeVoice() {
                 </div>
               )}
               {post.shareError && <p className="mt-2 text-xs text-red-200">{post.shareError}</p>}
-              {post.emailed && <p className="mt-2 text-xs text-white/50">Sent to {post.emailed}.</p>}
-              {post.emailError && <p className="mt-2 text-xs text-red-200">{post.emailError}</p>}
             </div>
           )}
         </section>
