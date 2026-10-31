@@ -1,0 +1,16 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "separateMajorMinor": true,
+  "packageRules": [
+    {
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "minor and patch updates",
+      "schedule": ["before 6am on monday"]
+    },
+    {
+      "matchUpdateTypes": ["major"],
+      "groupName": null
+    }
+  ]
+}
