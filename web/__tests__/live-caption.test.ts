@@ -67,6 +67,11 @@ describe("support", () => {
   it("an old Chrome without available() is not", () => {
     expect(liveCaptionSupported(fakeWindow(CHROME, class {}))).toBe(false);
   });
+  it("NEXT_PUBLIC_LIVE_CAPTIONS=0 turns captions off", () => {
+    vi.stubEnv("NEXT_PUBLIC_LIVE_CAPTIONS", "0");
+    expect(liveCaptionSupported(fakeWindow())).toBe(false);
+    vi.unstubAllEnvs();
+  });
   it("unsupported returns null and touches nothing", () => {
     const { track } = fakeTrack();
     expect(startLiveCaption(track, { onCaption: () => {} }, fakeWindow(FIREFOX, undefined))).toBeNull();
@@ -229,6 +234,10 @@ describe("mute", () => {
 
 describe("names", () => {
   it("leaves ordinary words alone", () => {
-    for (const s of ["what's the forecast for tomorrow", "does he focus on backend", "indy cars are fast"]) expect(fixNames(s)).toBe(s);
+    for (const s of ["what's the forecast for tomorrow", "does he focus on backend", "indy cars are fast", "my friend Eric said hi"]) expect(fixNames(s)).toBe(s);
+  });
+  it("fixes Eric only in a phrase about Ariv", () => {
+    expect(fixNames("where does Eric work")).toBe("where does Ariv work");
+    expect(fixNames("whether Eric would be a good fit")).toBe("whether Ariv would be a good fit");
   });
 });

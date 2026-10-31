@@ -68,9 +68,10 @@ function recognitionClass(w: Window): RecognitionClass | null {
 /**
  * Desktop Chromium only. available() marks the build that also has start(track). Safari and iOS have
  * the old API, which would open its own mic without echo cancelling and cut into the call's audio.
- * Phones stay off until tested on a real device.
+ * Phones stay off until tested on a real device. NEXT_PUBLIC_LIVE_CAPTIONS=0 turns captions off.
  */
 export function liveCaptionSupported(w: Window = window): boolean {
+  if (process.env.NEXT_PUBLIC_LIVE_CAPTIONS === "0") return false;
   const ua = w.navigator.userAgent;
   if (/Android|iPhone|iPad|iPod|Mobile/i.test(ua) || !/Chrome\//.test(ua)) return false;
   return typeof recognitionClass(w)?.available === "function";
