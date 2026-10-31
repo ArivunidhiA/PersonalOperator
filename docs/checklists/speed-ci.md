@@ -39,10 +39,10 @@ Tick only when done and verified. Each item ships as its own PR.
 - [x] Verified: `npx knip` clean, build still passes
 
 ## Item 36 - Nightly live evals
-- [ ] Code: `.github/workflows/evals-nightly.yml` (`npm run eval:live`, GEMINI_API_KEY secret, upload `evals/.results`)
-- [ ] Test: n/a (workflow); YAML parsed
-- [ ] Docs/env: secret named in PR
-- [ ] Verified: YAML validated
+- [x] Code: `.github/workflows/evals-nightly.yml` (`npm run eval:live`, GEMINI_API_KEY secret, upload `evals/.results`)
+- [x] Test: n/a (workflow); YAML parsed
+- [x] Docs/env: secret named in PR
+- [x] Verified: YAML validated
 
 ## Item 37 - Config rename + @types/node
 - [x] Code: vitest configs renamed to `.mts`, references fixed, `@types/node` 24
