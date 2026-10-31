@@ -1,4 +1,5 @@
 import { ALLOWED_NUMBERS } from "./knowledge";
+import { normalizeNumbers } from "./normalize-numbers";
 
 /**
  * Deterministic "fast check" on what the agent said (the System-1 idea from
@@ -66,7 +67,8 @@ const sentenceAt = (text: string, idx: number) => {
 };
 
 export function verifyUtterance(raw: string, extraAllowedNumbers: string[] = []): Violation[] {
-  const text = normalize(raw);
+  // Spelled numbers ("forty percent") become digits so the number checks see them.
+  const text = normalizeNumbers(normalize(raw));
   const out: Violation[] = [];
   const lower = text.toLowerCase();
 
