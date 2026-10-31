@@ -6,7 +6,7 @@ Gate: CI minutes are exhausted, so local `cd web && npm run lint && npm run type
 - [x] Code: `api/calls/share` inserts `expires_at = now()+30d`, returns `expires_at` (also for an existing live link; an expired link is replaced)
 - [x] Fetch path: `api/calls/[token]` already returned 410 past `expires_at` (unchanged); cron already deletes expired rows
 - [x] Test: `routes-security.test.ts` "share response includes a ~30 day expiry" (insert value equals response)
-- [x] Docs/migration: `web/scripts/migrate-v5.sql` (ensures column + backfills NULLs). **Owner action: run it in Supabase.**
+- [x] Docs/migration: `web/scripts/migrate-v6.sql` (ensures column + backfills NULLs). **Owner action: run it in Supabase.**
 - [x] Verified: unit test + lint/typecheck. Not verified: the expired-token 410 path has no new test; not run against real Supabase.
 
 ## 10. ANALYTICS_SALT
