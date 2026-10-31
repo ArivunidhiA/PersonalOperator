@@ -3,10 +3,10 @@
 Tick only when done and verified. Each item ships as its own PR.
 
 ## Item 28 - Health endpoint + uptime
-- [ ] Code: `web/app/api/health/route.ts` (Supabase reachable, Redis, GEMINI_API_KEY set; never mints a token; 200/503 JSON) and `.github/workflows/uptime.yml` (30-min schedule, fails loudly)
-- [ ] Test: vitest route test (ok and degraded paths)
-- [ ] Docs/env: `docs/ops/uptime.md` (Actions-minutes caveat, UptimeRobot alternative)
-- [ ] Verified: lint + typecheck + tests; route hit on local server
+- [x] Code: `web/app/api/health/route.ts` (Supabase reachable, Redis, GEMINI_API_KEY set; never mints a token; 200/503 JSON) and `.github/workflows/uptime.yml` (30-min schedule, fails loudly)
+- [x] Test: vitest route test (ok and degraded paths)
+- [x] Docs/env: `docs/ops/uptime.md` (Actions-minutes caveat, UptimeRobot alternative)
+- [x] Verified: lint + typecheck + tests; route hit on local server
 
 ## Item 30 - Lightpanda smoke
 - [ ] Code: `web/scripts/smoke-lightpanda.mjs` (CDP via puppeteer-core; LINKS 2xx/3xx, /call/deadbeef renders, security headers, old endpoints 404) and `.github/workflows/smoke.yml` (hourly; fetch fallback)
