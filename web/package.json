@@ -13,7 +13,8 @@
     "eval:live": "vitest run --config vitest.eval.config.mts",
     "kb:seed": "node scripts/seed-knowledge.mjs",
     "kb:verify": "node scripts/seed-knowledge.mjs --verify",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "lhci": "lhci autorun"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.39.7",
@@ -36,6 +37,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@lhci/cli": "^0.15.1",
     "@playwright/test": "^1.58.2",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.9.1",
