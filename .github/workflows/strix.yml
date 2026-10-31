@@ -1,0 +1,28 @@
+name: Strix security scan
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_url:
+        description: Preview URL to scan (never production without Ari's say-so)
+        required: true
+
+jobs:
+  strix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Strix
+        run: pipx install strix-agent
+      - name: Scan
+        env:
+          STRIX_LLM: ${{ vars.STRIX_LLM || 'anthropic/claude-sonnet-5-5' }}
+          LLM_API_KEY: ${{ secrets.STRIX_LLM_API_KEY }}
+          TARGET: ${{ inputs.target_url }}
+        run: strix --non-interactive --target "$TARGET"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: strix-results
+          path: strix_runs/

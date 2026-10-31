@@ -5,22 +5,23 @@ import { mintTicket, newSessionId } from "@/lib/session-ticket";
 import { createLogger } from "@/lib/logger";
 import { GREETING_NUDGE, MAX_CALL_SECONDS, chooseProvider, geminiAllowedIn } from "@/lib/voice-config";
 import { GEMINI_WS_URL, mintGeminiToken } from "@/lib/gemini-token";
+import { sessionHintsSchema } from "@/lib/schemas";
+import { verifyTurnstile } from "@/lib/turnstile";
+import { isOwnerRequest } from "@/lib/session-ticket";
 import { isOwnerUser, recordEvent } from "@/lib/analytics-store";
 import { later } from "@/lib/later";
 import { requestContext } from "@/lib/visitor";
 import { strictPrivacyRegion } from "@/lib/voice-config";
 
-const VID = /^v_[A-Za-z0-9_-]{12,40}$/;
-
-/** Optional analytics hints from the page: its visitor id and whether it's Ariv's own browser. */
-async function readHints(req: Request): Promise<{ vid: string | null; own: boolean }> {
+/** Optional hints from the page: its visitor id and the Turnstile token. Ownership is never taken from the body. */
+async function readHints(req: Request): Promise<{ vid: string | null; ts: string | null }> {
   try {
     const raw = await req.text();
-    if (!raw || raw.length > 512) return { vid: null, own: false };
-    const b = JSON.parse(raw) as { vid?: unknown; own?: unknown };
-    return { vid: typeof b.vid === "string" && VID.test(b.vid) ? b.vid : null, own: b.own === true };
+    if (!raw || raw.length > 2560) return { vid: null, ts: null };
+    const b = sessionHintsSchema.safeParse(JSON.parse(raw));
+    return b.success ? { vid: b.data.vid ?? null, ts: b.data.ts ?? null } : { vid: null, ts: null };
   } catch {
-    return { vid: null, own: false };
+    return { vid: null, ts: null };
   }
 }
 
@@ -42,6 +43,10 @@ export async function POST(req: Request) {
   const site = req.headers.get("sec-fetch-site");
   if (req.headers.get("x-ariv-client") !== "1" || (site && site !== "same-origin" && site !== "none")) {
     return NextResponse.json({ error: "Forbidden", code: "forbidden" }, { status: 403 });
+  }
+  const hints = await readHints(req);
+  if (!(await verifyTurnstile(hints.ts, clientIp(req)))) {
+    return NextResponse.json({ error: "Couldn't verify your browser. Refresh and try again.", code: "verification" }, { status: 403 });
   }
   const country = req.headers.get("x-vercel-ip-country");
   const provider = chooseProvider(country);
@@ -82,9 +87,8 @@ export async function POST(req: Request) {
     );
   }
   const sessionId = newSessionId();
-  const hints = await readHints(req);
   const ctx = requestContext(req);
-  const own = hints.own || isOwnerUser(uid);
+  const own = isOwnerUser(uid) || isOwnerRequest(req);
   const vid = strictPrivacyRegion(country) ? null : hints.vid;
   const ticket = mintTicket({ sid: sessionId, p: provider, uid, em: email, vid, own });
   const logStart = () =>

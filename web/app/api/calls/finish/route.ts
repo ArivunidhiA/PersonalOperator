@@ -7,6 +7,7 @@ import { completeJSON } from "@/lib/llm";
 import { verifyTranscript } from "@/lib/verifier";
 import { escapeHtml } from "@/lib/html";
 import { LINKS } from "@/lib/knowledge";
+import { finishSchema, messageSchema } from "@/lib/schemas";
 import { createLogger } from "@/lib/logger";
 import { MAX_CALL_SECONDS } from "@/lib/voice-config";
 import { fallbackAnalysis, type Analysis, type Msg } from "@/lib/call-summary";
@@ -47,19 +48,25 @@ const cap = (v: unknown, n: number) => (typeof v === "string" && v.trim() ? v.tr
 export async function POST(req: Request) {
   const raw = await req.text();
   if (raw.length > MAX_BODY) return NextResponse.json({ error: "Too large" }, { status: 413 });
-  let body: { ticket?: unknown; messages?: unknown };
+  let json: unknown;
   try {
-    body = JSON.parse(raw);
+    json = JSON.parse(raw);
   } catch {
     return NextResponse.json({ error: "Bad JSON" }, { status: 400 });
   }
-  const ticket = verifyTicket(req.headers.get("x-session-ticket") ?? (typeof body.ticket === "string" ? body.ticket : null));
+  const parsed = finishSchema.safeParse(json);
+  if (!parsed.success) return NextResponse.json({ error: "Bad JSON" }, { status: 400 });
+  const body = parsed.data;
+  const ticket = verifyTicket(req.headers.get("x-session-ticket") ?? (body.ticket ?? null));
   if (!ticket) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const sid = ticket.sid;
   const slog = log.child({ sessionId: sid });
 
-  const messages: Msg[] = (Array.isArray(body.messages) ? body.messages : [])
-    .filter((m): m is Msg => !!m && (m.role === "user" || m.role === "assistant") && typeof m.text === "string")
+  const messages: Msg[] = body.messages
+    .flatMap((m) => {
+      const r = messageSchema.safeParse(m);
+      return r.success ? [r.data as Msg] : [];
+    })
     .map((m) => ({ role: m.role, text: m.text.slice(0, 2000).trim() }))
     .filter((m) => m.text)
     .slice(0, MAX_MESSAGES);

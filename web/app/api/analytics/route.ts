@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase";
 import { createLogger } from "@/lib/logger";
+import { mintOwnerCookie, OWNER_COOKIE } from "@/lib/session-ticket";
 import { isOwnerUser } from "@/lib/analytics-store";
 import { recentBookings } from "@/lib/calendly";
 import { buildReport, type CallRow, type EventRow } from "@/lib/analytics-report";
@@ -63,7 +64,10 @@ export async function GET(req: Request) {
       includeAll,
     });
     log.info("Analytics served", { days, visitors: report.overview.visitors, calls: report.overview.calls });
-    return NextResponse.json({ ...report, meta: { ...report.meta, migrationPending, bookingsAvailable: bookings !== null } });
+    const res = NextResponse.json({ ...report, meta: { ...report.meta, migrationPending, bookingsAvailable: bookings !== null } });
+    const owner = mintOwnerCookie();
+    res.cookies.set(OWNER_COOKIE, owner.value, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/", maxAge: owner.maxAge });
+    return res;
   } catch (err) {
     log.error("Analytics query failed", {
       error: err instanceof Error ? err.message : String(err),
