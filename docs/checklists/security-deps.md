@@ -33,4 +33,4 @@ Gate: CI minutes are exhausted, so `cd web && npm run lint && npm run typecheck 
 - [x] Test added: n/a (config)
 - [x] Docs/env updated: README line; fallback snippet `docs/gitleaks-ci.yml.txt`
 - [x] Verified: local `gitleaks detect --config .gitleaks.toml`: 86 commits, no leaks (config parses)
-- [ ] Workflow file push accepted (confirm after push); CI step itself not run (CI minutes exhausted)
+- [ ] CI step: push rejected (token lacks `workflow` scope), so `ci.yml` is unchanged; snippet in `docs/gitleaks-ci.yml.txt` must be applied by the owner
