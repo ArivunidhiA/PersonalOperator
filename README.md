@@ -18,7 +18,7 @@ Go try it, then tell me what felt off. Feedback is the whole point.
 
 Here's the setup, kept short.
 
-![How the pieces fit together](docs/readme/architecture.svg)
+<img src="docs/readme/architecture.svg" alt="You talk, Gemini speaks back, a small server handles facts and the calendar, Supabase keeps the transcript, I get the recap" width="300" align="right">
 
 **The flow in four steps**
 
