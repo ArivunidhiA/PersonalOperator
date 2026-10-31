@@ -73,6 +73,7 @@ const LIMITS = {
     make: () => Ratelimit.fixedWindow(Number(process.env.OPENAI_DAILY_SESSION_CAP || 30), "1 d"),
   },
   shareView: { max: 60, windowMs: 600_000, make: () => Ratelimit.slidingWindow(60, "10 m") }, // per IP
+  clientError: { max: 30, windowMs: 600_000, make: () => Ratelimit.slidingWindow(30, "10 m") }, // browser error reports per IP
   track: { max: 120, windowMs: 600_000, make: () => Ratelimit.slidingWindow(120, "10 m") }, // analytics events per IP
 } satisfies Record<string, Spec>;
 
@@ -139,4 +140,24 @@ export function clientIp(req: Request): string {
   if (!ip.includes(":")) return ip;
   const parts = ip.split("::")[0].split(":").filter(Boolean);
   return `${parts.slice(0, 4).join(":")}::/64`;
+}
+
+const memoryLocks = new Map<string, number>();
+
+/**
+ * Short mutual-exclusion lock. Redis SET NX when reachable; when it isn't, a
+ * per-instance in-memory lock (the old fallback pretended every lock was won,
+ * so two saves could race). Returns a release function, or null if held.
+ */
+export async function withLock(key: string, ttlSec: number): Promise<(() => Promise<void>) | null> {
+  const res = await safeRedis<string | number | null>((r) => r.set(key, 1, { nx: true, ex: ttlSec }), "UNAVAILABLE");
+  if (res === "UNAVAILABLE") {
+    const now = Date.now();
+    const until = memoryLocks.get(key);
+    if (until && until > now) return null;
+    memoryLocks.set(key, now + ttlSec * 1000);
+    return async () => void memoryLocks.delete(key);
+  }
+  if (!res) return null;
+  return async () => void (await safeRedis((r) => r.del(key), 0));
 }

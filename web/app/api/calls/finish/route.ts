@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import { getSupabase } from "@/lib/supabase";
-import { checkLimit, safeRedis } from "@/lib/rate-limit";
+import { checkLimit, withLock } from "@/lib/rate-limit";
 import { verifyTicket } from "@/lib/session-ticket";
 import { completeJSON } from "@/lib/llm";
 import { verifyTranscript } from "@/lib/verifier";
 import { escapeHtml } from "@/lib/html";
 import { LINKS } from "@/lib/knowledge";
+import { finishSchema, messageSchema } from "@/lib/schemas";
 import { createLogger } from "@/lib/logger";
 import { MAX_CALL_SECONDS } from "@/lib/voice-config";
 import { fallbackAnalysis, type Analysis, type Msg } from "@/lib/call-summary";
@@ -47,19 +48,25 @@ const cap = (v: unknown, n: number) => (typeof v === "string" && v.trim() ? v.tr
 export async function POST(req: Request) {
   const raw = await req.text();
   if (raw.length > MAX_BODY) return NextResponse.json({ error: "Too large" }, { status: 413 });
-  let body: { ticket?: unknown; messages?: unknown };
+  let json: unknown;
   try {
-    body = JSON.parse(raw);
+    json = JSON.parse(raw);
   } catch {
     return NextResponse.json({ error: "Bad JSON" }, { status: 400 });
   }
-  const ticket = verifyTicket(req.headers.get("x-session-ticket") ?? (typeof body.ticket === "string" ? body.ticket : null));
+  const parsed = finishSchema.safeParse(json);
+  if (!parsed.success) return NextResponse.json({ error: "Bad JSON" }, { status: 400 });
+  const body = parsed.data;
+  const ticket = verifyTicket(req.headers.get("x-session-ticket") ?? (body.ticket ?? null));
   if (!ticket) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const sid = ticket.sid;
   const slog = log.child({ sessionId: sid });
 
-  const messages: Msg[] = (Array.isArray(body.messages) ? body.messages : [])
-    .filter((m): m is Msg => !!m && (m.role === "user" || m.role === "assistant") && typeof m.text === "string")
+  const messages: Msg[] = body.messages
+    .flatMap((m) => {
+      const r = messageSchema.safeParse(m);
+      return r.success ? [r.data as Msg] : [];
+    })
     .map((m) => ({ role: m.role, text: m.text.slice(0, 2000).trim() }))
     .filter((m) => m.text)
     .slice(0, MAX_MESSAGES);
@@ -72,10 +79,8 @@ export async function POST(req: Request) {
   if (!(await checkLimit("finish", sid)).ok) return NextResponse.json({ ok: false, error: "Too many saves" }, { status: 429 });
 
   // Short lock so a snapshot and the final save don't process at the same time.
-  const lockKey = `finish-lock:${sid}`;
-  const locked = await safeRedis<string | number | null>((r) => r.set(lockKey, 1, { nx: true, ex: 25 }), "OK");
-  if (!locked) return NextResponse.json({ ok: false, pending: true, error: "Saving, try again in a moment" }, { status: 409 });
-  const unlock = () => safeRedis((r) => r.del(lockKey), 0);
+  const release = await withLock(`finish-lock:${sid}`, 25);
+  if (!release) return NextResponse.json({ ok: false, pending: true, error: "Saving, try again in a moment" }, { status: 409 });
 
   try {
     const existing = await supabase.from("call_summaries").select("summary, transcript").eq("session_id", sid).maybeSingle();
@@ -194,7 +199,7 @@ export async function POST(req: Request) {
     slog.error("save failed", { error: err instanceof Error ? err.message : String(err) });
     return NextResponse.json({ ok: false, error: "Couldn't save the call" }, { status: 500 });
   } finally {
-    await unlock();
+    await release();
   }
 }
 

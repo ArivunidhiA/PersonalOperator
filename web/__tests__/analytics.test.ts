@@ -131,10 +131,10 @@ describe("/api/track", () => {
     expect((await lastEvent()).target).toBe("email");
   });
 
-  it("flags headless browsers and honours the owner hint", async () => {
+  it("flags headless browsers and ignores a spoofed owner hint", async () => {
     const { POST } = await import("@/app/api/track/route");
     await POST(track({ t: "visit", own: true }, { "user-agent": "Mozilla/5.0 HeadlessChrome/140.0", "x-vercel-ip-country": "US" }));
-    expect(await lastEvent()).toMatchObject({ is_bot: true, is_owner: true });
+    expect(await lastEvent()).toMatchObject({ is_bot: true, is_owner: false });
   });
 });
 
@@ -202,5 +202,24 @@ describe("dashboard report", () => {
     const r = buildReport({ now, days: 7, includeAll: true, bookings: null, calls: [], events: [ev({ visitor_id: "v_me", is_owner: true }), ev({ visitor_id: "v_bot", is_bot: true })] });
     expect(r.visitors.map((v) => v.id).sort()).toEqual(["v_bot", "v_me"]);
     expect(r.visitors.find((v) => v.id === "v_me")?.owner).toBe(true);
+  });
+});
+
+describe("owner cookie", () => {
+  it("is trusted only when signed by us, unexpired and untampered", async () => {
+    const { mintOwnerCookie, isOwnerRequest, OWNER_COOKIE } = await import("@/lib/session-ticket");
+    const c = mintOwnerCookie();
+    const mk = (v: string) => new Request("http://x/", { headers: { cookie: `a=b; ${OWNER_COOKIE}=${v}` } });
+    expect(isOwnerRequest(mk(c.value))).toBe(true);
+    expect(isOwnerRequest(mk(c.value.slice(0, -2) + "xx"))).toBe(false);
+    expect(isOwnerRequest(mk(c.value.replace(/^o\.\d+/, "o.9999999999")))).toBe(false);
+    expect(isOwnerRequest(mk(c.value), Date.now() + 400 * 24 * 3600 * 1000)).toBe(false);
+    expect(isOwnerRequest(new Request("http://x/"))).toBe(false);
+  });
+  it("marks /api/track events as owner with a valid cookie", async () => {
+    const { mintOwnerCookie, OWNER_COOKIE } = await import("@/lib/session-ticket");
+    const { POST } = await import("@/app/api/track/route");
+    await POST(track({ t: "visit", own: true }, { cookie: `${OWNER_COOKIE}=${mintOwnerCookie().value}` }));
+    expect(await lastEvent()).toMatchObject({ is_owner: true });
   });
 });

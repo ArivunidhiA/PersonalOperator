@@ -63,10 +63,10 @@ export function markOwnerBrowser() {
 }
 
 /** Hints for /api/voice/session: which visitor is calling. */
-export function sessionHints(): { vid?: string; own?: boolean } {
+export function sessionHints(): { vid?: string } {
   if (optedOut()) return {};
   const vid = visitorId();
-  return { ...(vid ? { vid } : {}), ...(isOwnerBrowser() ? { own: true } : {}) };
+  return vid ? { vid } : {};
 }
 
 export async function trackVisit(path: string) {
@@ -83,7 +83,6 @@ export async function trackVisit(path: string) {
     utm,
     tz: Intl.DateTimeFormat().resolvedOptions().timeZone,
     lang: navigator.language,
-    own: isOwnerBrowser() || undefined,
   };
   try {
     const res = await fetch("/api/track", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), keepalive: true });
@@ -102,7 +101,7 @@ export async function trackVisit(path: string) {
 /** A click on a link we show (profile links, booking links). Survives the page navigating away. */
 export function trackClick(label: string, href: string, sid?: string | null) {
   if (optedOut()) return;
-  const body = JSON.stringify({ t: "click", vid: visitorId(), sid: sid ?? undefined, label, href, path: window.location.pathname, own: isOwnerBrowser() || undefined });
+  const body = JSON.stringify({ t: "click", vid: visitorId(), sid: sid ?? undefined, label, href, path: window.location.pathname });
   try {
     if (navigator.sendBeacon?.("/api/track", new Blob([body], { type: "text/plain" }))) return;
   } catch {
