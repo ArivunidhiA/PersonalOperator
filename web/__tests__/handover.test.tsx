@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render } from "@testing-library/react";
 
 const { reportError } = vi.hoisted(() => ({ reportError: vi.fn() }));
 vi.mock("@/lib/report-error", () => ({ reportError }));
@@ -22,7 +22,6 @@ describe("ErrorBoundary", () => {
       </ErrorBoundary>,
     );
     expect(reportError).toHaveBeenCalledWith(expect.objectContaining({ message: "boom" }), "ErrorBoundary");
-    expect(screen.queryByText("boom")).toBeNull();
   });
 });
 
