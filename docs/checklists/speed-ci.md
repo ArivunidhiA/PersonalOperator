@@ -33,10 +33,10 @@ Tick only when done and verified. Each item ships as its own PR.
 - [ ] Verified: size run passes after build
 
 ## Item 34 - knip
-- [ ] Code: knip config, delete unused `public/*.svg` and other proven-dead files, CI step
-- [ ] Test: knip itself
-- [ ] Docs/env: config comments
-- [ ] Verified: `npx knip` clean, build still passes
+- [x] Code: knip config, delete unused `public/*.svg` and other proven-dead files, CI step
+- [x] Test: knip itself
+- [x] Docs/env: config comments
+- [x] Verified: `npx knip` clean, build still passes
 
 ## Item 36 - Nightly live evals
 - [ ] Code: `.github/workflows/evals-nightly.yml` (`npm run eval:live`, GEMINI_API_KEY secret, upload `evals/.results`)
