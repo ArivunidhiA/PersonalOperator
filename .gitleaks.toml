@@ -1,0 +1,11 @@
+title = "PersonalOperator gitleaks"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Placeholders and generated files"
+paths = [
+  '''web/\.env\.example$''',
+  '''web/package-lock\.json$''',
+]
