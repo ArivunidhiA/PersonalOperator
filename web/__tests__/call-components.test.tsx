@@ -33,12 +33,12 @@ describe("CallButton / MuteButton", () => {
     const onStart = vi.fn();
     const onHangUp = vi.fn();
     const { rerender } = render(<CallButton phase="idle" onStart={onStart} onHangUp={onHangUp} />);
-    fireEvent.click(screen.getByRole("button", { name: /start talking/i }));
+    fireEvent.click(screen.getByRole("button", { name: /ask me/i }));
     expect(onStart).toHaveBeenCalled();
     rerender(<CallButton phase="connecting" onStart={onStart} onHangUp={onHangUp} />);
     fireEvent.click(screen.getByRole("button", { name: /cancel/i }));
     rerender(<CallButton phase="live" onStart={onStart} onHangUp={onHangUp} />);
-    fireEvent.click(screen.getByRole("button", { name: /end call/i }));
+    fireEvent.click(screen.getByRole("button", { name: /^end$/i }));
     expect(onHangUp).toHaveBeenCalledTimes(2);
   });
   it("mute button reflects state", () => {
@@ -52,20 +52,23 @@ describe("CallButton / MuteButton", () => {
 });
 
 describe("StatusLine", () => {
-  it("shows status, mode and countdown; warns under a minute", () => {
-    const { container } = render(<StatusLine status="Listening" live modeName="Closer" secondsLeft={59} />);
+  it("renders nothing without a status", () => {
+    const { container } = render(<StatusLine status="" secondsLeft={300} live={false} />);
+    expect(container.textContent).toBe("");
+  });
+  it("hides the countdown until 60 s remain, then warns", () => {
+    const { container, rerender } = render(<StatusLine status="Listening" secondsLeft={61} live />);
     expect(screen.getByText("Listening")).toBeTruthy();
-    expect(screen.getByText("Closer")).toBeTruthy();
+    expect(container.textContent).not.toContain("left");
+    rerender(<StatusLine status="Listening" secondsLeft={59} live />);
     expect(container.textContent).toContain("0:59 left");
     expect(container.querySelector(".text-amber-300")).toBeTruthy();
   });
 });
 
 describe("TranscriptLog", () => {
-  it("shows the empty hint, then lines with em dashes softened", () => {
-    const { rerender } = render(<TranscriptLog items={[]} live={false} onLink={() => {}} />);
-    expect(screen.getByText(/conversation will show up here/i)).toBeTruthy();
-    rerender(<TranscriptLog items={[{ id: "a", role: "assistant", text: "Hi — there", final: true }]} live onLink={() => {}} />);
+  it("renders lines with em dashes softened", () => {
+    render(<TranscriptLog items={[{ id: "a", role: "assistant", text: "Hi \u2014 there", final: true }]} onLink={() => {}} />);
     expect(screen.getByText("Hi, there")).toBeTruthy();
   });
 });

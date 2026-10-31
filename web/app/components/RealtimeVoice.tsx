@@ -9,7 +9,7 @@ import { FaviconAnimator } from "./FaviconAnimator";
 import { StatusLine } from "./StatusLine";
 import { TranscriptLog } from "./TranscriptLog";
 import { trackClick } from "@/lib/track-client";
-import { detectAgentTransition, AGENT_MODES } from "@/lib/agents";
+import { detectAgentTransition } from "@/lib/agents";
 import { initialTranscript, toMessages, transcriptReducer, type TranscriptItem } from "@/lib/voice/transcript";
 import type { EndReason, SessionInfo, VoiceSession } from "@/lib/voice/types";
 // Static on purpose: iOS only allows audio if the AudioContext is created inside the tap,
@@ -31,7 +31,6 @@ export default function RealtimeVoice() {
   const [notice, setNotice] = useState<{ text: string; tone: "error" | "info"; showLinks?: boolean } | null>(null);
   const [agentSpeaking, setAgentSpeaking] = useState(false);
   const [activeTool, setActiveTool] = useState<string | null>(null);
-  const [mode, setMode] = useState<string>("greeter");
   const [muted, setMuted] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [post, setPost] = useState<PostState | null>(null);
@@ -96,7 +95,6 @@ export default function RealtimeVoice() {
     cancelRef.current = false;
     abortRef.current = new AbortController();
     modeRef.current = "greeter";
-    setMode("greeter");
     setMuted(false);
     setPhase("connecting");
     try {
@@ -112,7 +110,6 @@ export default function RealtimeVoice() {
             const next = detectAgentTransition(modeRef.current, name);
             if (next) {
               modeRef.current = next.id;
-              setMode(next.id);
             }
           },
           onToolEnd: (_name, _ok, card) => {
@@ -218,37 +215,19 @@ export default function RealtimeVoice() {
         : muted
           ? "Muted"
           : "Listening";
-  const orbHue = phase === "connecting" ? 280 : agentSpeaking ? 205 : live ? 235 : 240;
-  const modeName = AGENT_MODES.find((m) => m.id === mode)?.name;
+  const hasConversation = transcript.items.length > 0;
 
   return (
-    <div className="flex min-h-screen flex-col bg-black text-white">
+    <div className="flex min-h-screen flex-col bg-background text-foreground">
       <FaviconAnimator enabled={live} />
-      <header className="flex items-center justify-between gap-3 px-4 py-3 sm:px-6">
-        <h1 className="text-sm font-medium tracking-wide text-white/70">Ariv&apos;s AI</h1>
-        <div className="flex items-center gap-3">
-          <CallButton phase={phase} onStart={() => void start()} onHangUp={hangUp} />
-        </div>
+      <header className="px-5 py-4 sm:px-8 print:hidden">
+        <h1 className="font-serif text-lg italic tracking-wide text-primary/80">Ariv&apos;s AI</h1>
       </header>
-
-      {phase === "idle" && (
-        <div className="mx-auto max-w-xl px-4 pt-2 text-center sm:px-6">
-          <p className="text-base text-white/80">
-            Talk to my AI. It knows what I work on, it can find time on my calendar, and yes, it&apos;s an AI.
-          </p>
-          <p className="mt-2 text-xs leading-5 text-white/40">
-            Voice runs on Google&apos;s Gemini API (free tier), which may use calls to improve Google&apos;s models, so don&apos;t share
-            anything sensitive. Transcripts are saved so I can read them, and I log basic visit info (rough location, network,
-            device, where you came from, what you click) to see how people use this. Your browser&apos;s Do Not Track or Global
-            Privacy Control setting turns that off.
-          </p>
-        </div>
-      )}
 
       {notice && (
         <div
           role={notice.tone === "error" ? "alert" : "status"}
-          className={`mx-auto mt-3 w-[calc(100%-2rem)] max-w-xl rounded-xl border px-4 py-3 text-sm ${
+          className={`mx-auto mt-3 w-[calc(100%-2rem)] max-w-xl rounded-xl border px-4 py-3 text-sm print:hidden ${
             notice.tone === "error" ? "border-red-500/30 bg-red-500/10 text-red-100" : "border-white/15 bg-white/5 text-white/80"
           }`}
         >
@@ -257,33 +236,45 @@ export default function RealtimeVoice() {
         </div>
       )}
 
-      <main className="flex flex-1 flex-col items-center gap-6 px-4 pb-8 pt-4 lg:flex-row lg:items-start lg:justify-center lg:gap-12 lg:px-6">
-        <section className="flex flex-col items-center" aria-label="Call">
-          <div className="relative h-60 w-60 sm:h-72 sm:w-72 lg:h-[26rem] lg:w-[26rem]">
-            <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-blue-500/15 via-purple-500/15 to-fuchsia-500/15 blur-3xl" />
-            <div className="relative h-full w-full overflow-hidden rounded-full">
-              <VoicePoweredOrb hue={orbHue} getLevel={getLevel} />
-            </div>
+      <main
+        className={`flex flex-1 flex-col items-center gap-8 px-4 pb-10 pt-2 ${
+          hasConversation ? "lg:flex-row lg:items-start lg:justify-center lg:gap-14 lg:px-6" : "justify-center"
+        }`}
+      >
+        <section className="flex flex-col items-center print:hidden" aria-label="Call">
+          <div className="h-64 w-64 overflow-hidden rounded-full sm:h-80 sm:w-80 lg:h-[26rem] lg:w-[26rem]">
+            <VoicePoweredOrb hue={0} getLevel={getLevel} />
           </div>
-          <StatusLine status={status} live={live} modeName={modeName} secondsLeft={secondsLeft} />
+          <div className="mt-8">
+            <CallButton phase={phase} onStart={() => void start()} onHangUp={hangUp} />
+          </div>
+          <StatusLine status={status} secondsLeft={secondsLeft} live={live} />
           {live && <MuteButton muted={muted} onToggle={toggleMute} />}
         </section>
 
-        <section className="flex w-full max-w-md flex-col lg:mt-8" aria-label="Conversation">
-          <TranscriptLog items={transcript.items} live={live} onLink={(label, href) => trackClick(label, href, sessionId)} />
+        {(hasConversation || (phase === "ended" && post)) && (
+          <section className="flex w-full max-w-md flex-col lg:mt-8" aria-label="Conversation">
+            {hasConversation && <TranscriptLog items={transcript.items} onLink={(label, href) => trackClick(label, href, sessionId)} />}
 
-          {phase === "ended" && post && (
-            <PostCallPanel
-              post={post}
-              shareUrl={shareUrl}
-              sessionId={sessionId}
-              onRetry={() => void finish()}
-              onShare={() => void createShareLink()}
-              onPrint={() => window.print()}
-            />
-          )}
-        </section>
+            {phase === "ended" && post && (
+              <PostCallPanel
+                post={post}
+                shareUrl={shareUrl}
+                sessionId={sessionId}
+                onRetry={() => void finish()}
+                onShare={() => void createShareLink()}
+                onPrint={() => window.print()}
+              />
+            )}
+          </section>
+        )}
       </main>
+
+      <footer className="px-5 pb-6 text-center text-xs print:hidden">
+        <a href="/privacy" className="text-white/60 underline-offset-4 hover:text-white/90 hover:underline">
+          How this works · Privacy
+        </a>
+      </footer>
     </div>
   );
 }
@@ -297,7 +288,7 @@ function FallbackLinks() {
   return (
     <div className="mt-2 flex flex-wrap gap-3 text-sm">
       {links.map((l) => (
-        <a key={l.label} className="text-sky-300 hover:underline" href={l.href} target="_blank" rel="noopener noreferrer" onClick={() => trackClick(l.label, l.href)}>
+        <a key={l.label} className="text-ivory hover:underline" href={l.href} target="_blank" rel="noopener noreferrer" onClick={() => trackClick(l.label, l.href)}>
           {l.label}
         </a>
       ))}

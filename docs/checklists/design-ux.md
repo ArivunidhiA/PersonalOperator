@@ -46,32 +46,32 @@ Note: child sessions could not be started from a session-initiated turn, so all 
 - [x] verified (how: lint, typecheck, 205 tests incl. 8 new render tests; behaviour unchanged)
 
 ## 45. Minimal landing: orb + one pill (Ask me / End / Cancel)
-- [ ] code change
-- [ ] test added/updated
-- [ ] screenshot taken (UI items)
-- [ ] docs updated
-- [ ] verified (how: )
+- [x] code change
+- [x] test added/updated
+- [x] screenshot taken (UI items)
+- [x] docs updated
+- [x] verified (how: next start build; Browser pane 375px + desktop idle, connecting (mic stubbed) screenshots; docs/design/screenshots)
 
 ## 46. Footer: How this works · Privacy
-- [ ] code change
+- [x] code change
 - [ ] test added/updated
-- [ ] screenshot taken (UI items)
-- [ ] docs updated
-- [ ] verified (how: )
+- [x] screenshot taken (UI items)
+- [x] docs updated
+- [x] verified (how: footer link visible in screenshots; /privacy page is po-security's)
 
 ## 47. Update e2e/voice-call.spec.ts assertions
-- [ ] code change
-- [ ] test added/updated
+- [x] code change
+- [x] test added/updated
 - [ ] screenshot taken (UI items)
-- [ ] docs updated
-- [ ] verified (how: )
+- [x] docs updated
+- [x] verified (how: edited only; e2e needs live Gemini, not run)
 
 ## 48. Remove Sign in / AuthHeader from public page
-- [ ] code change
+- [x] code change
 - [ ] test added/updated
 - [ ] screenshot taken (UI items)
-- [ ] docs updated
-- [ ] verified (how: )
+- [x] docs updated
+- [x] verified (how: rg: no AuthHeader on public page; dashboard keeps it)
 
 ## 49. Impeccable detect/distill/audit + docs/design/impeccable-report.md
 - [ ] code change
@@ -81,32 +81,32 @@ Note: child sessions could not be started from a session-initiated turn, so all 
 - [ ] verified (how: )
 
 ## 50. One accent, distinctive typeface, orb palette, no halo; docs/design/DESIGN.md
-- [ ] code change
+- [x] code change
 - [ ] test added/updated
-- [ ] screenshot taken (UI items)
-- [ ] docs updated
-- [ ] verified (how: )
+- [x] screenshot taken (UI items)
+- [x] docs updated
+- [x] verified (how: screenshots: ivory/garnet orb, no halo; DESIGN.md)
 
 ## 51. Contrast: no informational text below white/60
-- [ ] code change
+- [x] code change
 - [ ] test added/updated
 - [ ] screenshot taken (UI items)
-- [ ] docs updated
-- [ ] verified (how: )
+- [x] docs updated
+- [x] verified (how: rg text-white/(30..50) = 0 in app/ components/)
 
 ## 52. Countdown hidden until 60 s remain
-- [ ] code change
-- [ ] test added/updated
+- [x] code change
+- [x] test added/updated
 - [ ] screenshot taken (UI items)
-- [ ] docs updated
-- [ ] verified (how: )
+- [x] docs updated
+- [x] verified (how: StatusLine unit test: hidden at 61s, shown at 59s)
 
 ## 53. Remove mode label from status line
-- [ ] code change
+- [x] code change
 - [ ] test added/updated
 - [ ] screenshot taken (UI items)
-- [ ] docs updated
-- [ ] verified (how: )
+- [x] docs updated
+- [x] verified (how: mode label gone from StatusLine; modeRef kept)
 
 ## 54. Favicon animates only while live (2 s)
 - [x] code change
@@ -129,3 +129,8 @@ Note: child sessions could not be started from a session-initiated turn, so all 
 - [x] docs updated
 - [x] verified (how: next start: robots 200, sitemap 200, manifest 200)
 
+
+## Handed over from speed (blocked on PR #6 merging)
+- [ ] item 29: `reportError(error, "ErrorBoundary")` in ErrorBoundary.componentDidCatch; `reportError(err, "start")` in RealtimeVoice start catch for non-StartError (needs `lib/report-error.ts` from #6)
+- [ ] item 43: send `liveAt` in `/api/calls/finish` body (needs `liveAt` on SessionInfo/VoiceSession; not yet in #6's types.ts)
+- [ ] test added, verified

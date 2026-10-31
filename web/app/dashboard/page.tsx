@@ -25,9 +25,9 @@ const pretty = (v: string | null) => (v ?? "unknown").replace(/_/g, " ");
 function Stat({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
   return (
     <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-      <div className="text-[11px] font-medium uppercase tracking-wider text-white/40">{label}</div>
+      <div className="text-[11px] font-medium uppercase tracking-wider text-white/60">{label}</div>
       <div className="mt-1.5 text-2xl font-bold text-white">{value}</div>
-      {sub && <div className="mt-0.5 text-xs text-white/35">{sub}</div>}
+      {sub && <div className="mt-0.5 text-xs text-white/60">{sub}</div>}
     </div>
   );
 }
@@ -35,21 +35,21 @@ function Stat({ label, value, sub }: { label: string; value: string | number; su
 function Panel({ title, children, className = "" }: { title: string; children: React.ReactNode; className?: string }) {
   return (
     <section className={`rounded-xl border border-white/10 bg-white/5 p-5 ${className}`}>
-      <h2 className="text-xs font-medium uppercase tracking-wider text-white/40">{title}</h2>
+      <h2 className="text-xs font-medium uppercase tracking-wider text-white/60">{title}</h2>
       <div className="mt-3">{children}</div>
     </section>
   );
 }
 
 function CountList({ rows, empty }: { rows: { name: string; count: number; kind?: string | null }[]; empty: string }) {
-  if (!rows.length) return <p className="text-sm text-white/30">{empty}</p>;
+  if (!rows.length) return <p className="text-sm text-white/60">{empty}</p>;
   return (
     <ul className="space-y-1.5 text-sm">
       {rows.map((r) => (
         <li key={r.name} className="flex items-center justify-between gap-3">
           <span className="truncate text-white/75">
             {r.name}
-            {r.kind && r.kind !== "org" && <span className="ml-2 text-[11px] text-white/35">{r.kind === "isp" ? "ISP" : "cloud/VPN"}</span>}
+            {r.kind && r.kind !== "org" && <span className="ml-2 text-[11px] text-white/60">{r.kind === "isp" ? "ISP" : "cloud/VPN"}</span>}
           </span>
           <span className="font-semibold text-white">{r.count}</span>
         </li>
@@ -64,8 +64,8 @@ function NetworkLine({ n }: { n: VisitorCard["network"] }) {
   return (
     <span>
       <span className={n.kind === "org" ? "text-emerald-300/90" : "text-white/60"}>{n.org ?? n.host}</span>
-      {n.domain && <span className="text-white/40"> ({n.domain})</span>}
-      <span className="text-white/30"> · {tag}</span>
+      {n.domain && <span className="text-white/60"> ({n.domain})</span>}
+      <span className="text-white/60"> · {tag}</span>
     </span>
   );
 }
@@ -78,52 +78,52 @@ function VisitorItem({ v }: { v: VisitorCard }) {
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <div className="text-sm font-medium text-white">
           {who ?? <span className="text-white/60">Anonymous visitor</span>}
-          {v.identity?.email && who !== v.identity.email && <span className="ml-2 text-xs text-white/45">{v.identity.email}</span>}
-          {v.identity && <span className="ml-2 text-[11px] text-white/30">({v.identity.via.join(", ")})</span>}
+          {v.identity?.email && who !== v.identity.email && <span className="ml-2 text-xs text-white/60">{v.identity.email}</span>}
+          {v.identity && <span className="ml-2 text-[11px] text-white/60">({v.identity.via.join(", ")})</span>}
         </div>
         <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
           {v.booking && <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-emerald-300">booked {when(v.booking.startTime)}</span>}
           {v.calls.length > 0 && <span className="rounded-full bg-sky-500/20 px-2 py-0.5 text-sky-300">{v.calls.length} call{v.calls.length > 1 ? "s" : ""}</span>}
           {v.visits > 1 && <span className="rounded-full bg-white/10 px-2 py-0.5 text-white/60">{v.visits} visits</span>}
           {v.owner && <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-amber-300">you</span>}
-          {v.bot && <span className="rounded-full bg-white/10 px-2 py-0.5 text-white/50">bot/test</span>}
-          <span className="text-white/35">{ago(v.lastSeen)}</span>
+          {v.bot && <span className="rounded-full bg-white/10 px-2 py-0.5 text-white/60">bot/test</span>}
+          <span className="text-white/60">{ago(v.lastSeen)}</span>
         </div>
       </div>
-      <dl className="mt-2 grid gap-x-4 gap-y-1 text-xs text-white/55 sm:grid-cols-2">
+      <dl className="mt-2 grid gap-x-4 gap-y-1 text-xs text-white/60 sm:grid-cols-2">
         {v.location && (
           <div>
-            <dt className="inline text-white/30">From </dt>
+            <dt className="inline text-white/60">From </dt>
             <dd className="inline">{v.location}</dd>
           </div>
         )}
         {(v.network?.org || v.network?.host) && (
           <div>
-            <dt className="inline text-white/30">Network </dt>
+            <dt className="inline text-white/60">Network </dt>
             <dd className="inline">
               <NetworkLine n={v.network} />
             </dd>
           </div>
         )}
         <div>
-          <dt className="inline text-white/30">Came from </dt>
+          <dt className="inline text-white/60">Came from </dt>
           <dd className="inline">{v.source ?? "direct / unknown"}</dd>
         </div>
         {v.device && (
           <div>
-            <dt className="inline text-white/30">Device </dt>
+            <dt className="inline text-white/60">Device </dt>
             <dd className="inline">{v.device}</dd>
           </div>
         )}
         {v.clicks.length > 0 && (
           <div className="sm:col-span-2">
-            <dt className="inline text-white/30">Clicked </dt>
+            <dt className="inline text-white/60">Clicked </dt>
             <dd className="inline">{v.clicks.join(", ")}</dd>
           </div>
         )}
         {v.booking && (
           <div className="sm:col-span-2">
-            <dt className="inline text-white/30">Booking </dt>
+            <dt className="inline text-white/60">Booking </dt>
             <dd className="inline">
               {v.booking.name} ({v.booking.email}) for {when(v.booking.startTime)}
               {v.booking.status === "canceled" && " (canceled)"}
@@ -133,7 +133,7 @@ function VisitorItem({ v }: { v: VisitorCard }) {
       </dl>
       {v.calls.map((c) => (
         <div key={c.at} className="mt-3 border-t border-white/10 pt-3">
-          <div className="flex flex-wrap items-center gap-2 text-[11px] text-white/40">
+          <div className="flex flex-wrap items-center gap-2 text-[11px] text-white/60">
             <span>Call {when(c.at)}</span>
             {c.durationS != null && <span>· {dur(c.durationS)}</span>}
             <span>· {pretty(c.intent)}</span>
@@ -198,7 +198,7 @@ export default function DashboardPage() {
   if (loading && !data) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-black text-white">
-        <div className="animate-pulse text-white/40">Loading analytics...</div>
+        <div className="animate-pulse text-white/60">Loading analytics...</div>
       </div>
     );
   }
@@ -218,7 +218,7 @@ export default function DashboardPage() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold">Who&apos;s talking to your AI</h1>
-            <p className="mt-1 text-sm text-white/40">Visits, calls, questions and bookings from arivsai.app</p>
+            <p className="mt-1 text-sm text-white/60">Visits, calls, questions and bookings from arivsai.app</p>
           </div>
           <AuthHeader />
         </div>
@@ -246,9 +246,9 @@ export default function DashboardPage() {
               }} className="accent-sky-400" />
             Include my own visits and automated tests
           </label>
-          {loading && <span className="text-xs text-white/40">Refreshing...</span>}
+          {loading && <span className="text-xs text-white/60">Refreshing...</span>}
           {!all && (data.meta.excludedOwner > 0 || data.meta.excludedBots > 0) && (
-            <span className="text-xs text-white/35">
+            <span className="text-xs text-white/60">
               Hiding {data.meta.excludedOwner} of yours, {data.meta.excludedBots} bot/test
             </span>
           )}
@@ -285,7 +285,7 @@ export default function DashboardPage() {
 
         <Panel title={`Who's been here (${data.visitors.length})`} className="mt-5">
           {data.visitors.length === 0 ? (
-            <p className="text-sm text-white/30">No visitors in this range yet.</p>
+            <p className="text-sm text-white/60">No visitors in this range yet.</p>
           ) : (
             <>
               <ul className="space-y-3">
@@ -305,13 +305,13 @@ export default function DashboardPage() {
         <div className="mt-5 grid gap-5 lg:grid-cols-2">
           <Panel title="What people asked (latest)">
             {data.recentQuestions.length === 0 ? (
-              <p className="text-sm text-white/30">No calls yet.</p>
+              <p className="text-sm text-white/60">No calls yet.</p>
             ) : (
               <ul className="max-h-96 space-y-2 overflow-y-auto pr-1 text-sm">
                 {data.recentQuestions.map((q, i) => (
                   <li key={i}>
                     <div className="text-white/80">{q.text}</div>
-                    <div className="text-[11px] text-white/35">
+                    <div className="text-[11px] text-white/60">
                       {[q.who, q.where, ago(q.at)].filter(Boolean).join(" · ")}
                     </div>
                   </li>
@@ -321,7 +321,7 @@ export default function DashboardPage() {
           </Panel>
           <Panel title="Top topics">
             {data.topTopics.length === 0 ? (
-              <p className="text-sm text-white/30">No calls yet.</p>
+              <p className="text-sm text-white/60">No calls yet.</p>
             ) : (
               <div className="h-72">
                 <ResponsiveContainer width="100%" height="100%">
@@ -363,14 +363,14 @@ export default function DashboardPage() {
 
         <Panel title="Calendly bookings" className="mt-5">
           {data.meta.bookingsAvailable === false ? (
-            <p className="text-sm text-white/30">Couldn&apos;t reach Calendly right now.</p>
+            <p className="text-sm text-white/60">Couldn&apos;t reach Calendly right now.</p>
           ) : data.bookings.length === 0 ? (
-            <p className="text-sm text-white/30">No bookings in this range.</p>
+            <p className="text-sm text-white/60">No bookings in this range.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
                 <thead>
-                  <tr className="border-b border-white/10 text-[11px] uppercase tracking-wider text-white/30">
+                  <tr className="border-b border-white/10 text-[11px] uppercase tracking-wider text-white/60">
                     <th className="pb-2 pr-4">Who</th>
                     <th className="pb-2 pr-4">Meeting</th>
                     <th className="pb-2 pr-4">Booked</th>
@@ -381,14 +381,14 @@ export default function DashboardPage() {
                   {data.bookings.map((b) => (
                     <tr key={`${b.email}-${b.startTime}`} className="border-b border-white/5">
                       <td className="py-2 pr-4 text-white/80">
-                        {b.name} <span className="text-xs text-white/40">{b.email}</span>
+                        {b.name} <span className="text-xs text-white/60">{b.email}</span>
                       </td>
                       <td className="py-2 pr-4 text-white/60">
                         {when(b.startTime)}
                         {b.status === "canceled" && " (canceled)"}
                       </td>
-                      <td className="py-2 pr-4 text-white/40">{ago(b.bookedAt)}</td>
-                      <td className="py-2 text-white/50">{b.matched ? "this site (matched)" : b.utmSource === "arivsai" ? "this site" : "elsewhere"}</td>
+                      <td className="py-2 pr-4 text-white/60">{ago(b.bookedAt)}</td>
+                      <td className="py-2 text-white/60">{b.matched ? "this site (matched)" : b.utmSource === "arivsai" ? "this site" : "elsewhere"}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -397,7 +397,7 @@ export default function DashboardPage() {
           )}
         </Panel>
 
-        <p className="mt-6 text-xs leading-5 text-white/30">
+        <p className="mt-6 text-xs leading-5 text-white/60">
           Location and network are approximate, from the IP address. A company shows up only when someone browses from an office network;
           home and mobile ISPs are labeled. Names come only from what people say on a call, a sign-in, or a Calendly booking. Visitors in
           the EEA, UK and Switzerland, and browsers with Do Not Track or Global Privacy Control, stay anonymous.
