@@ -9,10 +9,10 @@ Tick only when done and verified. Each item ships as its own PR.
 - [x] Verified: lint + typecheck + tests; route hit on local server
 
 ## Item 30 - Lightpanda smoke
-- [ ] Code: `web/scripts/smoke-lightpanda.mjs` (CDP via puppeteer-core; LINKS 2xx/3xx, /call/deadbeef renders, security headers, old endpoints 404) and `.github/workflows/smoke.yml` (hourly; fetch fallback)
-- [ ] Test: script run against a local `next start`
-- [ ] Docs/env: fallback behavior documented
-- [ ] Verified: script exit code and output
+- [x] Code: `web/scripts/smoke-lightpanda.mjs` (CDP via puppeteer-core; LINKS 2xx/3xx, /call/deadbeef renders, security headers, old endpoints 404) and `.github/workflows/smoke.yml` (hourly; fetch fallback)
+- [x] Test: script run against a local `next start`
+- [x] Docs/env: fallback behavior documented
+- [x] Verified: script exit code and output
 
 ## Item 31 - axe a11y spec
 - [ ] Code: `web/e2e/a11y.spec.ts` (/, /privacy skip on 404, /call/[token]) + `@axe-core/playwright`
