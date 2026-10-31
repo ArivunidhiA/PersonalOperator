@@ -88,3 +88,11 @@ export async function visitorHistory(vid: string | null | undefined, sid: string
     clicks,
   };
 }
+
+/** Data retention in days. Unset or invalid = 90; an explicit 0 keeps everything. */
+export function retentionDays(): number {
+  const raw = process.env.RETENTION_DAYS;
+  if (raw === undefined || raw.trim() === "") return 90;
+  const n = Number(raw);
+  return Number.isFinite(n) && n >= 0 ? Math.floor(n) : 90;
+}
