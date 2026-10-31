@@ -1,0 +1,16 @@
+{
+  "note": "Caption bench corpus: one file per voice, every turn carries a hard name. Generated with `say -o` (files only, never played).",
+  "lead_silence_s": 1.5,
+  "gap_s": 2.5,
+  "turns": [
+    "Where does Ariv work right now?",
+    "Tell me about his job at INZI Controls.",
+    "What did he build with forecost and how does it work?",
+    "Is Registrum one of his open source projects?",
+    "So um I was wondering what Malbit actually does, like who is it for?",
+    "Does he use Agno and pgvector with NeMo Curator?",
+    "Okay and could you tell me whether Ariv would be a good fit for a small AI team that ships every week?"
+  ],
+  "names": ["ariv", "inzi", "forecost", "registrum", "malbit", "agno", "pgvector", "nemo", "curator"],
+  "voices": ["Samantha", "Daniel", "Karen", "Rishi", "Moira", "Aman"]
+}
