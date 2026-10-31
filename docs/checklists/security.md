@@ -28,7 +28,8 @@ Verification gate for all: `cd web && npm run lint && npm run typecheck && npm t
 - [x] Verified: full suite
 
 ### 20 Strix
-- [x] `.github/workflows/strix.yml`, `docs/qa/strix.md`
+- [x] `docs/qa/strix.workflow.yml` + `docs/qa/strix.md`
+- [ ] Ari copies workflow to `.github/workflows/strix.yml` (token lacks `workflow` scope)
 - [ ] Local run + findings in known-risks (blocked: Docker unavailable here)
 
 ## Child sessions: NOT STARTED
