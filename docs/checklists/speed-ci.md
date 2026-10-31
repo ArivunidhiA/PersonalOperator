@@ -45,7 +45,7 @@ Tick only when done and verified. Each item ships as its own PR.
 - [ ] Verified: YAML validated
 
 ## Item 37 - Config rename + @types/node
-- [ ] Code: vitest configs renamed to `.mts`, references fixed, `@types/node` 24
-- [ ] Test: existing suite
-- [ ] Docs/env: n/a
-- [ ] Verified: lint + typecheck + tests
+- [x] Code: vitest configs renamed to `.mts`, references fixed, `@types/node` 24
+- [x] Test: existing suite
+- [x] Docs/env: n/a
+- [x] Verified: lint + typecheck + tests
