@@ -5,11 +5,11 @@ import { VoicePoweredOrb } from "@/components/ui/voice-powered-orb";
 import { LINKS, tagBookingUrl } from "@/lib/knowledge";
 import { CallButton, MuteButton, type Phase } from "./CallControls";
 import { PostCallPanel, type PostState } from "./PostCallPanel";
+import { FaviconAnimator } from "./FaviconAnimator";
 import { StatusLine } from "./StatusLine";
 import { TranscriptLog } from "./TranscriptLog";
 import { trackClick } from "@/lib/track-client";
 import { detectAgentTransition, AGENT_MODES } from "@/lib/agents";
-import { cardToText } from "@/lib/ui-cards";
 import { initialTranscript, toMessages, transcriptReducer, type TranscriptItem } from "@/lib/voice/transcript";
 import type { EndReason, SessionInfo, VoiceSession } from "@/lib/voice/types";
 // Static on purpose: iOS only allows audio if the AudioContext is created inside the tap,
@@ -195,32 +195,6 @@ export default function RealtimeVoice() {
     return l ? Math.max(l.mic, l.agent) : 0;
   }, []);
 
-  const downloadPdf = async () => {
-    const { jsPDF } = await import("jspdf");
-    const doc = new jsPDF();
-    const pageH = doc.internal.pageSize.getHeight();
-    let y = 20;
-    doc.setFontSize(14);
-    doc.text("Conversation with Ariv's AI", 20, y);
-    y += 12;
-    doc.setFontSize(10);
-    for (const it of itemsRef.current) {
-      const text = it.role === "card" ? cardToText(it.card) : `${it.role === "user" ? "You" : "Ariv's AI"}: ${it.text}`;
-      // jsPDF's built-in font is Latin-1 only; keep the text readable instead of garbled.
-      const safe = text.normalize("NFKD").replace(/[^\x20-\x7E\n]/g, "");
-      for (const line of doc.splitTextToSize(safe, 170) as string[]) {
-        if (y > pageH - 15) {
-          doc.addPage();
-          y = 20;
-        }
-        doc.text(line, 20, y);
-        y += 6;
-      }
-      y += 3;
-    }
-    doc.save("ariv-ai-conversation.pdf");
-  };
-
   const createShareLink = async () => {
     const info = infoRef.current;
     if (!info) return;
@@ -247,6 +221,7 @@ export default function RealtimeVoice() {
 
   return (
     <div className="flex min-h-screen flex-col bg-black text-white">
+      <FaviconAnimator enabled={live} />
       <header className="flex items-center justify-between gap-3 px-4 py-3 sm:px-6">
         <h1 className="text-sm font-medium tracking-wide text-white/70">Ariv&apos;s AI</h1>
         <div className="flex items-center gap-3">
@@ -302,7 +277,7 @@ export default function RealtimeVoice() {
               sessionId={sessionId}
               onRetry={() => void finish()}
               onShare={() => void createShareLink()}
-              onDownload={() => void downloadPdf()}
+              onPrint={() => window.print()}
             />
           )}
         </section>

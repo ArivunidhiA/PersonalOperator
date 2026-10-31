@@ -27,6 +27,7 @@ export function TranscriptLog({
   return (
     <div
       ref={logRef}
+      data-print="transcript"
       role="log"
       aria-live="polite"
       className="max-h-[45vh] min-h-[6rem] space-y-3 overflow-y-auto overscroll-contain rounded-2xl border border-white/10 bg-white/[0.03] p-4 lg:max-h-[60vh]"

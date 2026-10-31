@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CalendarDays, Check, Copy, Download } from "lucide-react";
+import { CalendarDays, Check, Copy, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LINKS, tagBookingUrl } from "@/lib/knowledge";
 import { trackClick } from "@/lib/track-client";
@@ -20,18 +20,18 @@ export function PostCallPanel({
   sessionId,
   onRetry,
   onShare,
-  onDownload,
+  onPrint,
 }: {
   post: PostState;
   shareUrl: string | null;
   sessionId: string | null;
   onRetry: () => void;
   onShare: () => void;
-  onDownload: () => void;
+  onPrint: () => void;
 }) {
   const [copied, setCopied] = useState(false);
   return (
-    <div className="mt-4 rounded-2xl border border-white/15 bg-white/5 p-5">
+    <div className="mt-4 print:hidden rounded-2xl border border-white/15 bg-white/5 p-5">
       <h2 className="text-base font-semibold">
         {post.saving ? "Saving your transcript…" : post.failed ? "Couldn't save the transcript" : "Your transcript"}
       </h2>
@@ -68,9 +68,9 @@ export function PostCallPanel({
               {copied ? "Copied" : "Copy share link"}
             </Button>
           )}
-          <Button variant="secondary" size="sm" className="gap-2" onClick={onDownload}>
-            <Download className="h-4 w-4" aria-hidden />
-            Download PDF
+          <Button variant="secondary" size="sm" className="gap-2" onClick={onPrint}>
+            <Printer className="h-4 w-4" aria-hidden />
+            Print or save as PDF
           </Button>
           <a
             href={tagBookingUrl(LINKS.calendly, sessionId)}
