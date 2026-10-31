@@ -2,54 +2,75 @@ export const dynamic = "force-static";
 
 export const metadata = { title: "Privacy | Ariv's AI" };
 
-const wrap = { maxWidth: 680, margin: "0 auto", padding: "48px 20px", lineHeight: 1.6, fontFamily: "system-ui, sans-serif" } as const;
+const wrap = { maxWidth: 640, margin: "0 auto", padding: "56px 20px 80px", lineHeight: 1.65 } as const;
+const h2 = { fontSize: 17, fontWeight: 700, margin: "32px 0 8px" } as const;
+const ul = { margin: 0, paddingLeft: 20, listStyle: "disc" } as const;
+
+function Topic({ title, items }: { title: string; items: React.ReactNode[] }) {
+  return (
+    <section>
+      <h2 style={h2}>
+        <strong>{title}</strong>
+      </h2>
+      <ul style={ul}>
+        {items.map((it, i) => (
+          <li key={i}>{it}</li>
+        ))}
+      </ul>
+    </section>
+  );
+}
 
 export default function Privacy() {
   return (
     <main style={wrap}>
-      <h1>Privacy</h1>
-      <p>This site is a personal project. Here is what happens to your data.</p>
+      <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 4 }}>Privacy</h1>
+      <p style={{ opacity: 0.7, marginTop: 0 }}>Personal project. Short version of what happens to your data.</p>
 
-      <h2>Voice calls and Google Gemini</h2>
-      <p>
-        Calls run on Google&apos;s Gemini Live free tier. Google may use content sent on the free tier, including your
-        audio and the transcript, to improve its products. Don&apos;t share anything you wouldn&apos;t want that used for.
-      </p>
+      <Topic
+        title="The voice (Google Gemini)"
+        items={[
+          "Calls run on Google's Gemini API free tier.",
+          "Google may use the audio and transcript to improve its models. That's Google's rule, not mine, so please don't say anything sensitive.",
+        ]}
+      />
 
-      <h2>Transcripts</h2>
-      <p>
-        After a call, the transcript, a short summary, and details you said yourself (such as your name, company, role,
-        or email) are stored in Supabase and emailed to Ariv. A transcript is only shared by link if you choose to create
-        one; that link expires after 30 days.
-      </p>
+      <Topic
+        title="Your transcript"
+        items={[
+          "Saved after the call, with a short summary, and emailed to me.",
+          "Only things you said about yourself (name, company, role) are kept. Nothing is looked up about you.",
+          "Share links exist only if you make one, and expire after 30 days.",
+        ]}
+      />
 
-      <h2>Site analytics</h2>
-      <p>First-party only, no cookies and no third-party trackers. For each visit, click, or call start we record:</p>
-      <ul>
-        <li>page path, referrer (host and path only), UTM tags, language;</li>
-        <li>country, region, city, and timezone (from the request headers);</li>
-        <li>device, browser, and operating system;</li>
-        <li>the owner of your network (for example an ISP or company), looked up from your IP through IPinfo;</li>
-        <li>a random visitor id kept in your browser&apos;s local storage;</li>
-        <li>which link you clicked, and which call a click belongs to.</li>
-      </ul>
-      <p>Your IP address itself is never stored; only a salted hash is used as a lookup cache key.</p>
+      <Topic
+        title="Visits and clicks"
+        items={[
+          "First-party only. No cookies, no third-party trackers.",
+          "Recorded: page, referrer site, device, rough location, the network you're on, and which links you click.",
+          "Your IP address is never stored.",
+        ]}
+      />
 
-      <h2>EEA, UK and Switzerland</h2>
-      <p>
-        If you visit from the EEA, UK, or Switzerland, no visitor id is created and visits are not linked to each other.
-      </p>
+      <Topic
+        title="Opting out"
+        items={[
+          "Turn on Do Not Track or Global Privacy Control in your browser and nothing is recorded.",
+          "EEA, UK and Switzerland visitors are never linked across visits.",
+        ]}
+      />
 
-      <h2>Do Not Track and Global Privacy Control</h2>
-      <p>If your browser sends Global Privacy Control or Do Not Track, you are not tracked.</p>
+      <Topic title="How long" items={["Everything above is deleted after 90 days."]} />
 
-      <h2>Retention</h2>
-      <p>Calls, caller details, and analytics events are deleted after 90 days.</p>
-
-      <h2>Contact</h2>
-      <p>
-        Questions or deletion requests: <a href="mailto:annaarivan.a@northeastern.edu">annaarivan.a@northeastern.edu</a>.
-      </p>
+      <Topic
+        title="Questions or deletion"
+        items={[
+          <a key="m" href="mailto:annaarivan.a@northeastern.edu">
+            annaarivan.a@northeastern.edu
+          </a>,
+        ]}
+      />
     </main>
   );
 }
