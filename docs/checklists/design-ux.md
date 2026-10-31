@@ -134,3 +134,7 @@ Note: child sessions could not be started from a session-initiated turn, so all 
 - [ ] item 29: `reportError(error, "ErrorBoundary")` in ErrorBoundary.componentDidCatch; `reportError(err, "start")` in RealtimeVoice start catch for non-StartError (needs `lib/report-error.ts` from #6)
 - [ ] item 43: send `liveAt` in `/api/calls/finish` body (needs `liveAt` on SessionInfo/VoiceSession; not yet in #6's types.ts)
 - [ ] test added, verified
+
+### Handover items done (PR for 29/43)
+- [x] item 29: reportError in ErrorBoundary and RealtimeVoice start catch (non-StartError); test in `__tests__/handover.test.tsx`
+- [x] item 43: `liveAt` sent in finish body, schema accepts it, route bounds it to [ticket.iat, now] for `duration_s`; schema test added; verified lint/typecheck/tests

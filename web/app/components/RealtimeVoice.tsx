@@ -8,6 +8,7 @@ import { PostCallPanel, type PostState } from "./PostCallPanel";
 import { FaviconAnimator } from "./FaviconAnimator";
 import { StatusLine } from "./StatusLine";
 import { TranscriptLog } from "./TranscriptLog";
+import { reportError } from "@/lib/report-error";
 import { trackClick } from "@/lib/track-client";
 import { detectAgentTransition } from "@/lib/agents";
 import { initialTranscript, toMessages, transcriptReducer, type TranscriptItem } from "@/lib/voice/transcript";
@@ -40,6 +41,7 @@ export default function RealtimeVoice() {
   const infoRef = useRef<SessionInfo | null>(null);
   const itemsRef = useRef<TranscriptItem[]>([]);
   const finishedRef = useRef(false);
+  const liveAtRef = useRef<number | null>(null);
   const modeRef = useRef("greeter");
   const cancelRef = useRef(false);
   const abortRef = useRef<AbortController | null>(null);
@@ -50,7 +52,7 @@ export default function RealtimeVoice() {
   const finish = useCallback(async (viaBeacon = false) => {
     const info = infoRef.current;
     if (!info || finishedRef.current) return;
-    const body = JSON.stringify({ ticket: info.ticket, messages: toMessages(itemsRef.current) });
+    const body = JSON.stringify({ ticket: info.ticket, messages: toMessages(itemsRef.current), liveAt: sessionRef.current?.liveAt?.() ?? liveAtRef.current ?? undefined });
     if (viaBeacon) {
       // Snapshot while the page may be going away. The server is save-or-update, so the
       // final save (if the page comes back) still updates it.
@@ -74,6 +76,7 @@ export default function RealtimeVoice() {
 
   const onEnded = useCallback(
     (reason: EndReason, message?: string) => {
+      liveAtRef.current = sessionRef.current?.liveAt?.() ?? liveAtRef.current;
       sessionRef.current = null;
       setAgentSpeaking(false);
       setActiveTool(null);
@@ -90,6 +93,7 @@ export default function RealtimeVoice() {
     setPost(null);
     dispatch({ type: "reset" });
     finishedRef.current = false;
+    liveAtRef.current = null;
     infoRef.current = null;
     setSessionId(null);
     cancelRef.current = false;
@@ -126,6 +130,7 @@ export default function RealtimeVoice() {
       } catch (err) {
         setPhase("idle");
         const e = err instanceof StartError ? err : null;
+        if (!e) reportError(err, "start");
         if (e?.code === "cancelled") return;
         setNotice({
           text: e?.message ?? "Couldn't start the call. Try again in a minute.",

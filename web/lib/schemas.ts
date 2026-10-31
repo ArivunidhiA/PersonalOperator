@@ -29,6 +29,7 @@ export const trackSchema = z.object({
 export const finishSchema = z.object({
   ticket: soft(z.string()),
   messages: z.array(z.unknown()).catch([]),
+  liveAt: z.number().finite().optional().catch(undefined),
 });
 
 export const messageSchema = z.object({ role: z.enum(["user", "assistant"]), text: z.string() });
