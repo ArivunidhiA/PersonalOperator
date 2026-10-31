@@ -32,7 +32,7 @@ const FALSE_HISTORY: [string, RegExp, RegExp?][] = [
 
 const URL_SPOKEN = /\bhttps?:\/\/|\bwww\b|\b[a-z0-9-]+\s?(?:\.|dot)\s?(?:com|io|app|dev|org|net|edu|ai)\b/i;
 const TIME_OR_DATE =
-  /\b\d{1,2}(?::\d{2})?\s?(?:a\.?m\.?|p\.?m\.?)|\b\w+:(?:fifteen|thirty|forty[- ]five)\b|\b\d{1,2}(?:st|nd|rd|th)\b|\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.? \d{1,2}\b/gi;
+  /\b\d{1,2}(?::\d{2})?\s?(?:a\.?m\.?|p\.?m\.?)|\b\d{1,2}(?:st|nd|rd|th)\b|\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.? \d{1,2}\b/gi;
 // Small counts are allowed ("two merged fixes") but not as invented metrics ("3 years", "a team of 4").
 const SMALL_COUNT_CLAIM =
   /\b(?:\d+|two|three|four|five|six|seven|eight|nine|ten|dozen)\+? (?:years?(?! old)|yrs|internships|products|engineers|people|reports|direct reports|clients|customers|startups|companies|x\b|times)\b|\b\d+(?:\.\d+)?\s?(?:%|percent|x\b)/i;
@@ -80,7 +80,7 @@ const sentenceAt = (text: string, idx: number) => {
 export function verifyUtterance(raw: string, extraAllowedNumbers: string[] = []): Violation[] {
   // Spelled numbers ("forty percent") become digits so the number checks see them.
   // Clock times said as words ("nine thirty") would otherwise read as 39.
-  const text = normalizeNumbers(normalize(raw).replace(SPOKEN_TIME, "$1:$2"));
+  const text = normalizeNumbers(normalize(raw).replace(SPOKEN_TIME, "that time"));
   const out: Violation[] = [];
   const lower = text.toLowerCase();
 
