@@ -1,101 +1,69 @@
 # Ariv's AI
 
-A voice agent that talks to people about me (Ariv). Recruiters and curious visitors open [arivsai.app](https://arivsai.app), hit **Start talking**, and have a real conversation: what I'm working on, what I've built, whether I'd fit a role, and a link to book 15 minutes with me. It says it's an AI, it only says true things, and it runs on free tiers.
+**Talk to it:** [arivsai.app](https://www.arivsai.app)
 
-## How it works
+![The landing page: a dark screen, a slowly turning orb, and one button that says "Ask me"](docs/design/screenshots/landing-idle-desktop.png)
 
-```
-Browser (Next.js page)
-  │ 1. POST /api/voice/session  → rate limits, region check, signed call ticket
-  │                              + single-use Gemini token with the prompt/tools locked in
-  │ 2. WebSocket (audio) ───────────────────────────────►  Gemini Live (gemini-3.8-live)
-  │      mic 16 kHz PCM  ─►        ◄─ 24 kHz speech + transcripts + tool calls
-  │ 3. tool calls → POST /api/tools/execute (ticket required)
-  │      retrieve_knowledge · research_role · check_availability
-  │      schedule_meeting · share_links · generate_summary
-  │ 4. call ends → POST /api/calls/finish (ticket) → Supabase + summary + email to me
-  │    (optional) POST /api/calls/share → opt-in, fact-checked, unverified-labeled share link
-  │ 5. page views + link clicks → POST /api/track → site_events (first-party analytics)
-  ▼          /dashboard (me only): who visited, from where, what they asked, clicked, booked
-Vercel (Hobby) · Supabase (Postgres) · Upstash (rate limits) · Clerk (optional sign-in)
-Resend (my notification + "email me the transcript") · Calendly (open slots, bookings)
-IPinfo (which network a visitor is on; optional free token)
-```
+## Why this exists
 
-- **One source of truth for facts.** Everything the agent may say about me lives in [`web/lib/knowledge.ts`](web/lib/knowledge.ts). The prompt inlines it, so most answers need no tool call and no retrieval round trip. `retrieve_knowledge` searches the same registry in memory, and `npm run kb:seed` mirrors it into Supabase.
-- **Fast by default, checked afterwards** (the "System 1" idea from TypeSafe's Jev). The realtime model answers straight from the fact card, and plain code in [`web/lib/verifier.ts`](web/lib/verifier.ts) checks every line it said, including invented numbers, wrong titles, "I'm human", spoken URLs and confidential names. Flags show up in the call notification.
-- **Locked session.** The browser gets a single-use Gemini token whose prompt and tools are fixed on the server, so a visitor can't rewrite the agent.
-- **Least privilege.** No tool can email anyone or read another caller's data. Personal data never goes through the model. Links reach the chat as structured cards, so the agent never reads a URL aloud.
-- **Four call modes** (greeter, role researcher, scheduler, closer) live in one prompt, so no rule or tool disappears mid-call. The UI shows the active mode.
+In the age of AI, nobody really has conversations to understand humans anymore. We send resumes, we send portfolios, we send links. I think a direct conversation says more about what a person can do, and whether they can get things done for you, than any of those. Face to face isn't always possible. So I built the next best thing.
 
-## Cost
+This is a voice agent that knows my work. You open the page, press the button, and talk to it like you'd talk to a friend of mine who happens to know what I've built, where I work, and what I'm into. It'll tell you straight if I'd fit what you're hiring for, it won't make anything up, and if you want the real human it can pull up my calendar and find fifteen minutes.
 
-$0 at current traffic: Gemini API free tier (voice, role research, summaries), Vercel Hobby, and the free tiers of Supabase, Upstash, Clerk, Resend and Calendly.
+It says it's an AI if you ask. It only says true things. And it runs on free tiers, so it costs me nothing to keep it up.
 
-The Gemini free tier has some catches:
-- Google may use free-tier calls to improve its models. The page tells visitors this.
-- It can't serve the EEA, the UK or Switzerland. Those visitors see my links instead, unless the paid OpenAI fallback is enabled.
-- Its rate limits aren't published. `DAILY_SESSION_CAP` protects them.
+Go try it, then tell me what felt off. Feedback is the whole point.
 
-Optional paid paths, both off by default:
-- OpenAI Realtime (`VOICE_FALLBACK=openai`, `gpt-realtime-2.1-mini`).
-- Claude via [Vercel AI Gateway's Anthropic Messages API](https://vercel.com/docs/ai-gateway/sdks-and-apis/anthropic-messages-api) (`AI_GATEWAY_API_KEY`, `LLM_PROVIDER=gateway`).
+## For the nerds
 
-## Personality
+Here's the setup, kept short.
 
-It's meant to sound like someone who actually knows me, not an assistant, and to close like Harvey Specter: one sharp question about what you need, real evidence, then an offer to put 15 minutes on my calendar. No hype, no fake urgency, no invented numbers. `web/lib/system-prompt.ts` sets the persona, the answer shape (answer, evidence, personality, stop), the spoken style and the humor rules (answer first, joke second, never at anyone's expense, a straight face for visa, salary and confidential stuff). My own answers are in [`docs/voice/ARIV_ANSWERS.md`](docs/voice/ARIV_ANSWERS.md). It still says it's an AI whenever asked, and the evals fail any reply that sounds like a generic assistant ("great question", "feel free to", "anything else?"). The voice is Gemini's prebuilt `Zubenelgenubi`; you can change it with `GEMINI_VOICE`. Every model turn re-sends the prompt on the free tier, so it stays under 20k characters.
+![How the pieces fit together](docs/readme/architecture.svg)
 
-## Analytics (for me)
+**The flow in four steps**
 
-`/dashboard` (my Clerk account only) shows each visitor: rough location and network owner (from the IP, which is never stored), how they found the site, device, how often they came back, what they said on a call and who they said they are, which links they clicked, and whether they booked on Calendly (booking links carry UTM tags, so a booking matches its call). Each call also sends me an email with the same details. Names and companies only ever come from the visitor: what they say, a sign-in, or a booking. Nothing identifies people behind their back. My own browser (after I open the dashboard) and headless test browsers are left out of the numbers. Visitors in the EEA, UK and Switzerland stay anonymous, browsers with Global Privacy Control or Do Not Track aren't tracked, and everything is deleted after `RETENTION_DAYS` (default 90; `0` keeps everything). Share links expire after 30 days. IP hashes use `ANALYTICS_SALT` (default: derived from `SESSION_SECRET`). Set `IPINFO_TOKEN` (free at ipinfo.io) for reliable network lookups: without it the rate-limited keyless endpoint is used, and production logs a warning once per instance. Details for visitors are on `/privacy`.
+1. You press the button. The page asks a small server for permission to start a call. The server rate-limits, runs a bot check, and hands back a one-use token with the agent's instructions and tools already baked in. Nothing in your browser can change what the agent is allowed to say or do.
+2. Your mic audio streams straight to Google's Gemini Live model, and its voice streams straight back. The server is not in the middle of the audio, which is why it feels quick.
+3. When the model needs something it doesn't know, it asks the server: look up a fact, check the calendar, make a booking link. Links show up as cards in the chat so the agent never reads a URL out loud.
+4. When the call ends, the server saves the transcript, runs a plain-code fact check over every line the agent said, and emails me a recap. Flagged lines land in that email so I can see where it went wrong.
 
-## Run it
+**What it's made of**
+
+| Piece | What it does |
+|---|---|
+| Next.js 16 + React 19 on Vercel | the page, the small server, the owner dashboard |
+| Gemini Live (free tier) | the voice: speech in, speech out |
+| One fact file | everything the agent may say about me lives in a single TypeScript file; the prompt inlines it |
+| A regex verifier | checks each line for invented numbers, wrong titles, "I'm human", spoken URLs, confidential names |
+| Supabase | transcripts, callers, first-party visit analytics |
+| Upstash Redis | rate limits, per-call locks, small caches |
+| Calendly | real open slots and tagged booking links |
+| Resend | the recap email to me |
+| Cloudflare Turnstile | keeps scripts from draining the free quota |
+| Clerk | sign-in for the dashboard only; visitors never need an account |
+| A WebGL orb (ogl) | the only thing on the landing page besides the button |
+
+**Guardrails worth knowing**
+
+- The agent runs in four modes (greeter, role researcher, scheduler, closer) that live in one prompt, so no rule disappears mid-call.
+- No tool can email anyone or read another caller's data. Your name or email never passes through the model.
+- Transcripts are assembled in your browser, so share links are opt-in and labelled as unverified, and they expire after 30 days.
+- Visitors in the EEA, UK and Switzerland see links instead of voice (the free tier can't serve them) and stay anonymous in analytics. Do Not Track and Global Privacy Control turn tracking off entirely.
+- Everything about data use is on the [privacy page](https://www.arivsai.app/privacy).
+
+**Quality bar**
+
+Around 260 unit and route tests, live red-team evals against the real voice model (prompt injection, false premises, invented numbers, "are you human"), a real-browser call test with a fake microphone, an accessibility scan, a bundle budget, and a nightly eval run. The checklists under `docs/checklists/` show exactly what was verified and what wasn't.
+
+## Run it yourself
 
 ```bash
-cd web
-npm ci
-vercel env pull .env.local        # or copy .env.example and fill it in
+cd web && npm ci && cp .env.example .env.local   # fill in a Gemini key at minimum
 npm run dev
 ```
 
-Node 22+ (Vercel uses 24). Env vars are documented in [`web/.env.example`](web/.env.example).
+Everything else is optional and documented in `web/.env.example`. The whole thing stays on free tiers.
 
-**Database:** run [`web/scripts/migrate-v3.sql`](web/scripts/migrate-v3.sql) and then [`web/scripts/migrate-v4.sql`](web/scripts/migrate-v4.sql) once each in the Supabase SQL editor. v3 turns on row-level security, creates `conversations`, adds a unique index per call and drops the unused vector indexes; v4 adds `site_events` and the per-call analytics columns.
+## Say hi
 
-## Tests
-
-| Command | What it proves |
-|---|---|
-| `npm test` | 190+ unit/route/UI tests. Facts registry, prompt rules, verifier (seeded with lines the old agent really said), tickets, tool least-privilege, booking links, transcript ordering, provider/region choice, route auth, analytics tracking and privacy rules, the dashboard. |
-| `npm run eval:live` | Red-team evals on the **real** voice model through the production token path (AI disclosure, prompt injection, confidentiality, false premises, invented numbers, URL reading, email/memory abuse, visa, scheduling and booking a real slot, the close, weaknesses, experience objections, privacy, prompt leaks). Repeats each case; deterministic checks only. Costs nothing on the Gemini free tier. |
-| `npm run test:e2e` | A real browser call. Chrome's fake microphone plays a scripted caller (`e2e/make-audio.sh`). The test checks the greeting, the correct answer, the links card, the tagged booking link and its click, the saved transcript and the share link, the analytics rows in Supabase, plus security probes and headers. |
-| `npm run kb:verify` | Read-only check that Supabase `knowledge_base` matches `lib/knowledge.ts`. |
-
-CI runs lint, typecheck, tests, `npm audit` (prod, high+) and a production build on Node 24.
-
-## Updating what the agent knows
-
-Edit [`web/lib/knowledge.ts`](web/lib/knowledge.ts). Only add true things, and add any new number to `ALLOWED_NUMBERS`. Then:
-
-```bash
-npm test && npm run eval:live && npm run kb:seed
-```
-
-## Repo map
-
-- `web/lib/knowledge.ts`: facts, links, search
-- `web/lib/system-prompt.ts`: the one prompt
-- `web/lib/agents.ts`: call modes
-- `web/lib/tools.ts`: tool schemas
-- `web/lib/tool-executor.ts`: tool logic, all input untrusted
-- `web/lib/voice-config.ts`: engines, models, voice, VAD, region rules
-- `web/lib/voice/`: browser clients (Gemini WebSocket plus worklets, OpenAI WebRTC fallback), transcript reducer
-- `web/app/api/voice/session`: starts a call
-- `web/app/api/tools/execute`: runs tools
-- `web/app/api/calls/*`: finish (save-or-update), share (opt-in), [token] (share view), email
-- `web/app/api/cron/maintenance`: daily housekeeping (retention)
-- `web/app/api/track`, `web/lib/visitor.ts`, `web/lib/track-client.ts`: first-party analytics
-- `web/app/api/analytics`, `web/lib/analytics-report.ts`, `web/lib/calendly.ts`, `web/app/dashboard`: my dashboard
-- `web/evals/`, `web/e2e/`: live evals and the browser call test
-- `docs/qa/`: QA profile and release reports
-- Secret scanning: enable the pre-commit hook once per clone with `git config core.hooksPath .githooks` (needs gitleaks; config in `.gitleaks.toml`).
+If you build something like this for yourself, or you think the agent got something about me wrong, I'd like to hear it. Find me on [LinkedIn](https://www.linkedin.com/in/arivunidhi-anna-arivan/) or just [ask the AI](https://www.arivsai.app) to book a slot.
