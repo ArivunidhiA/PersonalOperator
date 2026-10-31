@@ -4,6 +4,26 @@ import { startOpenAI } from "./openai";
 import { sessionHints } from "../track-client";
 import type { SessionInfo, VoiceHandlers, VoiceSession } from "./types";
 
+/**
+ * Warm the HTTP cache for the two AudioWorklet modules as soon as this module
+ * loads, so addModule() in startGemini() doesn't pay a network round trip after
+ * the tap. Browser only, once, failures ignored (addModule fetches normally).
+ */
+export const WORKLET_URLS = ["/audio/pcm-capture.js", "/audio/pcm-player.js"] as const;
+let prefetched = false;
+export function prefetchWorklets(): void {
+  if (prefetched || typeof window === "undefined" || typeof fetch !== "function") return;
+  prefetched = true;
+  for (const u of WORKLET_URLS) {
+    try {
+      void fetch(u, { credentials: "same-origin" }).catch(() => {});
+    } catch {
+      /* ignore */
+    }
+  }
+}
+prefetchWorklets();
+
 export class StartError extends Error {
   constructor(
     message: string,
