@@ -13,7 +13,8 @@
     "eval:live": "vitest run --config vitest.eval.config.mts",
     "kb:seed": "node scripts/seed-knowledge.mjs",
     "kb:verify": "node scripts/seed-knowledge.mjs --verify",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "size": "size-limit"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.39.7",
@@ -37,6 +38,7 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.58.2",
+    "@size-limit/file": "^14.3.0",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
@@ -49,6 +51,7 @@
     "eslint-config-next": "^16.4.3",
     "jsdom": "^28.1.0",
     "puppeteer-core": "^25.16.0",
+    "size-limit": "^14.3.0",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^4.0.18",

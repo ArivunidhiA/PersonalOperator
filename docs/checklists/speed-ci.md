@@ -27,10 +27,10 @@ Tick only when done and verified. Each item ships as its own PR.
 - [ ] Verified: `lhci autorun` locally
 
 ## Item 33 - size-limit
-- [ ] Code: size-limit config for `/` client JS + CI step
-- [ ] Test: `npm run size`
-- [ ] Docs/env: config comments
-- [ ] Verified: size run passes after build
+- [x] Code: size-limit config for `/` client JS + CI step
+- [x] Test: `npm run size`
+- [x] Docs/env: config comments
+- [x] Verified: size run passes after build
 
 ## Item 34 - knip
 - [ ] Code: knip config, delete unused `public/*.svg` and other proven-dead files, CI step
