@@ -68,3 +68,26 @@ export function ticketFrom(req: Request, bodyTicket?: unknown): SessionTicket | 
   const header = req.headers.get("x-session-ticket");
   return verifyTicket(header ?? (typeof bodyTicket === "string" ? bodyTicket : null));
 }
+
+/** Signed "this is Ariv's browser" cookie, set only by the owner-gated /api/analytics. Never client-supplied. */
+export const OWNER_COOKIE = "ariv-owner";
+const OWNER_COOKIE_TTL_SECONDS = 365 * 24 * 3600;
+
+export function mintOwnerCookie(now = Date.now()): { value: string; maxAge: number } {
+  const exp = Math.floor(now / 1000) + OWNER_COOKIE_TTL_SECONDS;
+  const body = `o.${exp}`;
+  return { value: `${body}.${sign(body)}`, maxAge: OWNER_COOKIE_TTL_SECONDS };
+}
+
+/** True only for an unexpired cookie we signed ourselves. */
+export function isOwnerRequest(req: Request, now = Date.now()): boolean {
+  const header = req.headers.get("cookie");
+  if (!header) return false;
+  const raw = header.split(/;\s*/).find((c) => c.startsWith(`${OWNER_COOKIE}=`))?.slice(OWNER_COOKIE.length + 1);
+  const m = raw && /^o\.(\d{1,12})\.([A-Za-z0-9_-]{43})$/.exec(raw);
+  if (!m) return false;
+  if (Number(m[1]) <= Math.floor(now / 1000)) return false;
+  const want = Buffer.from(sign(`o.${m[1]}`));
+  const got = Buffer.from(m[2]);
+  return want.length === got.length && timingSafeEqual(want, got);
+}
