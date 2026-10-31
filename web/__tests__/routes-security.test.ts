@@ -108,6 +108,17 @@ describe("sharing is opt-in and refuses forged transcripts", () => {
     const data = await res.json();
     expect(data.share_token).toMatch(/^[0-9a-f]{32}$/);
   });
+  it("share response includes a ~30 day expiry", async () => {
+    stored.transcript = [{ role: "user", text: "Hi" }, { role: "assistant", text: "He's at INZI Controls." }];
+    inserted.share_tokens = [];
+    const { POST } = await import("@/app/api/calls/share/route");
+    const res = await POST(new Request("http://localhost/api/calls/share", { method: "POST", headers: { "x-session-ticket": await oldTicket("s_expiry") } }));
+    const data = await res.json();
+    const days = (new Date(data.expires_at).getTime() - Date.now()) / 86400_000;
+    expect(days).toBeGreaterThan(29.9);
+    expect(days).toBeLessThan(30.1);
+    expect((inserted.share_tokens[0] as { expires_at: string }).expires_at).toBe(data.expires_at);
+  });
 });
 
 describe("share pages", () => {
@@ -116,5 +127,30 @@ describe("share pages", () => {
     const res = await GET(new Request("http://localhost/api/calls/x"), { params: Promise.resolve({ token: "not-a-token" }) });
     expect(res.status).toBe(400);
     expect(res.headers.get("x-robots-tag")).toContain("noindex");
+  });
+});
+
+describe("privacy config", () => {
+  it("retentionDays defaults to 90, honours overrides, 0 disables", async () => {
+    const { retentionDays } = await import("@/lib/analytics-store");
+    const prev = process.env.RETENTION_DAYS;
+    delete process.env.RETENTION_DAYS;
+    expect(retentionDays()).toBe(90);
+    process.env.RETENTION_DAYS = "30";
+    expect(retentionDays()).toBe(30);
+    process.env.RETENTION_DAYS = "0";
+    expect(retentionDays()).toBe(0);
+    process.env.RETENTION_DAYS = "abc";
+    expect(retentionDays()).toBe(90);
+    if (prev === undefined) delete process.env.RETENTION_DAYS; else process.env.RETENTION_DAYS = prev;
+  });
+  it("analyticsSalt prefers ANALYTICS_SALT, else HMAC of SESSION_SECRET", async () => {
+    const { analyticsSalt } = await import("@/lib/visitor");
+    const { createHmac } = await import("crypto");
+    delete process.env.ANALYTICS_SALT;
+    expect(analyticsSalt()).toBe(createHmac("sha256", process.env.SESSION_SECRET!).update("analytics").digest("hex"));
+    process.env.ANALYTICS_SALT = "custom";
+    expect(analyticsSalt()).toBe("custom");
+    delete process.env.ANALYTICS_SALT;
   });
 });

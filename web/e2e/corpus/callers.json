@@ -1,0 +1,16 @@
+{
+  "script": [
+    "Where does Ariv work right now?",
+    "Cool. Can you drop his LinkedIn & GitHub in the chat?",
+    "Nice. Can you also drop his booking link in the chat?"
+  ],
+  "silences_s": [6, 14, 16, 40],
+  "callers": [
+    { "id": "samantha-100-clean", "voice": "Samantha", "speed": 1.0, "noise": false },
+    { "id": "samantha-085-noise", "voice": "Samantha", "speed": 0.85, "noise": true },
+    { "id": "alex-115-clean", "voice": "Alex", "speed": 1.15, "noise": false },
+    { "id": "alex-100-noise", "voice": "Alex", "speed": 1.0, "noise": true },
+    { "id": "daniel-085-clean", "voice": "Daniel", "speed": 0.85, "noise": false },
+    { "id": "daniel-115-noise", "voice": "Daniel", "speed": 1.15, "noise": true }
+  ]
+}

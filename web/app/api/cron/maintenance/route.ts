@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase";
 import { createLogger } from "@/lib/logger";
+import { retentionDays } from "@/lib/analytics-store";
 
 export const runtime = "nodejs";
 
@@ -9,7 +10,7 @@ const log = createLogger({ tool: "cron-maintenance" });
 /**
  * Daily housekeeping (Vercel cron, Hobby plan allows once a day).
  * - Always: drop expired share links.
- * - Only if RETENTION_DAYS is set: delete stored calls older than that.
+ * - Delete stored calls older than RETENTION_DAYS (default 90; 0 = keep everything).
  * Fails closed without CRON_SECRET.
  */
 export async function GET(req: Request) {
@@ -23,7 +24,7 @@ export async function GET(req: Request) {
   const now = new Date().toISOString();
   const expired = await supabase.from("share_tokens").delete({ count: "exact" }).lt("expires_at", now);
 
-  const days = Number(process.env.RETENTION_DAYS || 0);
+  const days = retentionDays();
   let conversations = 0;
   let summaries = 0;
   if (days > 0) {

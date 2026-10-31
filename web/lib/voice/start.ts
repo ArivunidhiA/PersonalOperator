@@ -1,7 +1,28 @@
+import { turnstileToken } from "@/lib/turnstile-client";
 import { prepareAudio, startGemini } from "./gemini";
 import { startOpenAI } from "./openai";
 import { sessionHints } from "../track-client";
 import type { SessionInfo, VoiceHandlers, VoiceSession } from "./types";
+
+/**
+ * Warm the HTTP cache for the two AudioWorklet modules as soon as this module
+ * loads, so addModule() in startGemini() doesn't pay a network round trip after
+ * the tap. Browser only, once, failures ignored (addModule fetches normally).
+ */
+export const WORKLET_URLS = ["/audio/pcm-capture.js", "/audio/pcm-player.js"] as const;
+let prefetched = false;
+export function prefetchWorklets(): void {
+  if (prefetched || typeof window === "undefined" || typeof fetch !== "function") return;
+  prefetched = true;
+  for (const u of WORKLET_URLS) {
+    try {
+      void fetch(u, { credentials: "same-origin" }).catch(() => {});
+    } catch {
+      /* ignore */
+    }
+  }
+}
+prefetchWorklets();
 
 export class StartError extends Error {
   constructor(
@@ -26,45 +47,60 @@ function micError(err: unknown): StartError {
   return new StartError("Couldn't start your microphone. Try again, or try another browser.", "mic_error");
 }
 
+async function fetchSession(signal: AbortSignal): Promise<SessionInfo> {
+  const res = await fetch("/api/voice/session", {
+    method: "POST",
+    headers: { "x-ariv-client": "1", "Content-Type": "application/json" },
+    body: JSON.stringify({ ...sessionHints(), ts: await turnstileToken() }),
+    signal,
+  });
+  const data = (await res.json().catch(() => ({}))) as SessionInfo & { error?: string; code?: string };
+  if (!res.ok) throw new StartError(data.error || "Couldn't start the call right now.", data.code || String(res.status));
+  return data;
+}
+
 /** Start a call. Must be invoked directly from a click/tap handler. */
 export async function startVoiceCall(h: VoiceHandlers, signal?: AbortSignal): Promise<{ session: VoiceSession; info: SessionInfo }> {
   const cancelled = () => new StartError("Call cancelled.", "cancelled");
   if (!navigator.mediaDevices?.getUserMedia) {
     throw new StartError("This browser can't use a microphone here. Try Chrome, Safari or Edge.", "unsupported");
   }
-  // Gesture-bound work first (iOS): audio context + mic permission.
-  let prepared: Awaited<ReturnType<typeof prepareAudio>>;
-  try {
-    prepared = await prepareAudio();
-  } catch (err) {
-    throw micError(err);
-  }
+  // Mic permission + the session fetch run concurrently. Both calls start
+  // synchronously inside the tap (prepareAudio reaches getUserMedia before its
+  // first await), so the iOS gesture requirement still holds. If the mic fails
+  // the fetch is aborted; if the fetch fails the mic is released.
+  const inner = new AbortController();
+  const onAbort = () => inner.abort();
+  if (signal?.aborted) inner.abort();
+  else signal?.addEventListener("abort", onAbort, { once: true });
+
+  const audioP = prepareAudio().then(
+    (v) => ({ ok: true as const, v }),
+    (e: unknown) => {
+      inner.abort();
+      return { ok: false as const, e };
+    },
+  );
+  const sessionP = fetchSession(inner.signal).then(
+    (v) => ({ ok: true as const, v }),
+    (e: unknown) => ({ ok: false as const, e }),
+  );
+  const [audio, sess] = await Promise.all([audioP, sessionP]);
+  signal?.removeEventListener("abort", onAbort);
+
+  if (!audio.ok) throw micError(audio.e);
+  const prepared = audio.v;
   const release = () => {
     prepared.mic.getTracks().forEach((t) => t.stop());
     void prepared.ctx.close().catch(() => {});
   };
-  if (signal?.aborted) {
-    release();
-    throw cancelled();
-  }
-
-  let info: SessionInfo;
-  try {
-    const res = await fetch("/api/voice/session", {
-      method: "POST",
-      headers: { "x-ariv-client": "1", "Content-Type": "application/json" },
-      body: JSON.stringify(sessionHints()),
-      signal,
-    });
-    const data = (await res.json().catch(() => ({}))) as SessionInfo & { error?: string; code?: string };
-    if (!res.ok) throw new StartError(data.error || "Couldn't start the call right now.", data.code || String(res.status));
-    info = data;
-  } catch (err) {
+  if (!sess.ok) {
     release();
     if (signal?.aborted) throw cancelled();
-    if (err instanceof StartError) throw err;
+    if (sess.e instanceof StartError) throw sess.e;
     throw new StartError("Network issue. Check your connection and try again.", "network");
   }
+  const info = sess.v;
   if (signal?.aborted) {
     release();
     throw cancelled();
