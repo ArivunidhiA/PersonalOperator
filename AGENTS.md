@@ -301,3 +301,7 @@ Include:
 Report `GO` only when the relevant release risks have credible evidence through the real supported product surface.
 
 Never equate “all automated tests passed” with “the product works.”
+
+## 16. Engineering workflow (Superpowers)
+
+For non-trivial changes, use the Superpowers skills (github.com/obra/superpowers): `systematic-debugging` before fixing any bug (reproduce, find root cause, then fix), `test-driven-development` for new behavior, `verification-before-completion` before claiming done. They complement, and never override, sections 11-13 above (frozen findings, fail-before-fix regression tests, independent re-verification).
