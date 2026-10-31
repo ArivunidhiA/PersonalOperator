@@ -3,7 +3,7 @@
 Tick only when done and verified. Each item ships as its own PR.
 
 ## Item 28 - Health endpoint + uptime
-- [x] Code: `web/app/api/health/route.ts` (Supabase reachable, Redis, GEMINI_API_KEY set; never mints a token; 200/503 JSON) and `.github/workflows/uptime.yml` (30-min schedule, fails loudly)
+- [x] Code: `web/app/api/health/route.ts` (Supabase reachable, Redis, GEMINI_API_KEY set; never mints a token; 200/503 JSON) and `docs/ops/workflows/uptime.yml`, to be moved to `.github/workflows/` by Ari (token lacks workflow scope) (30-min schedule, fails loudly)
 - [x] Test: vitest route test (ok and degraded paths)
 - [x] Docs/env: `docs/ops/uptime.md` (Actions-minutes caveat, UptimeRobot alternative)
 - [x] Verified: lint + typecheck + tests; route hit on local server
