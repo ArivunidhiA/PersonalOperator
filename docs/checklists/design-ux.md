@@ -39,11 +39,11 @@ Note: child sessions could not be started from a session-initiated turn, so all 
 - [x] verified (how: build ok, dep removed)
 
 ## 38. Split RealtimeVoice into CallControls, StatusLine, TranscriptLog, PostCallPanel, CardView
-- [ ] code change
-- [ ] test added/updated
-- [ ] screenshot taken (UI items)
-- [ ] docs updated
-- [ ] verified (how: )
+- [x] code change
+- [x] test added/updated
+- [x] screenshot taken (UI items)
+- [x] docs updated
+- [x] verified (how: lint, typecheck, 205 tests incl. 8 new render tests; behaviour unchanged)
 
 ## 45. Minimal landing: orb + one pill (Ask me / End / Cancel)
 - [ ] code change

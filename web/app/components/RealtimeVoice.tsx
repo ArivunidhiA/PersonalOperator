@@ -1,20 +1,20 @@
 "use client";
 
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
-import { Mic, MicOff, PhoneOff, Copy, Check, Download, ExternalLink, CalendarDays } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { VoicePoweredOrb } from "@/components/ui/voice-powered-orb";
 import { LINKS, tagBookingUrl } from "@/lib/knowledge";
+import { CallButton, MuteButton, type Phase } from "./CallControls";
+import { PostCallPanel, type PostState } from "./PostCallPanel";
+import { StatusLine } from "./StatusLine";
+import { TranscriptLog } from "./TranscriptLog";
 import { trackClick } from "@/lib/track-client";
 import { detectAgentTransition, AGENT_MODES } from "@/lib/agents";
-import { cardToText, isSafeUrl, type UiCard } from "@/lib/ui-cards";
+import { cardToText } from "@/lib/ui-cards";
 import { initialTranscript, toMessages, transcriptReducer, type TranscriptItem } from "@/lib/voice/transcript";
 import type { EndReason, SessionInfo, VoiceSession } from "@/lib/voice/types";
 // Static on purpose: iOS only allows audio if the AudioContext is created inside the tap,
 // and a dynamic import here would put a network wait before it.
 import { startVoiceCall, StartError } from "@/lib/voice/start";
-
-type Phase = "idle" | "connecting" | "live" | "ending" | "ended";
 
 const TOOL_LABELS: Record<string, string> = {
   retrieve_knowledge: "Checking his notes",
@@ -25,11 +25,6 @@ const TOOL_LABELS: Record<string, string> = {
   generate_summary: "Writing a recap",
 };
 
-// The speech transcriber adds em dashes as punctuation; show them as commas.
-const displayText = (t: string) => t.replace(/\s*\u2014\s*/g, ", ");
-
-const fmt = (s: number) => `${Math.floor(s / 60)}:${String(Math.max(0, s) % 60).padStart(2, "0")}`;
-
 export default function RealtimeVoice() {
   const [phase, setPhase] = useState<Phase>("idle");
   const [transcript, dispatch] = useReducer(transcriptReducer, initialTranscript);
@@ -39,14 +34,7 @@ export default function RealtimeVoice() {
   const [mode, setMode] = useState<string>("greeter");
   const [muted, setMuted] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(0);
-  const [post, setPost] = useState<{
-    shareToken?: string;
-    shareError?: string;
-    summary?: string;
-    saving: boolean;
-    failed?: boolean;
-  } | null>(null);
-  const [copied, setCopied] = useState(false);
+  const [post, setPost] = useState<PostState | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
 
   const sessionRef = useRef<VoiceSession | null>(null);
@@ -56,13 +44,8 @@ export default function RealtimeVoice() {
   const modeRef = useRef("greeter");
   const cancelRef = useRef(false);
   const abortRef = useRef<AbortController | null>(null);
-  const logRef = useRef<HTMLDivElement | null>(null);
-  itemsRef.current = transcript.items;
-
-  // Keep the newest line in view.
   useEffect(() => {
-    const el = logRef.current;
-    if (el) el.scrollTop = el.scrollHeight;
+    itemsRef.current = transcript.items;
   }, [transcript.items]);
 
   const finish = useCallback(async (viaBeacon = false) => {
@@ -269,29 +252,7 @@ export default function RealtimeVoice() {
       <header className="flex items-center justify-between gap-3 px-4 py-3 sm:px-6">
         <h1 className="text-sm font-medium tracking-wide text-white/70">Ariv&apos;s AI</h1>
         <div className="flex items-center gap-3">
-          {/* One persistent button (label/action change) so keyboard focus isn't lost. */}
-          <Button
-            onClick={live || phase === "connecting" ? hangUp : () => void start()}
-            disabled={phase === "ending"}
-            variant={live || phase === "connecting" ? "destructive" : "default"}
-            className="rounded-full px-5 text-sm"
-          >
-            {live ? (
-              <>
-                <PhoneOff className="mr-2 h-4 w-4" aria-hidden />
-                End call
-              </>
-            ) : phase === "connecting" ? (
-              "Cancel"
-            ) : phase === "ending" ? (
-              "Ending…"
-            ) : (
-              <>
-                <Mic className="mr-2 h-4 w-4" aria-hidden />
-                {phase === "ended" ? "Talk again" : "Start talking"}
-              </>
-            )}
-          </Button>
+          <CallButton phase={phase} onStart={() => void start()} onHangUp={hangUp} />
         </div>
       </header>
 
@@ -329,169 +290,25 @@ export default function RealtimeVoice() {
               <VoicePoweredOrb hue={orbHue} getLevel={getLevel} />
             </div>
           </div>
-          <div className="mt-3 flex h-6 items-center gap-3 text-xs text-white/50">
-            <span aria-live="polite">{status}</span>
-            {live && modeName && <span className="text-emerald-300/50">{modeName}</span>}
-            {live && (
-              <span aria-hidden className={secondsLeft <= 60 ? "text-amber-300" : "text-white/30"}>
-                {fmt(secondsLeft)} left
-              </span>
-            )}
-            <span className="sr-only" aria-live="polite">
-              {live && secondsLeft <= 60 && secondsLeft > 55 ? "One minute left in this call." : ""}
-            </span>
-          </div>
-          {live && (
-            <Button
-              onClick={toggleMute}
-              variant="secondary"
-              size="sm"
-              className="mt-3 rounded-full"
-              aria-pressed={muted}
-              aria-label={muted ? "Unmute microphone" : "Mute microphone"}
-            >
-              {muted ? <MicOff className="mr-2 h-4 w-4" aria-hidden /> : <Mic className="mr-2 h-4 w-4" aria-hidden />}
-              {muted ? "Unmute" : "Mute"}
-            </Button>
-          )}
+          <StatusLine status={status} live={live} modeName={modeName} secondsLeft={secondsLeft} />
+          {live && <MuteButton muted={muted} onToggle={toggleMute} />}
         </section>
 
         <section className="flex w-full max-w-md flex-col lg:mt-8" aria-label="Conversation">
-          <div
-            ref={logRef}
-            role="log"
-            aria-live="polite"
-            className="max-h-[45vh] min-h-[6rem] space-y-3 overflow-y-auto overscroll-contain rounded-2xl border border-white/10 bg-white/[0.03] p-4 lg:max-h-[60vh]"
-          >
-            {transcript.items.length === 0 ? (
-              <p className="text-sm text-white/30">
-                {live ? "Say hi, or ask what Ariv's working on." : "The conversation will show up here."}
-              </p>
-            ) : (
-              transcript.items.map((it) =>
-                it.role === "card" ? (
-                  <CardView key={it.id} card={it.card} onLink={(label, href) => trackClick(label, href, sessionId)} />
-                ) : (
-                  <div key={it.id} className="text-sm leading-6" aria-hidden={!it.final || undefined}>
-                    <span className="mr-2 text-[11px] font-medium uppercase tracking-wider text-white/35">
-                      {it.role === "user" ? "You" : "Ariv's AI"}
-                    </span>
-                    <span className={it.final ? "text-white/85" : "text-white/50"}>{displayText(it.text)}</span>
-                  </div>
-                ),
-              )
-            )}
-          </div>
+          <TranscriptLog items={transcript.items} live={live} onLink={(label, href) => trackClick(label, href, sessionId)} />
 
           {phase === "ended" && post && (
-            <div className="mt-4 rounded-2xl border border-white/15 bg-white/5 p-5">
-              <h2 className="text-base font-semibold">
-                {post.saving ? "Saving your transcript…" : post.failed ? "Couldn't save the transcript" : "Your transcript"}
-              </h2>
-              {post.failed && (
-                <Button variant="secondary" size="sm" className="mt-2" onClick={() => void finish()}>
-                  Retry
-                </Button>
-              )}
-              {post.summary && <p className="mt-1 text-sm text-white/60">{post.summary}</p>}
-              {!post.saving && !post.failed && (
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {!shareUrl && (
-                    <Button variant="secondary" size="sm" className="gap-2" onClick={() => void createShareLink()}>
-                      <Copy className="h-4 w-4" aria-hidden />
-                      Create share link
-                    </Button>
-                  )}
-                  {shareUrl && (
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      className="gap-2"
-                      onClick={async () => {
-                        try {
-                          await navigator.clipboard.writeText(shareUrl);
-                          setCopied(true);
-                          setTimeout(() => setCopied(false), 2000);
-                        } catch {
-                          window.prompt("Copy this link:", shareUrl);
-                        }
-                      }}
-                    >
-                      {copied ? <Check className="h-4 w-4" aria-hidden /> : <Copy className="h-4 w-4" aria-hidden />}
-                      {copied ? "Copied" : "Copy share link"}
-                    </Button>
-                  )}
-                  <Button variant="secondary" size="sm" className="gap-2" onClick={() => void downloadPdf()}>
-                    <Download className="h-4 w-4" aria-hidden />
-                    Download PDF
-                  </Button>
-                  <a
-                    href={tagBookingUrl(LINKS.calendly, sessionId)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => trackClick("Book time with Ariv (after call)", e.currentTarget.href, sessionId)}
-                    className="inline-flex h-9 items-center gap-2 rounded-md border border-white/15 px-3 text-sm text-white/85 hover:bg-white/10"
-                  >
-                    <CalendarDays className="h-4 w-4" aria-hidden />
-                    Book time with Ariv
-                  </a>
-                </div>
-              )}
-              {post.shareError && <p className="mt-2 text-xs text-red-200">{post.shareError}</p>}
-            </div>
+            <PostCallPanel
+              post={post}
+              shareUrl={shareUrl}
+              sessionId={sessionId}
+              onRetry={() => void finish()}
+              onShare={() => void createShareLink()}
+              onDownload={() => void downloadPdf()}
+            />
           )}
         </section>
       </main>
-    </div>
-  );
-}
-
-function CardView({ card, onLink }: { card: UiCard; onLink: (label: string, href: string) => void }) {
-  if (card.kind === "links") {
-    return (
-      <div className="rounded-xl border border-white/10 bg-white/5 p-3">
-        <div className="text-[11px] font-medium uppercase tracking-wider text-white/40">{card.title}</div>
-        <ul className="mt-2 space-y-1">
-          {card.links.filter((l) => isSafeUrl(l.url) || l.url.startsWith("mailto:")).map((l) => (
-            <li key={l.url}>
-              <a href={l.url} target="_blank" rel="noopener noreferrer" onClick={() => onLink(l.label, l.url)} className="inline-flex items-center gap-1.5 text-sm text-sky-300 hover:text-sky-200 hover:underline">
-                {l.label}
-                <ExternalLink className="h-3 w-3" aria-hidden />
-              </a>
-            </li>
-          ))}
-        </ul>
-      </div>
-    );
-  }
-  if (card.kind === "booking") {
-    return (
-      <div className="rounded-xl border border-sky-400/20 bg-sky-400/5 p-3">
-        <div className="text-sm font-medium text-white/90">{card.title}</div>
-        <div className="mt-0.5 text-sm text-white/60">{card.when}</div>
-        {isSafeUrl(card.url) && (
-          <a
-            href={card.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={() => onLink("Confirm on Calendly", card.url)}
-            className="mt-2 inline-flex items-center gap-1.5 rounded-md bg-sky-500/90 px-3 py-1.5 text-sm font-medium text-white hover:bg-sky-500"
-          >
-            Confirm on Calendly
-            <ExternalLink className="h-3.5 w-3.5" aria-hidden />
-          </a>
-        )}
-      </div>
-    );
-  }
-  return (
-    <div className="rounded-xl border border-white/10 bg-white/5 p-3">
-      <div className="text-[11px] font-medium uppercase tracking-wider text-white/40">{card.title}</div>
-      <ul className="mt-1 space-y-0.5 text-sm text-white/75">
-        {card.lines.map((l) => (
-          <li key={l}>{l}</li>
-        ))}
-      </ul>
     </div>
   );
 }
