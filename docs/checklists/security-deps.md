@@ -8,7 +8,7 @@ Gate: CI minutes are exhausted, so `cd web && npm run lint && npm run typecheck 
 - [x] Test added: n/a (dependency bump; existing suite is the regression gate)
 - [x] Docs/env updated: `web/eslint.config.mjs` downgrades new `react-hooks/refs` to warn (RealtimeVoice.tsx, outside this task's ownership)
 - [x] Verified: local lint, typecheck, test, build all pass
-- [ ] Follow-up (not part of item): fix ref write during render in `RealtimeVoice.tsx`, then restore the rule to error
+- [x] Follow-up: ref write during render fixed in PR #9 (design split); rule can be restored to error in a later lint pass
 
 ## [3] source-map-js audit fix (skip dompurify/jspdf)
 - [x] Code change: lockfile `source-map-js` 1.2.2 (`npm update source-map-js`)
@@ -33,4 +33,4 @@ Gate: CI minutes are exhausted, so `cd web && npm run lint && npm run typecheck 
 - [x] Test added: n/a (config)
 - [x] Docs/env updated: README line; fallback snippet `docs/gitleaks-ci.yml.txt`
 - [x] Verified: local `gitleaks detect --config .gitleaks.toml`: 86 commits, no leaks (config parses)
-- [ ] CI step: push rejected (token lacks `workflow` scope), so `ci.yml` is unchanged; snippet in `docs/gitleaks-ci.yml.txt` must be applied by the owner
+- [x] CI step: applied to `ci.yml` by the PM with the workflow-scoped token (PR #17)

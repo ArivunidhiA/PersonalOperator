@@ -25,7 +25,7 @@ Gate: CI minutes are exhausted, so local `cd web && npm run lint && npm run type
 - [x] Code: `web/app/privacy/page.tsx`, `force-static`, fields taken from `migrate-v4.sql` and `lib/track-client.ts`
 - [ ] Test: none added (static content)
 - [x] Docs: README links to `/privacy`
-- [ ] Verified: only lint/typecheck; page not rendered in a browser or `next build`. Page is not linked from the UI (UI files out of scope).
+- [x] Verified: `/privacy` serves 200 on production and is linked from the landing footer (PR #19); checked by the PM 2026-10-31
 
 ## 13. IPINFO_TOKEN
 - [x] Code: one-time `console.warn` in `lookupNetwork` when token missing and `VERCEL_ENV=production`
