@@ -3,6 +3,7 @@ import { executeTool } from "@/lib/tool-executor";
 import { TOOL_NAMES } from "@/lib/tools";
 import { checkLimit } from "@/lib/rate-limit";
 import { ticketFrom } from "@/lib/session-ticket";
+import { toolExecuteSchema } from "@/lib/schemas";
 import { createLogger } from "@/lib/logger";
 
 export const runtime = "nodejs";
@@ -17,13 +18,16 @@ export async function POST(req: Request) {
 
   const raw = await req.text();
   if (raw.length > 8_000) return NextResponse.json({ error: "Too large" }, { status: 413 });
-  let body: { name?: unknown; args?: unknown };
+  let json: unknown;
   try {
-    body = JSON.parse(raw);
+    json = JSON.parse(raw);
   } catch {
     return NextResponse.json({ error: "Bad JSON" }, { status: 400 });
   }
-  const name = typeof body.name === "string" ? body.name : "";
+  const parsed = toolExecuteSchema.safeParse(json);
+  if (!parsed.success) return NextResponse.json({ error: "Bad JSON" }, { status: 400 });
+  const body = parsed.data;
+  const name = body.name;
   if (!TOOL_NAMES.includes(name)) return NextResponse.json({ error: "Unknown tool" }, { status: 400 });
 
   const limit = await checkLimit("toolCall", ticket.sid);

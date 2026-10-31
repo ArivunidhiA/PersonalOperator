@@ -2,14 +2,14 @@ import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { checkLimit, clientIp } from "@/lib/rate-limit";
 import { later } from "@/lib/later";
+import { trackSchema } from "@/lib/schemas";
+import { isOwnerRequest } from "@/lib/session-ticket";
 import { isOwnerUser, networkFields, recordEvent, type SiteEvent } from "@/lib/analytics-store";
 import { lookupNetwork, rawIp, requestContext } from "@/lib/visitor";
 import { strictPrivacyRegion } from "@/lib/voice-config";
 
 export const runtime = "nodejs";
 
-const VID = /^v_[A-Za-z0-9_-]{12,40}$/;
-const SID = /^s_[a-z0-9]{4,16}_[A-Za-z0-9_-]{8,24}$/;
 const UTM_KEYS = ["source", "medium", "campaign", "content", "term"] as const;
 
 const clean = (v: unknown, max: number): string | null =>
@@ -52,23 +52,24 @@ export async function POST(req: Request) {
   if (site && site !== "same-origin" && site !== "none") return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   const raw = await req.text();
   if (raw.length > 4096) return NextResponse.json({ error: "Too large" }, { status: 413 });
-  let b: Record<string, unknown>;
+  let json: unknown;
   try {
-    const parsed: unknown = JSON.parse(raw);
-    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error("not an object");
-    b = parsed as Record<string, unknown>;
+    json = JSON.parse(raw);
   } catch {
     return NextResponse.json({ error: "Bad JSON" }, { status: 400 });
   }
-  const type = b.t === "visit" ? "visit" : b.t === "click" ? "click" : null;
-  if (!type) return NextResponse.json({ error: "Unknown event" }, { status: 400 });
+  if (!json || typeof json !== "object" || Array.isArray(json)) return NextResponse.json({ error: "Bad JSON" }, { status: 400 });
+  const parsed = trackSchema.safeParse(json);
+  if (!parsed.success) return NextResponse.json({ error: "Unknown event" }, { status: 400 });
+  const b = parsed.data;
+  const type = b.t;
   if (!(await checkLimit("track", clientIp(req))).ok) return NextResponse.json({ ok: false }, { status: 429 });
 
   const ctx = requestContext(req);
   const strict = strictPrivacyRegion(ctx.country);
-  const utmIn = b.utm && typeof b.utm === "object" ? (b.utm as Record<string, unknown>) : {};
+  const utmIn = b.utm ?? {};
   const utm = Object.fromEntries(UTM_KEYS.map((k) => [k, clean(utmIn[k], 100)]).filter(([, v]) => v)) as Record<string, string>;
-  let owner = b.own === true;
+  let owner = isOwnerRequest(req);
   if (!owner && process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY) {
     try {
       owner = isOwnerUser((await auth()).userId);
@@ -79,8 +80,8 @@ export async function POST(req: Request) {
   const path = clean(b.path, 200);
   const event: SiteEvent = {
     type,
-    visitor_id: !strict && typeof b.vid === "string" && VID.test(b.vid) ? b.vid : null,
-    session_id: typeof b.sid === "string" && SID.test(b.sid) ? b.sid : null,
+    visitor_id: strict ? null : (b.vid ?? null),
+    session_id: b.sid ?? null,
     label: type === "click" ? clean(b.label, 60) : null,
     target: type === "click" ? targetOf(b.href) : null,
     path: path?.startsWith("/") ? path : null,
