@@ -1,12 +1,19 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
-  "entry": ["scripts/*.mjs", "evals/**/*.eval.ts", "e2e/*.spec.ts"],
-  "ignore": [
-    "public/audio/*.js",
-    "components/ui/avatar.tsx",
-    "components/ui/chat-bubble.tsx",
-    "components/ui/message-loading.tsx"
+  "entry": [
+    "scripts/*.mjs",
+    "evals/**/*.eval.ts",
+    "e2e/*.spec.ts"
   ],
-  "ignoreDependencies": ["@testing-library/jest-dom", "@radix-ui/react-avatar"],
-  "rules": { "exports": "warn", "types": "warn", "files": "error" }
+  "ignore": [
+    "public/audio/*.js"
+  ],
+  "ignoreDependencies": [
+    "@testing-library/jest-dom"
+  ],
+  "rules": {
+    "exports": "warn",
+    "types": "warn",
+    "files": "error"
+  }
 }

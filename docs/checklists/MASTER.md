@@ -27,22 +27,22 @@ Topic checklists with sub-steps live beside this file: `security.md`, `speed-qua
 ## Topic 2: Speed, reliability, quality (session po-speed)
 - [x] 25 Parallel mic + session start (merged #12; live check pending)
 - [x] 26 Prefetch audio worklets (merged #16; live check pending)
-- [ ] 27 Client VAD gating
+- [x] 27 Client VAD gating (merged #24; flag off until A/B)
 - [x] 28 /api/health + uptime schedule (merged #18; live check pending)
-- [x] 29 Error reporting (merged #6; live check pending)
+- [x] 29 Error reporting (merged #6, #28; live check pending)
 - [x] 30 Lightpanda smoke (merged #23; live check pending)
-- [ ] 31 axe in Playwright
-- [ ] 32 Lighthouse CI budget
-- [ ] 33 size-limit budget
-- [ ] 34 knip + dead files removed
+- [x] 31 axe in Playwright (merged #29; verified locally)
+- [x] 32 Lighthouse CI budget (merged #32; verified locally)
+- [x] 33 size-limit budget (merged #31; verified locally)
+- [x] 34 knip + dead files removed (merged #30; verified locally)
 - [x] 35 known-risks.md filled (merged #6; live check pending)
-- [ ] 36 Nightly live evals
+- [x] 36 Nightly live evals (merged #33; needs GEMINI_API_KEY repo secret)
 - [x] 37 Vitest ESM config + @types/node 24 (merged #11; live check pending)
 - [x] 39 Superpowers + watchdog test (merged #21; live check pending)
 - [x] 40 NeMo SDP corpus (merged #22; live check pending)
 - [x] 41 Number normalization before verifier (merged #15; live check pending)
 - [x] 42 Finish-lock fallback fixed (merged #6/#7; live check pending)
-- [x] 43 Duration from setupComplete (merged #20; live check pending)
+- [x] 43 Duration from setupComplete (merged #20, #28)
 - [x] 44 Strix preview-only note (merged #6; live check pending)
 
 ## Topic 3: Design, UX, landing (session po-design)
@@ -66,7 +66,7 @@ Topic checklists with sub-steps live beside this file: `security.md`, `speed-qua
 - [x] 56 robots, sitemap, manifest (merged #10; live check pending)
 
 ## Final gate (PM)
-- [ ] All PRs merged in order: speed-ci, security-deps, security-headers/privacy, design-bundle, design-meta, speed-voice, design landing, remaining
-- [ ] `npm run lint && npm run typecheck && npm test` green on main
+- [x] All 56 items merged (PRs #6-#33, 2026-10-31)
+- [x] `npm run lint && npm run typecheck && npm test` green on main (261 tests, 0 prod vulns, 2026-10-31)
 - [ ] Production deploy verified: landing minimal, call connects, headers, /privacy, OG unfurl, robots/sitemap
 - [ ] Items needing Ari listed and handed over
