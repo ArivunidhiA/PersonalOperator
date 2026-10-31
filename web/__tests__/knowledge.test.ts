@@ -96,6 +96,8 @@ describe("searchFacts (retrieve_knowledge)", () => {
     ["has he held a software engineer title", "credentials"],
     ["how many years of experience does he have", "experience"],
     ["what languages does he speak", "languages"],
+    ["what's the hardest bug in forecost", "forecost-depth"],
+    ["walk me through the agno bug", "agno-depth"],
     ["what kind of team does he want", "team"],
     ["does he know rust", "skills"],
   ])("%s -> %s", (q, id) => {

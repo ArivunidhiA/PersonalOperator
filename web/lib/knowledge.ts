@@ -205,10 +205,34 @@ export const FACTS: Fact[] = [
     keywords: ["open", "source", "contributions", "oss", "agno", "nemo", "curator", "nvidia", "pytorch", "ao", "paperbanana", "merged", "pr", "prs", "pull", "github"],
   },
   {
+    id: "forecost-depth",
+    topic: "forecost: how it's built and the hardest bug",
+    text: "forecost is a Python CLI on Click, Rich and SQLite. Its hardest bug was double counting: Claude Code writes one log record per content block, so keying on the record ID inflated totals to more than double. Keying on the request ID fixed it. Design choices: meter readings and charges are separate immutable records, so a pricing fix never rewrites history. Every valuation names its authority, so imported files can never count as billed. The SQLite ledger runs in WAL mode with synchronous FULL, because NORMAL could lose a commit on power failure.",
+    keywords: ["forecost", "bug", "hardest", "double", "counting", "design", "decision", "decisions", "architecture", "sqlite", "wal", "durability", "immutable", "request", "click", "built", "how"],
+  },
+  {
+    id: "agno-depth",
+    topic: "The Agno bugs in detail",
+    text: "Two merged Agno fixes. First: Anthropic streaming counted input tokens twice, so usage is now read only from the stop event. Second: a Python list built by multiplying one empty dict made every tool call share the same dict, which caused duplicate execution and provider errors. He fixed that one across four providers. Both have regression tests.",
+    keywords: ["agno", "bug", "bugs", "fix", "fixes", "hardest", "token", "tokens", "streaming", "tool-call", "tool", "dict", "shared", "anthropic", "providers", "walk"],
+  },
+  {
+    id: "nemo-depth",
+    topic: "NeMo Curator and PaperBanana in detail",
+    text: "NeMo Curator: setting both blocksize and files_per_partition used to crash cryptically, so it now warns and picks one, and removing one re-export stopped the package importing transformers for nothing. PaperBanana: he added a verbose flag with per-agent timing, clear errors for missing keys, and fixed Settings silently ignoring a key passed to it. PyTorch AO: three docs fixes.",
+    keywords: ["nemo", "curator", "nvidia", "paperbanana", "pytorch", "ao", "blocksize", "transformers", "verbose", "contributions", "detail"],
+  },
+  {
+    id: "voice-agent-security",
+    topic: "How this agent is locked down",
+    text: "The server mints a single-use Gemini token with the prompt and tools locked in, so the browser can't change them. Call endpoints need a signed HMAC ticket. No tool can email anyone or read another caller's data. A real bug from building it: a false stall nudge made the agent repeat itself after late transcripts, so the nudge now arms only if the mic actually carried voice.",
+    keywords: ["security", "secure", "token", "ephemeral", "hmac", "ticket", "abuse", "locked", "bug", "hardest", "nudge", "stall", "stack", "clerk", "resend"],
+  },
+  {
     id: "ralph",
     topic: "Ralph Loop Arena",
-    text: "Ralph Loop Arena is a small experiment Ariv built. It runs a fresh-context coding agent (the Ralph loop pattern, credit to Geoffrey Huntley) against a standard long-context agent on the same task, so you can watch context rot happen. FastAPI backend that calls real LLMs, React front end.",
-    keywords: ["ralph", "loop", "arena", "context", "rot", "experiment", "coding", "agent"],
+    text: "Ralph Loop Arena is a small experiment Ariv built. It runs a fresh-context coding agent (the Ralph loop pattern, credit to Geoffrey Huntley) against a standard long-context agent on the same task, so you can watch context rot happen. FastAPI backend with asyncpg that calls real LLMs, React front end, with results streamed over server-sent events. The standard agent resends every prior attempt, while the Ralph agent gets only the task plus a state file.",
+    keywords: ["ralph", "loop", "arena", "context", "rot", "experiment", "coding", "agent", "fastapi", "react", "sse", "streaming"],
   },
   {
     id: "serotonin",

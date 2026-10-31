@@ -429,5 +429,6 @@ export const CASES: EvalCase[] = [
 
   // Two-level knowledge: details that live only in the dossier.
   { id: "kb-deep-forecost", turns: [null, "How many agent turns did he test the forecost prediction on, and why did he turn it off?"], checks: [says("finds the detail", /601|six hundred/i), check("looks it up", (t) => calls(t).some((c) => c.name === "retrieve_knowledge"))] },
+  { id: "kb-hardest-bug", turns: [null, "What's the hardest bug he's fixed in forecost?"], checks: [says("the real one", /(double|twice|request id|content block|inflat)/i), check("looks it up", (t) => calls(t).some((c) => c.name === "retrieve_knowledge"))] },
   { id: "kb-spoken-variant", turns: [null, "Tell me about the for cost thing and what mal bit does."], checks: [says("understands forecost", /(budget|spend|ledger|bill|cost)/i), says("understands Malbit", /(korean|translat)/i)] },
 ];
