@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import { getSupabase } from "@/lib/supabase";
-import { checkLimit, safeRedis } from "@/lib/rate-limit";
+import { checkLimit, withLock } from "@/lib/rate-limit";
 import { verifyTicket } from "@/lib/session-ticket";
 import { completeJSON } from "@/lib/llm";
 import { verifyTranscript } from "@/lib/verifier";
@@ -79,10 +79,8 @@ export async function POST(req: Request) {
   if (!(await checkLimit("finish", sid)).ok) return NextResponse.json({ ok: false, error: "Too many saves" }, { status: 429 });
 
   // Short lock so a snapshot and the final save don't process at the same time.
-  const lockKey = `finish-lock:${sid}`;
-  const locked = await safeRedis<string | number | null>((r) => r.set(lockKey, 1, { nx: true, ex: 25 }), "OK");
-  if (!locked) return NextResponse.json({ ok: false, pending: true, error: "Saving, try again in a moment" }, { status: 409 });
-  const unlock = () => safeRedis((r) => r.del(lockKey), 0);
+  const release = await withLock(`finish-lock:${sid}`, 25);
+  if (!release) return NextResponse.json({ ok: false, pending: true, error: "Saving, try again in a moment" }, { status: 409 });
 
   try {
     const existing = await supabase.from("call_summaries").select("summary, transcript").eq("session_id", sid).maybeSingle();
@@ -201,7 +199,7 @@ export async function POST(req: Request) {
     slog.error("save failed", { error: err instanceof Error ? err.message : String(err) });
     return NextResponse.json({ ok: false, error: "Couldn't save the call" }, { status: 500 });
   } finally {
-    await unlock();
+    await release();
   }
 }
 

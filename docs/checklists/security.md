@@ -34,3 +34,14 @@ Verification gate for all: `cd web && npm run lint && npm run typecheck && npm t
 
 ## Child sessions: NOT STARTED
 The app refused nested `start_session` ("Start sessions only on the user's own words"). Items 1,3,4,17,18 (po-sec-deps), 5,8,14,16 (po-sec-headers), 7,10,11,12,13 (po-sec-privacy) are untouched. Each needs its own section here with code/test/docs/verified sub-steps.
+
+## Handed over from speed (items 29 and 42)
+
+### 29 `/api/client-error`
+- [x] Code: `app/api/client-error/route.ts` (same-origin, 4 KB, zod, `clientError` limiter 30/10m, insert into `client_errors`, always 204); `scripts/migrate-v5.sql` copied from PR #6
+- [x] Test: `__tests__/client-error.test.ts`
+- [ ] Ari runs `migrate-v5.sql` in Supabase; insert not verified against a real DB
+
+### 42 Finish lock via `withLock`
+- [x] Code: `lib/rate-limit.ts` `withLock` cherry-picked from PR #6 (identical hunk, merges cleanly); `/api/calls/finish` uses it, releases in `finally`
+- [x] Existing finish tests pass

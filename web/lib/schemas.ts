@@ -37,3 +37,10 @@ export const toolExecuteSchema = z.object({
   name: z.string().catch(""),
   args: z.unknown().optional(),
 });
+
+export const clientErrorSchema = z.object({
+  message: z.string().min(1).max(500),
+  stack: soft(z.string().max(2000)),
+  context: soft(z.string().max(100)),
+  path: soft(z.string().max(200)),
+});
