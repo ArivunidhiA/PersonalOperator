@@ -9,11 +9,9 @@ const displayText = (t: string) => t.replace(/\s*—\s*/g, ", ");
 
 export function TranscriptLog({
   items,
-  live,
   onLink,
 }: {
   items: TranscriptItem[];
-  live: boolean;
   onLink: (label: string, href: string) => void;
 }) {
   const logRef = useRef<HTMLDivElement | null>(null);
@@ -32,20 +30,18 @@ export function TranscriptLog({
       aria-live="polite"
       className="max-h-[45vh] min-h-[6rem] space-y-3 overflow-y-auto overscroll-contain rounded-2xl border border-white/10 bg-white/[0.03] p-4 lg:max-h-[60vh]"
     >
-      {items.length === 0 ? (
-        <p className="text-sm text-white/30">{live ? "Say hi, or ask what Ariv's working on." : "The conversation will show up here."}</p>
-      ) : (
+      {
         items.map((it) =>
           it.role === "card" ? (
             <CardView key={it.id} card={it.card} onLink={onLink} />
           ) : (
             <div key={it.id} className="text-sm leading-6" aria-hidden={!it.final || undefined}>
-              <span className="mr-2 text-[11px] font-medium uppercase tracking-wider text-white/35">{it.role === "user" ? "You" : "Ariv's AI"}</span>
-              <span className={it.final ? "text-white/85" : "text-white/50"}>{displayText(it.text)}</span>
+              <span className="mr-2 text-[11px] font-medium uppercase tracking-wider text-white/60">{it.role === "user" ? "You" : "Ariv's AI"}</span>
+              <span className={it.final ? "text-white/85" : "text-white/60"}>{displayText(it.text)}</span>
             </div>
           ),
         )
-      )}
+      }
     </div>
   );
 }
