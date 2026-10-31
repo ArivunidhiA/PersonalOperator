@@ -1,0 +1,15 @@
+# NeMo Speech Data Processor, stage 1: list the generated caller WAVs.
+# Run by build_manifest.py (needs `raw_data_dir` and `workspace_dir` overrides).
+documentation: |
+  Index e2e/corpus/audio/*.wav into a manifest with audio_filepath.
+processors_to_run: all
+workspace_dir: ???
+raw_data_dir: ???
+final_manifest: ${workspace_dir}/manifest0.json
+
+processors:
+  - _target_: sdp.processors.CreateInitialManifestByExt
+    raw_data_dir: ${raw_data_dir}
+    extension: wav
+    output_file_key: audio_filepath
+    output_manifest_file: ${final_manifest}

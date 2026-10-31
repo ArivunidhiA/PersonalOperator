@@ -1,4 +1,5 @@
-import { test, expect, type Page } from "@playwright/test";
+import { test, expect, type APIRequestContext, type Page } from "@playwright/test";
+import { appendFileSync, mkdirSync, readFileSync } from "fs";
 import { createClient } from "@supabase/supabase-js";
 import { config } from "dotenv";
 import path from "path";
@@ -26,7 +27,15 @@ const errorsOf = (page: Page) => {
   return errors;
 };
 
-test("voice call: greeting, facts, links card, saved transcript", async ({ page, request }) => {
+/** One row of e2e/corpus/manifest.jsonl (built by e2e/corpus/build_manifest.py). */
+type CorpusEntry = { id: string; audio_filepath: string; voice: string; speed: number; noise: boolean; raw_text: string; text: string };
+const corpus = process.env.E2E_CORPUS === "1";
+const corpusDir = path.resolve(__dirname, "corpus");
+const entries: CorpusEntry[] = corpus
+  ? readFileSync(path.join(corpusDir, "manifest.jsonl"), "utf8").split("\n").filter(Boolean).map((l) => JSON.parse(l) as CorpusEntry)
+  : [];
+
+async function journey({ page, request }: { page: Page; request: APIRequestContext }, entry?: CorpusEntry) {
   const errors = errorsOf(page);
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "Ariv's AI" })).toBeVisible();
@@ -69,6 +78,13 @@ test("voice call: greeting, facts, links card, saved transcript", async ({ page,
   // Clicking it opens Calendly in a new tab (nothing gets booked) and is recorded for Ariv's dashboard.
   const [calendly] = await Promise.all([page.waitForEvent("popup"), booking.click()]);
   await calendly.close();
+
+  // Corpus mode: keep what the agent heard from this synthetic caller, for e2e/corpus/wer.py.
+  if (entry) {
+    const heard = (await log.locator(":scope > div").filter({ has: page.locator("span", { hasText: /^you$/i }) }).allInnerTexts()).map((t) => t.replace(/^\s*you\s*/i, "").trim());
+    mkdirSync(path.join(corpusDir, "out"), { recursive: true });
+    appendFileSync(path.join(corpusDir, "out", "results.jsonl"), JSON.stringify({ id: entry.id, ref: entry.text, heard: heard.join(" ") }) + "\n");
+  }
 
   // End the call; the transcript is saved. Sharing is opt-in.
   const finished = page.waitForResponse((r) => r.url().includes("/api/calls/finish") && r.request().method() === "POST", { timeout: 60_000 });
@@ -124,7 +140,30 @@ test("voice call: greeting, facts, links card, saved transcript", async ({ page,
   }
   // Off-Vercel, the analytics script 404s and a production Clerk key refuses localhost.
   expect(errors.filter((e) => !/_vercel\/insights|clerk|favicon/i.test(e))).toEqual([]);
-});
+}
+
+if (corpus) {
+  // E2E_CORPUS=1: the same journey once per synthetic caller (voice / speed / noise) in the manifest.
+  for (const entry of entries) {
+    test.describe(`corpus caller ${entry.id}`, () => {
+      test.use({
+        launchOptions: {
+          args: [
+            "--use-fake-ui-for-media-stream",
+            "--use-fake-device-for-media-stream",
+            `--use-file-for-fake-audio-capture=${path.resolve(corpusDir, entry.audio_filepath)}`,
+            "--autoplay-policy=no-user-gesture-required",
+            "--use-angle=swiftshader",
+            "--enable-unsafe-swiftshader",
+          ],
+        },
+      });
+      test("voice call: greeting, facts, links card, saved transcript", async ({ page, request }) => journey({ page, request }, entry));
+    });
+  }
+} else {
+  test("voice call: greeting, facts, links card, saved transcript", async ({ page, request }) => journey({ page, request }));
+}
 
 test("security surface: old open endpoints are gone, new ones need a live-call ticket", async ({ request }) => {
   for (const path of ["/api/tools/send-email", "/api/tools/caller-memory", "/api/tools/post-call", "/api/tools/rag", "/api/realtime/token", "/api/realtime/connect"]) {
