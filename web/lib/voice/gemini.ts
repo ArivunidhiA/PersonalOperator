@@ -1,3 +1,4 @@
+import { createVadGate } from "./vad-gate";
 import { runTool, type EndReason, type SessionInfo, type VoiceHandlers, type VoiceSession } from "./types";
 
 /**
@@ -180,10 +181,18 @@ export async function startGemini(info: SessionInfo, prepared: Prepared, h: Voic
     if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(msg));
   };
 
-  capture.port.onmessage = (e: MessageEvent<{ pcm: ArrayBuffer; level: number }>) => {
+  // Optional client VAD gate (see vad-gate.ts); off unless NEXT_PUBLIC_CLIENT_VAD=1.
+  const gate = process.env.NEXT_PUBLIC_CLIENT_VAD === "1" ? createVadGate<ArrayBuffer>() : null;
+  const sendAudio = (pcm: ArrayBuffer) => send({ realtimeInput: { audio: { data: b64FromBuffer(pcm), mimeType: "audio/pcm;rate=16000" } } });
+
+  capture.port.onmessage = (e: MessageEvent<{ pcm: ArrayBuffer; level: number; rms?: number }>) => {
     micLevel = Math.min(1, e.data.level * 4);
     if (!speaking && e.data.level > VOICE_RMS) lastVoiceAt = Date.now();
-    if (live) send({ realtimeInput: { audio: { data: b64FromBuffer(e.data.pcm), mimeType: "audio/pcm;rate=16000" } } });
+    if (!live) return;
+    if (!gate) return sendAudio(e.data.pcm);
+    const out = gate.push(e.data.rms ?? e.data.level, e.data.pcm, Date.now());
+    out.send.forEach(sendAudio);
+    if (out.streamEnd) send({ realtimeInput: { audioStreamEnd: true } });
   };
   player.port.onmessage = (e: MessageEvent<{ speaking: boolean; level: number }>) => {
     agentLevel = Math.min(1, e.data.level * 4);

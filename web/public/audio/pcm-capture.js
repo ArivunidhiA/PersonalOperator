@@ -11,6 +11,8 @@ class PcmCapture extends AudioWorkletProcessor {
     this.out = new Int16Array(512);
     this.n = 0;
     this.muted = false;
+    this.csq = 0; // sum of squares over the current output chunk (for VAD)
+    this.cn = 0;
     this.port.onmessage = (e) => {
       if (e.data && typeof e.data.muted === "boolean") this.muted = e.data.muted;
     };
@@ -30,10 +32,14 @@ class PcmCapture extends AudioWorkletProcessor {
         const v = Math.max(-1, Math.min(1, this.acc / this.accN));
         this.acc = 0;
         this.accN = 0;
+        this.csq += v * v;
+        this.cn++;
         this.out[this.n++] = v < 0 ? v * 0x8000 : v * 0x7fff;
         if (this.n === this.out.length) {
-          this.port.postMessage({ pcm: this.out.buffer.slice(0), level: Math.sqrt(sq / ch.length) });
+          this.port.postMessage({ pcm: this.out.buffer.slice(0), level: Math.sqrt(sq / ch.length), rms: Math.sqrt(this.csq / this.cn) });
           this.n = 0;
+          this.csq = 0;
+          this.cn = 0;
         }
       }
     }

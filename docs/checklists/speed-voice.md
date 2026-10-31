@@ -16,10 +16,10 @@ Tick only when done AND verified. Gate per PR: `cd web && npm run lint && npm ru
 - [ ] Verified: unit test (prefetch fired once, SSR-safe); full gate
 
 ## 27 Client VAD gating (`gemini.ts`, `pcm-capture.js`)
-- [ ] Code: gated by NEXT_PUBLIC_CLIENT_VAD=1, 300 ms hangover, no onset latency
-- [ ] Test added
-- [ ] Docs/env updated: README env note, Gemini continuous-audio finding documented
-- [ ] Verified: unit tests; real-browser check (state result honestly)
+- [x] Code: gated by NEXT_PUBLIC_CLIENT_VAD=1, 300 ms hangover, pre-roll (energy detector; Silero follow-up)
+- [x] Test added
+- [x] Docs/env updated: web/.env.example; continuous audio NOT required (audioStreamEnd), no zero-frame mode
+- [ ] Verified: unit tests + gate pass; REAL-BROWSER CHECK NOT DONE (flag default off)
 
 ## 39 Superpowers pointer + stall watchdog (`gemini.ts`)
 - [ ] Code: AGENTS.md pointer; false nudge fixed
@@ -50,10 +50,10 @@ Tick only when done AND verified. Gate per PR: `cd web && npm run lint && npm ru
 - [x] Verified: unit test (prefetch fired once, SSR-safe); full gate
 
 ## 27 Client VAD gating (`gemini.ts`, `pcm-capture.js`)
-- [ ] Code: gated by NEXT_PUBLIC_CLIENT_VAD=1, 300 ms hangover, no onset latency
-- [ ] Test added
-- [ ] Docs/env updated: README env note, Gemini continuous-audio finding documented
-- [ ] Verified: unit tests; real-browser check (state result honestly)
+- [x] Code: gated by NEXT_PUBLIC_CLIENT_VAD=1, 300 ms hangover, pre-roll (energy detector; Silero follow-up)
+- [x] Test added
+- [x] Docs/env updated: web/.env.example; continuous audio NOT required (audioStreamEnd), no zero-frame mode
+- [ ] Verified: unit tests + gate pass; REAL-BROWSER CHECK NOT DONE (flag default off)
 
 ## 39 Superpowers pointer + stall watchdog (`gemini.ts`)
 - [ ] Code: AGENTS.md pointer; false nudge fixed
@@ -84,10 +84,10 @@ Tick only when done AND verified. Gate per PR: `cd web && npm run lint && npm ru
 - [ ] Verified: unit test (prefetch fired once, SSR-safe); full gate
 
 ## 27 Client VAD gating (`gemini.ts`, `pcm-capture.js`)
-- [ ] Code: gated by NEXT_PUBLIC_CLIENT_VAD=1, 300 ms hangover, no onset latency
-- [ ] Test added
-- [ ] Docs/env updated: README env note, Gemini continuous-audio finding documented
-- [ ] Verified: unit tests; real-browser check (state result honestly)
+- [x] Code: gated by NEXT_PUBLIC_CLIENT_VAD=1, 300 ms hangover, pre-roll (energy detector; Silero follow-up)
+- [x] Test added
+- [x] Docs/env updated: web/.env.example; continuous audio NOT required (audioStreamEnd), no zero-frame mode
+- [ ] Verified: unit tests + gate pass; REAL-BROWSER CHECK NOT DONE (flag default off)
 
 ## 39 Superpowers pointer + stall watchdog (`gemini.ts`)
 - [ ] Code: AGENTS.md pointer; false nudge fixed
@@ -118,10 +118,10 @@ Tick only when done AND verified. Gate per PR: `cd web && npm run lint && npm ru
 - [ ] Verified: unit test (prefetch fired once, SSR-safe); full gate
 
 ## 27 Client VAD gating (`gemini.ts`, `pcm-capture.js`)
-- [ ] Code: gated by NEXT_PUBLIC_CLIENT_VAD=1, 300 ms hangover, no onset latency
-- [ ] Test added
-- [ ] Docs/env updated: README env note, Gemini continuous-audio finding documented
-- [ ] Verified: unit tests; real-browser check (state result honestly)
+- [x] Code: gated by NEXT_PUBLIC_CLIENT_VAD=1, 300 ms hangover, pre-roll (energy detector; Silero follow-up)
+- [x] Test added
+- [x] Docs/env updated: web/.env.example; continuous audio NOT required (audioStreamEnd), no zero-frame mode
+- [ ] Verified: unit tests + gate pass; REAL-BROWSER CHECK NOT DONE (flag default off)
 
 ## 39 Superpowers pointer + stall watchdog (`gemini.ts`)
 - [x] Code: AGENTS.md pointer; false nudge fixed
