@@ -11,32 +11,32 @@ Note: child sessions could not be started from a session-initiated turn, so all 
 - [ ] verified (how: )
 
 ## 21. Clerk only in app/dashboard/layout.tsx; drop Email-it button
-- [ ] code change
-- [ ] test added/updated
-- [ ] screenshot taken (UI items)
-- [ ] docs updated
-- [ ] verified (how: )
+- [x] code change
+- [x] test added/updated
+- [x] screenshot taken (UI items)
+- [x] docs updated
+- [x] verified (how: lint/typecheck/197 tests; dashboard layout mounts Clerk; build ok)
 
 ## 22. Make / static (drop force-dynamic)
-- [ ] code change
-- [ ] test added/updated
-- [ ] screenshot taken (UI items)
-- [ ] docs updated
-- [ ] verified (how: )
+- [x] code change
+- [x] test added/updated
+- [x] screenshot taken (UI items)
+- [x] docs updated
+- [x] verified (how: next build shows / as ○ static)
 
 ## 23. Remove unused Geist Mono
-- [ ] code change
-- [ ] test added/updated
-- [ ] screenshot taken (UI items)
-- [ ] docs updated
-- [ ] verified (how: )
+- [x] code change
+- [x] test added/updated
+- [x] screenshot taken (UI items)
+- [x] docs updated
+- [x] verified (how: build ok, no geist-mono refs)
 
 ## 24. Remove @vercel/analytics
-- [ ] code change
-- [ ] test added/updated
-- [ ] screenshot taken (UI items)
-- [ ] docs updated
-- [ ] verified (how: )
+- [x] code change
+- [x] test added/updated
+- [x] screenshot taken (UI items)
+- [x] docs updated
+- [x] verified (how: build ok, dep removed)
 
 ## 38. Split RealtimeVoice into CallControls, StatusLine, TranscriptLog, PostCallPanel, CardView
 - [ ] code change
