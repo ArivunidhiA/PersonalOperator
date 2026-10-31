@@ -1,3 +1,4 @@
+import { turnstileToken } from "@/lib/turnstile-client";
 import { prepareAudio, startGemini } from "./gemini";
 import { startOpenAI } from "./openai";
 import { sessionHints } from "../track-client";
@@ -53,7 +54,7 @@ export async function startVoiceCall(h: VoiceHandlers, signal?: AbortSignal): Pr
     const res = await fetch("/api/voice/session", {
       method: "POST",
       headers: { "x-ariv-client": "1", "Content-Type": "application/json" },
-      body: JSON.stringify(sessionHints()),
+      body: JSON.stringify({ ...sessionHints(), ts: await turnstileToken() }),
       signal,
     });
     const data = (await res.json().catch(() => ({}))) as SessionInfo & { error?: string; code?: string };
