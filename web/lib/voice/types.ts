@@ -25,6 +25,8 @@ export interface VoiceHandlers {
 export interface VoiceSession {
   stop(reason?: EndReason): void;
   setMuted(muted: boolean): void;
+  /** Epoch ms when the model finished setup (the call became live), or null before that. Gemini only. */
+  liveAt?(): number | null;
   /** 0..1 levels for visuals. */
   levels(): { mic: number; agent: number };
 }

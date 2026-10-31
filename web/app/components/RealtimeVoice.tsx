@@ -1,22 +1,20 @@
 "use client";
 
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
-import { useUser as useClerkUser } from "@clerk/nextjs";
-import { Mic, MicOff, PhoneOff, Copy, Check, Download, Mail, ExternalLink, CalendarDays } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { VoicePoweredOrb } from "@/components/ui/voice-powered-orb";
-import { AuthHeader } from "./AuthHeader";
 import { LINKS, tagBookingUrl } from "@/lib/knowledge";
+import { CallButton, MuteButton, type Phase } from "./CallControls";
+import { PostCallPanel, type PostState } from "./PostCallPanel";
+import { FaviconAnimator } from "./FaviconAnimator";
+import { StatusLine } from "./StatusLine";
+import { TranscriptLog } from "./TranscriptLog";
 import { trackClick } from "@/lib/track-client";
-import { detectAgentTransition, AGENT_MODES } from "@/lib/agents";
-import { cardToText, isSafeUrl, type UiCard } from "@/lib/ui-cards";
+import { detectAgentTransition } from "@/lib/agents";
 import { initialTranscript, toMessages, transcriptReducer, type TranscriptItem } from "@/lib/voice/transcript";
 import type { EndReason, SessionInfo, VoiceSession } from "@/lib/voice/types";
 // Static on purpose: iOS only allows audio if the AudioContext is created inside the tap,
 // and a dynamic import here would put a network wait before it.
 import { startVoiceCall, StartError } from "@/lib/voice/start";
-
-type Phase = "idle" | "connecting" | "live" | "ending" | "ended";
 
 const TOOL_LABELS: Record<string, string> = {
   retrieve_knowledge: "Checking his notes",
@@ -27,39 +25,15 @@ const TOOL_LABELS: Record<string, string> = {
   generate_summary: "Writing a recap",
 };
 
-function useSafeUser() {
-  try {
-    return useClerkUser();
-  } catch {
-    return { user: null, isSignedIn: false, isLoaded: true };
-  }
-}
-
-// The speech transcriber adds em dashes as punctuation; show them as commas.
-const displayText = (t: string) => t.replace(/\s*\u2014\s*/g, ", ");
-
-const fmt = (s: number) => `${Math.floor(s / 60)}:${String(Math.max(0, s) % 60).padStart(2, "0")}`;
-
 export default function RealtimeVoice() {
-  const { isSignedIn } = useSafeUser();
   const [phase, setPhase] = useState<Phase>("idle");
   const [transcript, dispatch] = useReducer(transcriptReducer, initialTranscript);
   const [notice, setNotice] = useState<{ text: string; tone: "error" | "info"; showLinks?: boolean } | null>(null);
   const [agentSpeaking, setAgentSpeaking] = useState(false);
   const [activeTool, setActiveTool] = useState<string | null>(null);
-  const [mode, setMode] = useState<string>("greeter");
   const [muted, setMuted] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(0);
-  const [post, setPost] = useState<{
-    shareToken?: string;
-    shareError?: string;
-    summary?: string;
-    saving: boolean;
-    failed?: boolean;
-    emailed?: string;
-    emailError?: string;
-  } | null>(null);
-  const [copied, setCopied] = useState(false);
+  const [post, setPost] = useState<PostState | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
 
   const sessionRef = useRef<VoiceSession | null>(null);
@@ -69,13 +43,8 @@ export default function RealtimeVoice() {
   const modeRef = useRef("greeter");
   const cancelRef = useRef(false);
   const abortRef = useRef<AbortController | null>(null);
-  const logRef = useRef<HTMLDivElement | null>(null);
-  itemsRef.current = transcript.items;
-
-  // Keep the newest line in view.
   useEffect(() => {
-    const el = logRef.current;
-    if (el) el.scrollTop = el.scrollHeight;
+    itemsRef.current = transcript.items;
   }, [transcript.items]);
 
   const finish = useCallback(async (viaBeacon = false) => {
@@ -126,7 +95,6 @@ export default function RealtimeVoice() {
     cancelRef.current = false;
     abortRef.current = new AbortController();
     modeRef.current = "greeter";
-    setMode("greeter");
     setMuted(false);
     setPhase("connecting");
     try {
@@ -142,7 +110,6 @@ export default function RealtimeVoice() {
             const next = detectAgentTransition(modeRef.current, name);
             if (next) {
               modeRef.current = next.id;
-              setMode(next.id);
             }
           },
           onToolEnd: (_name, _ok, card) => {
@@ -227,46 +194,12 @@ export default function RealtimeVoice() {
     return l ? Math.max(l.mic, l.agent) : 0;
   }, []);
 
-  const downloadPdf = async () => {
-    const { jsPDF } = await import("jspdf");
-    const doc = new jsPDF();
-    const pageH = doc.internal.pageSize.getHeight();
-    let y = 20;
-    doc.setFontSize(14);
-    doc.text("Conversation with Ariv's AI", 20, y);
-    y += 12;
-    doc.setFontSize(10);
-    for (const it of itemsRef.current) {
-      const text = it.role === "card" ? cardToText(it.card) : `${it.role === "user" ? "You" : "Ariv's AI"}: ${it.text}`;
-      // jsPDF's built-in font is Latin-1 only; keep the text readable instead of garbled.
-      const safe = text.normalize("NFKD").replace(/[^\x20-\x7E\n]/g, "");
-      for (const line of doc.splitTextToSize(safe, 170) as string[]) {
-        if (y > pageH - 15) {
-          doc.addPage();
-          y = 20;
-        }
-        doc.text(line, 20, y);
-        y += 6;
-      }
-      y += 3;
-    }
-    doc.save("ariv-ai-conversation.pdf");
-  };
-
   const createShareLink = async () => {
     const info = infoRef.current;
     if (!info) return;
     const res = await fetch("/api/calls/share", { method: "POST", headers: { "x-session-ticket": info.ticket } }).catch(() => null);
     const data = (await res?.json().catch(() => ({}))) as { share_token?: string; error?: string } | undefined;
     setPost((p) => (p ? { ...p, shareToken: res?.ok ? data?.share_token : undefined, shareError: res?.ok ? undefined : data?.error || "Couldn't make a link." } : p));
-  };
-
-  const emailTranscript = async () => {
-    const info = infoRef.current;
-    if (!info) return;
-    const res = await fetch("/api/calls/email", { method: "POST", headers: { "x-session-ticket": info.ticket } }).catch(() => null);
-    const data = (await res?.json().catch(() => ({}))) as { to?: string; error?: string } | undefined;
-    setPost((p) => (p ? { ...p, emailed: res?.ok ? data?.to : undefined, emailError: res?.ok ? undefined : data?.error || "Couldn't send it." } : p));
   };
 
   const shareUrl = post?.shareToken && typeof window !== "undefined" ? `${window.location.origin}/call/${post.shareToken}` : null;
@@ -282,59 +215,19 @@ export default function RealtimeVoice() {
         : muted
           ? "Muted"
           : "Listening";
-  const orbHue = phase === "connecting" ? 280 : agentSpeaking ? 205 : live ? 235 : 240;
-  const modeName = AGENT_MODES.find((m) => m.id === mode)?.name;
+  const hasConversation = transcript.items.length > 0;
 
   return (
-    <div className="flex min-h-screen flex-col bg-black text-white">
-      <header className="flex items-center justify-between gap-3 px-4 py-3 sm:px-6">
-        <h1 className="text-sm font-medium tracking-wide text-white/70">Ariv&apos;s AI</h1>
-        <div className="flex items-center gap-3">
-          <AuthHeader />
-          {/* One persistent button (label/action change) so keyboard focus isn't lost. */}
-          <Button
-            onClick={live || phase === "connecting" ? hangUp : () => void start()}
-            disabled={phase === "ending"}
-            variant={live || phase === "connecting" ? "destructive" : "default"}
-            className="rounded-full px-5 text-sm"
-          >
-            {live ? (
-              <>
-                <PhoneOff className="mr-2 h-4 w-4" aria-hidden />
-                End call
-              </>
-            ) : phase === "connecting" ? (
-              "Cancel"
-            ) : phase === "ending" ? (
-              "Ending…"
-            ) : (
-              <>
-                <Mic className="mr-2 h-4 w-4" aria-hidden />
-                {phase === "ended" ? "Talk again" : "Start talking"}
-              </>
-            )}
-          </Button>
-        </div>
+    <div className="flex min-h-screen flex-col bg-background text-foreground">
+      <FaviconAnimator enabled={live} />
+      <header className="px-5 py-4 sm:px-8 print:hidden">
+        <h1 className="font-serif text-lg italic tracking-wide text-primary/80">Ariv&apos;s AI</h1>
       </header>
-
-      {phase === "idle" && (
-        <div className="mx-auto max-w-xl px-4 pt-2 text-center sm:px-6">
-          <p className="text-base text-white/80">
-            Talk to my AI. It knows what I work on, it can find time on my calendar, and yes, it&apos;s an AI.
-          </p>
-          <p className="mt-2 text-xs leading-5 text-white/40">
-            Voice runs on Google&apos;s Gemini API (free tier), which may use calls to improve Google&apos;s models, so don&apos;t share
-            anything sensitive. Transcripts are saved so I can read them, and I log basic visit info (rough location, network,
-            device, where you came from, what you click) to see how people use this. Your browser&apos;s Do Not Track or Global
-            Privacy Control setting turns that off.
-          </p>
-        </div>
-      )}
 
       {notice && (
         <div
           role={notice.tone === "error" ? "alert" : "status"}
-          className={`mx-auto mt-3 w-[calc(100%-2rem)] max-w-xl rounded-xl border px-4 py-3 text-sm ${
+          className={`mx-auto mt-3 w-[calc(100%-2rem)] max-w-xl rounded-xl border px-4 py-3 text-sm print:hidden ${
             notice.tone === "error" ? "border-red-500/30 bg-red-500/10 text-red-100" : "border-white/15 bg-white/5 text-white/80"
           }`}
         >
@@ -343,185 +236,45 @@ export default function RealtimeVoice() {
         </div>
       )}
 
-      <main className="flex flex-1 flex-col items-center gap-6 px-4 pb-8 pt-4 lg:flex-row lg:items-start lg:justify-center lg:gap-12 lg:px-6">
-        <section className="flex flex-col items-center" aria-label="Call">
-          <div className="relative h-60 w-60 sm:h-72 sm:w-72 lg:h-[26rem] lg:w-[26rem]">
-            <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-blue-500/15 via-purple-500/15 to-fuchsia-500/15 blur-3xl" />
-            <div className="relative h-full w-full overflow-hidden rounded-full">
-              <VoicePoweredOrb hue={orbHue} getLevel={getLevel} />
-            </div>
+      <main
+        className={`flex flex-1 flex-col items-center gap-8 px-4 pb-10 pt-2 ${
+          hasConversation ? "lg:flex-row lg:items-start lg:justify-center lg:gap-14 lg:px-6" : "justify-center"
+        }`}
+      >
+        <section className="flex flex-col items-center print:hidden" aria-label="Call">
+          <div className="h-64 w-64 overflow-hidden rounded-full sm:h-80 sm:w-80 lg:h-[26rem] lg:w-[26rem]">
+            <VoicePoweredOrb hue={0} getLevel={getLevel} />
           </div>
-          <div className="mt-3 flex h-6 items-center gap-3 text-xs text-white/50">
-            <span aria-live="polite">{status}</span>
-            {live && modeName && <span className="text-emerald-300/50">{modeName}</span>}
-            {live && (
-              <span aria-hidden className={secondsLeft <= 60 ? "text-amber-300" : "text-white/30"}>
-                {fmt(secondsLeft)} left
-              </span>
-            )}
-            <span className="sr-only" aria-live="polite">
-              {live && secondsLeft <= 60 && secondsLeft > 55 ? "One minute left in this call." : ""}
-            </span>
+          <div className="mt-8">
+            <CallButton phase={phase} onStart={() => void start()} onHangUp={hangUp} />
           </div>
-          {live && (
-            <Button
-              onClick={toggleMute}
-              variant="secondary"
-              size="sm"
-              className="mt-3 rounded-full"
-              aria-pressed={muted}
-              aria-label={muted ? "Unmute microphone" : "Mute microphone"}
-            >
-              {muted ? <MicOff className="mr-2 h-4 w-4" aria-hidden /> : <Mic className="mr-2 h-4 w-4" aria-hidden />}
-              {muted ? "Unmute" : "Mute"}
-            </Button>
-          )}
+          <StatusLine status={status} secondsLeft={secondsLeft} live={live} />
+          {live && <MuteButton muted={muted} onToggle={toggleMute} />}
         </section>
 
-        <section className="flex w-full max-w-md flex-col lg:mt-8" aria-label="Conversation">
-          <div
-            ref={logRef}
-            role="log"
-            aria-live="polite"
-            className="max-h-[45vh] min-h-[6rem] space-y-3 overflow-y-auto overscroll-contain rounded-2xl border border-white/10 bg-white/[0.03] p-4 lg:max-h-[60vh]"
-          >
-            {transcript.items.length === 0 ? (
-              <p className="text-sm text-white/30">
-                {live ? "Say hi, or ask what Ariv's working on." : "The conversation will show up here."}
-              </p>
-            ) : (
-              transcript.items.map((it) =>
-                it.role === "card" ? (
-                  <CardView key={it.id} card={it.card} onLink={(label, href) => trackClick(label, href, sessionId)} />
-                ) : (
-                  <div key={it.id} className="text-sm leading-6" aria-hidden={!it.final || undefined}>
-                    <span className="mr-2 text-[11px] font-medium uppercase tracking-wider text-white/35">
-                      {it.role === "user" ? "You" : "Ariv's AI"}
-                    </span>
-                    <span className={it.final ? "text-white/85" : "text-white/50"}>{displayText(it.text)}</span>
-                  </div>
-                ),
-              )
+        {(hasConversation || (phase === "ended" && post)) && (
+          <section className="flex w-full max-w-md flex-col lg:mt-8" aria-label="Conversation">
+            {hasConversation && <TranscriptLog items={transcript.items} onLink={(label, href) => trackClick(label, href, sessionId)} />}
+
+            {phase === "ended" && post && (
+              <PostCallPanel
+                post={post}
+                shareUrl={shareUrl}
+                sessionId={sessionId}
+                onRetry={() => void finish()}
+                onShare={() => void createShareLink()}
+                onPrint={() => window.print()}
+              />
             )}
-          </div>
-
-          {phase === "ended" && post && (
-            <div className="mt-4 rounded-2xl border border-white/15 bg-white/5 p-5">
-              <h2 className="text-base font-semibold">
-                {post.saving ? "Saving your transcript…" : post.failed ? "Couldn't save the transcript" : "Your transcript"}
-              </h2>
-              {post.failed && (
-                <Button variant="secondary" size="sm" className="mt-2" onClick={() => void finish()}>
-                  Retry
-                </Button>
-              )}
-              {post.summary && <p className="mt-1 text-sm text-white/60">{post.summary}</p>}
-              {!post.saving && !post.failed && (
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {!shareUrl && (
-                    <Button variant="secondary" size="sm" className="gap-2" onClick={() => void createShareLink()}>
-                      <Copy className="h-4 w-4" aria-hidden />
-                      Create share link
-                    </Button>
-                  )}
-                  {shareUrl && (
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      className="gap-2"
-                      onClick={async () => {
-                        try {
-                          await navigator.clipboard.writeText(shareUrl);
-                          setCopied(true);
-                          setTimeout(() => setCopied(false), 2000);
-                        } catch {
-                          window.prompt("Copy this link:", shareUrl);
-                        }
-                      }}
-                    >
-                      {copied ? <Check className="h-4 w-4" aria-hidden /> : <Copy className="h-4 w-4" aria-hidden />}
-                      {copied ? "Copied" : "Copy share link"}
-                    </Button>
-                  )}
-                  <Button variant="secondary" size="sm" className="gap-2" onClick={() => void downloadPdf()}>
-                    <Download className="h-4 w-4" aria-hidden />
-                    Download PDF
-                  </Button>
-                  {isSignedIn && (
-                    <Button variant="secondary" size="sm" className="gap-2" onClick={() => void emailTranscript()} disabled={!!post.emailed}>
-                      <Mail className="h-4 w-4" aria-hidden />
-                      {post.emailed ? "Sent" : "Email it to me"}
-                    </Button>
-                  )}
-                  <a
-                    href={tagBookingUrl(LINKS.calendly, sessionId)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => trackClick("Book time with Ariv (after call)", e.currentTarget.href, sessionId)}
-                    className="inline-flex h-9 items-center gap-2 rounded-md border border-white/15 px-3 text-sm text-white/85 hover:bg-white/10"
-                  >
-                    <CalendarDays className="h-4 w-4" aria-hidden />
-                    Book time with Ariv
-                  </a>
-                </div>
-              )}
-              {post.shareError && <p className="mt-2 text-xs text-red-200">{post.shareError}</p>}
-              {post.emailed && <p className="mt-2 text-xs text-white/50">Sent to {post.emailed}.</p>}
-              {post.emailError && <p className="mt-2 text-xs text-red-200">{post.emailError}</p>}
-            </div>
-          )}
-        </section>
-      </main>
-    </div>
-  );
-}
-
-function CardView({ card, onLink }: { card: UiCard; onLink: (label: string, href: string) => void }) {
-  if (card.kind === "links") {
-    return (
-      <div className="rounded-xl border border-white/10 bg-white/5 p-3">
-        <div className="text-[11px] font-medium uppercase tracking-wider text-white/40">{card.title}</div>
-        <ul className="mt-2 space-y-1">
-          {card.links.filter((l) => isSafeUrl(l.url) || l.url.startsWith("mailto:")).map((l) => (
-            <li key={l.url}>
-              <a href={l.url} target="_blank" rel="noopener noreferrer" onClick={() => onLink(l.label, l.url)} className="inline-flex items-center gap-1.5 text-sm text-sky-300 hover:text-sky-200 hover:underline">
-                {l.label}
-                <ExternalLink className="h-3 w-3" aria-hidden />
-              </a>
-            </li>
-          ))}
-        </ul>
-      </div>
-    );
-  }
-  if (card.kind === "booking") {
-    return (
-      <div className="rounded-xl border border-sky-400/20 bg-sky-400/5 p-3">
-        <div className="text-sm font-medium text-white/90">{card.title}</div>
-        <div className="mt-0.5 text-sm text-white/60">{card.when}</div>
-        {isSafeUrl(card.url) && (
-          <a
-            href={card.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={() => onLink("Confirm on Calendly", card.url)}
-            className="mt-2 inline-flex items-center gap-1.5 rounded-md bg-sky-500/90 px-3 py-1.5 text-sm font-medium text-white hover:bg-sky-500"
-          >
-            Confirm on Calendly
-            <ExternalLink className="h-3.5 w-3.5" aria-hidden />
-          </a>
+          </section>
         )}
-      </div>
-    );
-  }
-  return (
-    <div className="rounded-xl border border-white/10 bg-white/5 p-3">
-      <div className="text-[11px] font-medium uppercase tracking-wider text-white/40">{card.title}</div>
-      <ul className="mt-1 space-y-0.5 text-sm text-white/75">
-        {card.lines.map((l) => (
-          <li key={l}>{l}</li>
-        ))}
-      </ul>
+      </main>
+
+      <footer className="px-5 pb-6 text-center text-xs print:hidden">
+        <a href="/privacy" className="text-white/60 underline-offset-4 hover:text-white/90 hover:underline">
+          How this works · Privacy
+        </a>
+      </footer>
     </div>
   );
 }
@@ -535,7 +288,7 @@ function FallbackLinks() {
   return (
     <div className="mt-2 flex flex-wrap gap-3 text-sm">
       {links.map((l) => (
-        <a key={l.label} className="text-sky-300 hover:underline" href={l.href} target="_blank" rel="noopener noreferrer" onClick={() => trackClick(l.label, l.href)}>
+        <a key={l.label} className="text-ivory hover:underline" href={l.href} target="_blank" rel="noopener noreferrer" onClick={() => trackClick(l.label, l.href)}>
           {l.label}
         </a>
       ))}

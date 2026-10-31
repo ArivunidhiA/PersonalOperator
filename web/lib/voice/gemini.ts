@@ -141,6 +141,7 @@ export async function startGemini(info: SessionInfo, prepared: Prepared, h: Voic
   let speaking = false;
   let ended = false;
   let live = false;
+  let liveAt: number | null = null; // epoch ms of setupComplete
   const cancelled = new Set<string>();
   const timers: ReturnType<typeof setTimeout>[] = [];
 
@@ -251,6 +252,7 @@ export async function startGemini(info: SessionInfo, prepared: Prepared, h: Voic
     }
     if (msg.setupComplete) {
       live = true;
+      liveAt ??= Date.now();
       h.onLive();
       // Live waits for input; nudge it to greet first.
       send({ clientContent: { turns: [{ role: "user", parts: [{ text: g.greeting }] }], turnComplete: true } });
@@ -350,6 +352,7 @@ export async function startGemini(info: SessionInfo, prepared: Prepared, h: Voic
   return {
     stop: (reason = "hangup") => end(reason),
     setMuted: (muted) => capture.port.postMessage({ muted }),
+    liveAt: () => liveAt,
     levels: () => ({ mic: micLevel, agent: agentLevel }),
   };
 }
