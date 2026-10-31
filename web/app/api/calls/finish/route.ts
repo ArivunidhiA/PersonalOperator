@@ -61,6 +61,10 @@ export async function POST(req: Request) {
   if (!ticket) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const sid = ticket.sid;
   const slog = log.child({ sessionId: sid });
+  // Talk time starts when the model went live; ignore a client value outside [ticket issue, now].
+  const nowS = Math.round(Date.now() / 1000);
+  const liveS = body.liveAt ? Math.round(body.liveAt / 1000) : 0;
+  const startedAt = liveS >= ticket.iat && liveS <= nowS ? liveS : ticket.iat;
 
   const messages: Msg[] = body.messages
     .flatMap((m) => {
@@ -123,7 +127,7 @@ export async function POST(req: Request) {
       caller_role: cap(analysis.caller_role, 80),
       hiring_for: cap(analysis.role, 80),
       questions: messages.filter((m) => m.role === "user").map((m) => m.text.slice(0, 240)).slice(0, 20),
-      duration_s: Math.max(0, Math.min(MAX_CALL_SECONDS + 120, Math.round(Date.now() / 1000) - ticket.iat)),
+      duration_s: Math.max(0, Math.min(MAX_CALL_SECONDS + 120, Math.round(Date.now() / 1000) - startedAt)),
       context: {
         country: ctx.country,
         region: ticket.vid ? ctx.region : null,
