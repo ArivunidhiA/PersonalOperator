@@ -16,7 +16,7 @@ Results land in `strix_runs/`. Copy confirmed findings into `docs/qa/known-risks
 
 ## In CI
 
-Copy `docs/qa/strix.workflow.yml` to `.github/workflows/strix.yml` (the bot token lacks `workflow` scope, so Ari must add it). Then Actions > "Strix security scan" > Run workflow, with a preview URL. Needs repo secret `STRIX_LLM_API_KEY` (optional var `STRIX_LLM`). Manual only; it spends LLM credits.
+Copy `.github/workflows/strix.yml` to `.github/workflows/strix.yml` (the bot token lacks `workflow` scope, so Ari must add it). Then Actions > "Strix security scan" > Run workflow, with a preview URL. Needs repo secret `STRIX_LLM_API_KEY` (optional var `STRIX_LLM`). Manual only; it spends LLM credits.
 
 ## Status
 
