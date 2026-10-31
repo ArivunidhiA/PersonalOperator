@@ -117,3 +117,31 @@ describe("third-round verifier gaps (independent re-check)", () => {
     expect(verifyUtterance(line)).toEqual([]);
   });
 });
+
+describe("probe and call failures, 2026-10-31 (items 36)", () => {
+  it.each([
+    ["Fair. Ariv's a builder.|  |\n| --- | --- |\n| **Topic** | **Key details** |", "markdown or planning text"],
+    ["| Call to action | Ask the user for their role |", "markdown or planning text"],
+    ["Ariv builds with both, but prefers RAG when accuracy is non-negotiable.", "invented preference"],
+    ["His go-to database is Postgres.", "invented preference"],
+    ["¡Claro que sí! Ariv es un apasionado de la ingeniería de IA y trabaja en INZI Controls.", "non-English output"],
+    ["아리브는 AI 엔지니어링에 관심이 많습니다.", "non-English output"],
+    ["Ariv is an AI engineer and product manager.", "software engineer title"],
+    ["He was a software engineering intern at Hyundai.", "software engineer title"],
+  ])("%s", (line, rule) => {
+    expect(rules(line)).toContain(rule);
+  });
+  it.each([
+    "At Hyundai he did real software engineering work as an intern.",
+    "Ariv's an engineer at heart.",
+    "He's aiming for software engineer roles.",
+    "Not in my notes whether he prefers Rust, so ask him.",
+    "When the caller is talking, the model stops and listens.",
+    "Hola to you too. Malbit is his Korean and English translator.",
+    "He'd rather show a trustworthy log than a pretty wrong number.",
+    "He has no title that says engineer, but the work was engineering.",
+    "English only for now, so let's keep it there.",
+  ])("passes: %s", (line) => {
+    expect(verifyUtterance(line)).toEqual([]);
+  });
+});

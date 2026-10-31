@@ -1,5 +1,8 @@
 import { ALLOWED_NUMBERS } from "./knowledge";
+import { CERT_CLAIM, HUMAN_CLAIMS, PLANNING_LEAK, TITLE_CLAIM, TITLE_EXEMPT, negatedBefore, normalize } from "./live-guard";
 import { normalizeNumbers } from "./normalize-numbers";
+
+export { normalize };
 
 /**
  * Deterministic "fast check" on what the agent said (the System-1 idea from
@@ -12,25 +15,9 @@ import { normalizeNumbers } from "./normalize-numbers";
  */
 export type Violation = { rule: string; excerpt: string };
 
-/** Gemini transcripts use curly apostrophes; normalize before matching. */
-export const normalize = (t: string) => t.replace(/[‘’ʼ′]/g, "'").replace(/[“”]/g, '"');
-
-// "not only" and "no doubt" are emphasis, not negation.
-const NEGATION = /\b(?:not(?! only)|never|isn't|wasn't|hasn't|doesn't|didn't|no longer)\b|\bno\b(?! (?:doubt|question))/i;
-const negatedBefore = (text: string, idx: number, span = 30) => NEGATION.test(text.slice(Math.max(0, idx - span), idx));
-
-const HUMAN_CLAIMS: RegExp[] = [
-  /\bi(?:'m| am) (?:a |an )?(?:real |actual |living )?(?:human|person|human being)\b/i,
-  /\byou(?:'re| are) (?:talking|speaking) (?:to|with) (?:a )?(?:real |actual )?(?:human|person)\b/i,
-  /\bi(?:'m| am) not (?:an? )?(?:ai|bot|robot|machine)\b/i,
-  /\b(?:not|no) (?:an? )?(?:ai|bot)\b(?!\s+(?:yet|either))/i,
-  /\bi(?:'m| am) ariv\b(?!'s)/i,
-  /\bi (?:just )?work (?:with|for) ariv\b/i,
-];
-
 const FALSE_HISTORY: [string, RegExp, RegExp?][] = [
   // [rule, pattern, exemption tested on the same sentence]
-  ["software engineer title", /\b(?:was|is|he's|worked as|title is) (?:a |an )?(?:software|senior|lead|staff) engineer\b/i, /\blooking for|roles? as|wants to be|aiming\b/i],
+  ["software engineer title", TITLE_CLAIM, TITLE_EXEMPT],
 // Any engineer title at INZI (his title is Client Project Coordinator), in the usual phrasings.
   ["engineer title at INZI", /\b(?:engineer|developer)(?: (?:job|role|position))? (?:over )?(?:at|for|with) inzi\b|\binzi (?:\w+ )?(?:engineer|developer)\b|\bat inzi,? he(?:'s| is) (?:an? )?(?:\w+ )?(?:engineer|developer)\b|\binzi\b[^.]{0,20}\bas an? (?:\w+ )?(?:engineer|developer)\b|\btitle (?:at inzi )?is (?:an? )?(?!client project coordinator)[\w -]{0,30}(?:engineer|developer)\b/i, /\b(?:basically|kind of|like|essentially)\b[^.]{0,25}forward[- ]deployed|\bwork (?:is|looks) (?:basically |like )?forward[- ]deployed/i],
   // "Forward-deployed" describes the work, never his title.
@@ -38,7 +25,7 @@ const FALSE_HISTORY: [string, RegExp, RegExp?][] = [
   ["volunteer called a job", /\b(?:works?|working|worked|job|employed) (?:as an? \w+ )?at (?:bright ?mind|crossroads)\b/i, /volunteer/i],
   ["wrong location", /\b(?:lives|based|he's|he is) in boston\b/i],
   ["old project", /\bllm ?lab\b|\bjob copilot\b/i],
-  ["certification claim", /\b(?:is|he's|he is|is he) (?:an? )?aws[- ]?certified\b|\bhas (?:an? |the |a couple of |some |two |several )?aws(?: [a-z]+){0,3} cert(?:ification)?s?\b|\bgot (?:an? )?aws(?: [a-z]+){0,3} cert/i],
+  ["certification claim", CERT_CLAIM],
   ["published research", /\bpublished (?:a )?(?:research|paper)/i],
   ["years of experience", /\b(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten)\+? (?:years?|yrs) (?:of )?(?:experience|exp)\b/i],
 ];
@@ -51,6 +38,24 @@ const SMALL_COUNT_CLAIM =
   /\b(?:\d+|two|three|four|five|six|seven|eight|nine|ten|dozen)\+? (?:years?|yrs|internships|products|engineers|people|reports|direct reports|clients|customers|startups|companies|x\b|times)\b|\b\d+(?:\.\d+)?\s?(?:%|percent|x\b)/i;
 const SPELLED_METRIC =
   /\b(?:(?:twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|million|billion)[- ]?(?:\w+ )?)(?:percent|%|users|people|customers|clients|vehicles|records|volunteers|engineers|states|queries|requests|events)\b/i;
+
+// "Ariv prefers X" is an opinion he never gave: the facts hold no preferences. Asking him about one is fine.
+const INVENTED_PREFERENCE =
+  /\b(?:ariv|he)(?: \w+)? (?:prefers|favors|swears by|recommends)\b|\b(?:ariv|he)'?(?:s| is)? (?:\w+ )?(?:favorite|go-to)\b|\bhis (?:favorite|go-to|preferred)\b|\b(?:ariv|he) builds with both\b/i;
+const PREFERENCE_EXEMPT = /\b(?:ask|don't know|not sure|no idea|not in my notes|whether)\b/i;
+
+// Only full replies in another language, so a stray "hola" or a project name never counts.
+const OTHER_SCRIPT = /[\p{Script=Han}\p{Script=Hangul}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Cyrillic}\p{Script=Arabic}\p{Script=Devanagari}\p{Script=Tamil}]/u;
+const FOREIGN_WORDS =
+  /\b(?:el|los|las|una|es|que|para|con|por|pero|muy|sobre|también|puedo|claro|le|les|des|est|et|pour|avec|une|mais|je|der|die|und|ist|nicht|das|ein|mit|für|auch)\b|[¿¡]/giu;
+const ENGLISH_WORDS = /\b(?:the|is|and|he|his|to|of|a|in|it|that|for|with|but|on|you|i|i'm|what)\b/gi;
+
+function isNonEnglish(text: string): boolean {
+  if ((text.match(new RegExp(OTHER_SCRIPT, "gu")) ?? []).length >= 4) return true;
+  if (text.split(/\s+/).length < 6) return false;
+  const foreign = (text.match(FOREIGN_WORDS) ?? []).length;
+  return foreign >= 3 && foreign > (text.match(ENGLISH_WORDS) ?? []).length;
+}
 
 function bannedTerms(): string[] {
   return (process.env.BANNED_TERMS || "")
@@ -96,6 +101,14 @@ export function verifyUtterance(raw: string, extraAllowedNumbers: string[] = [])
   const u = text.match(URL_SPOKEN);
   if (u) out.push({ rule: "URL spoken", excerpt: u[0] });
   if (text.includes("—")) out.push({ rule: "em dash", excerpt: excerpt(text, text.indexOf("—")) });
+
+  const leak = text.match(PLANNING_LEAK);
+  if (leak) out.push({ rule: "markdown or planning text", excerpt: excerpt(text, leak.index ?? 0) });
+  const preference = text.match(INVENTED_PREFERENCE);
+  if (preference && !negatedBefore(text, preference.index ?? 0) && !PREFERENCE_EXEMPT.test(sentenceAt(text, preference.index ?? 0))) {
+    out.push({ rule: "invented preference", excerpt: excerpt(text, preference.index ?? 0) });
+  }
+  if (isNonEnglish(text)) out.push({ rule: "non-English output", excerpt: excerpt(text, 0) });
 
   const small = text.match(SMALL_COUNT_CLAIM);
   if (small && !negatedBefore(text, small.index ?? 0) && !/\b(?:merged|fixes|changes|features|operating systems|python versions|nonprofits)\b/i.test(text.slice(small.index ?? 0, (small.index ?? 0) + 40))) {
