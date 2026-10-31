@@ -39,17 +39,15 @@ async function journey({ page, request }: { page: Page; request: APIRequestConte
   const errors = errorsOf(page);
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "Ariv's AI" })).toBeVisible();
-  await expect(page.getByText(/Gemini API \(free tier\)/)).toBeVisible();
 
   const t0 = Date.now();
   const sessionRes = page.waitForResponse((r) => r.url().includes("/api/voice/session") && r.request().method() === "POST");
-  await page.getByRole("button", { name: /start talking/i }).click();
+  await page.getByRole("button", { name: /ask me/i }).click();
   const sid: string = (await (await sessionRes).json()).sessionId;
   expect(sid).toMatch(/^s_/);
   const log = page.getByRole("log");
 
-  // A natural greeting arrives (the page itself discloses it's an AI; the agent
-  // shouldn't sound like an assistant).
+  // A natural greeting arrives (the agent shouldn't sound like an assistant).
   const firstLine = log.locator(":scope > div").first();
   await expect(firstLine).toBeVisible({ timeout: 30_000 });
   const greetMs = Date.now() - t0;
@@ -88,7 +86,7 @@ async function journey({ page, request }: { page: Page; request: APIRequestConte
 
   // End the call; the transcript is saved. Sharing is opt-in.
   const finished = page.waitForResponse((r) => r.url().includes("/api/calls/finish") && r.request().method() === "POST", { timeout: 60_000 });
-  await page.getByRole("button", { name: /end call/i }).click();
+  await page.getByRole("button", { name: /^end$/i }).click();
   const finishRes = await finished;
   expect(finishRes.status()).toBe(200);
   expect((await finishRes.json()).ok).toBe(true);

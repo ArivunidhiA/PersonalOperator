@@ -141,6 +141,7 @@ export async function startGemini(info: SessionInfo, prepared: Prepared, h: Voic
   let speaking = false;
   let ended = false;
   let live = false;
+  let liveAt: number | null = null; // epoch ms of setupComplete
   const cancelled = new Set<string>();
   const timers: ReturnType<typeof setTimeout>[] = [];
 
@@ -151,6 +152,8 @@ export async function startGemini(info: SessionInfo, prepared: Prepared, h: Voic
   let heard = "";
   let nudged = false;
   let lastModelOutput = 0;
+  let lastVoiceAt = 0; // last time the mic carried voice while the agent was silent
+  const VOICE_RMS = 0.01;
   let watchdog: ReturnType<typeof setTimeout> | null = null;
   const clearWatchdog = () => {
     if (watchdog) clearTimeout(watchdog);
@@ -158,6 +161,11 @@ export async function startGemini(info: SessionInfo, prepared: Prepared, h: Voic
   };
   const armWatchdog = (force = false) => {
     if (!force && Date.now() - lastModelOutput < 2500) return;
+    // Late speech-to-text for a turn the model already answered can land well
+    // after 2.5 s. Only treat the words as a new, unanswered utterance if the
+    // caller's mic actually carried voice after the model's last output (and
+    // while the agent was not itself speaking, so echo doesn't count).
+    if (!force && lastVoiceAt <= lastModelOutput) return;
     clearWatchdog();
     watchdog = setTimeout(() => {
       if (ended || nudged || speaking || (!force && heard.trim().split(/\s+/).length < 3)) return;
@@ -174,6 +182,7 @@ export async function startGemini(info: SessionInfo, prepared: Prepared, h: Voic
 
   capture.port.onmessage = (e: MessageEvent<{ pcm: ArrayBuffer; level: number }>) => {
     micLevel = Math.min(1, e.data.level * 4);
+    if (!speaking && e.data.level > VOICE_RMS) lastVoiceAt = Date.now();
     if (live) send({ realtimeInput: { audio: { data: b64FromBuffer(e.data.pcm), mimeType: "audio/pcm;rate=16000" } } });
   };
   player.port.onmessage = (e: MessageEvent<{ speaking: boolean; level: number }>) => {
@@ -243,6 +252,7 @@ export async function startGemini(info: SessionInfo, prepared: Prepared, h: Voic
     }
     if (msg.setupComplete) {
       live = true;
+      liveAt ??= Date.now();
       h.onLive();
       // Live waits for input; nudge it to greet first.
       send({ clientContent: { turns: [{ role: "user", parts: [{ text: g.greeting }] }], turnComplete: true } });
@@ -342,6 +352,7 @@ export async function startGemini(info: SessionInfo, prepared: Prepared, h: Voic
   return {
     stop: (reason = "hangup") => end(reason),
     setMuted: (muted) => capture.port.postMessage({ muted }),
+    liveAt: () => liveAt,
     levels: () => ({ mic: micLevel, agent: agentLevel }),
   };
 }

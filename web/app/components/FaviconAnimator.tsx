@@ -16,7 +16,7 @@ type FaviconAnimatorProps = {
 
 export function FaviconAnimator({
   frames = DEFAULT_FRAMES,
-  intervalMs = 1200,
+  intervalMs = 2000,
   enabled = true,
 }: FaviconAnimatorProps) {
   const intervalIdRef = useRef<number | null>(null);
@@ -118,6 +118,7 @@ export function FaviconAnimator({
 
     return () => {
       stop();
+      setFaviconHref(safeFrames[0]);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
 
       if (mql) {
