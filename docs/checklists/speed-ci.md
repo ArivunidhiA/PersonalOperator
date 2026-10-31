@@ -15,10 +15,10 @@ Tick only when done and verified. Each item ships as its own PR.
 - [x] Verified: script exit code and output
 
 ## Item 31 - axe a11y spec
-- [ ] Code: `web/e2e/a11y.spec.ts` (/, /privacy skip on 404, /call/[token]) + `@axe-core/playwright`
-- [ ] Test: the spec itself
-- [ ] Docs/env: note in spec header
-- [ ] Verified: spec run locally against `next start`
+- [x] Code: `web/e2e/a11y.spec.ts` (/, /privacy skip on 404, /call/[token]) + `@axe-core/playwright`
+- [x] Test: the spec itself
+- [x] Docs/env: note in spec header
+- [ ] Verified: spec run locally against `next start` (NOT run: Chromium 1208 download stalled)
 
 ## Item 32 - Lighthouse CI
 - [ ] Code: `web/lighthouserc.json` (JS <= 450KB, performance >= 90 mobile) + PR workflow
