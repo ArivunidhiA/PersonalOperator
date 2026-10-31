@@ -1,4 +1,4 @@
-import { createHash } from "crypto";
+import { createHash, createHmac } from "crypto";
 import { safeRedis } from "./rate-limit";
 import { networkKind, type NetworkKind } from "./network-kind";
 
@@ -77,6 +77,20 @@ export function requestContext(req: Request): RequestContext {
   };
 }
 
+/** Salt for hashing IPs: ANALYTICS_SALT, else an HMAC derived from SESSION_SECRET. */
+export function analyticsSalt(): string {
+  const explicit = process.env.ANALYTICS_SALT;
+  if (explicit) return explicit;
+  return createHmac("sha256", process.env.SESSION_SECRET ?? "").update("analytics").digest("hex");
+}
+
+let warnedIpinfo = false;
+function warnIfNoIpinfoToken() {
+  if (warnedIpinfo || process.env.IPINFO_TOKEN || process.env.VERCEL_ENV !== "production") return;
+  warnedIpinfo = true;
+  console.warn("[visitor] IPINFO_TOKEN is not set in production: network lookups use IPinfo's rate-limited keyless endpoint.");
+}
+
 const PRIVATE_IP = /^(10\.|127\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|::1$|fc|fd|fe80:|unknown$)/i;
 
 /**
@@ -86,9 +100,10 @@ const PRIVATE_IP = /^(10\.|127\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.
  */
 export async function lookupNetwork(ip: string | null): Promise<Network | null> {
   if (!ip || PRIVATE_IP.test(ip) || ip.length > 64) return null;
-  const key = `net:v1:${createHash("sha256").update(`${process.env.SESSION_SECRET ?? ""}|${ip}`).digest("hex").slice(0, 32)}`;
+  const key = `net:v1:${createHash("sha256").update(`${analyticsSalt()}|${ip}`).digest("hex").slice(0, 32)}`;
   const cached = await safeRedis((r) => r.get<Network>(key), null);
   if (cached) return { ...cached, kind: networkKind(cached.org) };
+  warnIfNoIpinfoToken();
   const token = process.env.IPINFO_TOKEN;
   let net: Network | null = null;
   try {

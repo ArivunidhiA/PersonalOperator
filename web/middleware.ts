@@ -15,7 +15,11 @@ function noopMiddleware(_req: NextRequest) {
 const handler = clerkKey
   ? clerkMiddleware(async (auth, req) => {
       if (isProtectedRoute(req)) {
-        await auth.protect();
+        // Anonymous page visits go to sign-in (hosted Clerk page unless NEXT_PUBLIC_CLERK_SIGN_IN_URL says otherwise)
+        // instead of a bare 404; the analytics API keeps Clerk's default API behavior.
+        const signIn = process.env.NEXT_PUBLIC_CLERK_SIGN_IN_URL;
+        if (req.nextUrl.pathname.startsWith("/api/") || !signIn) await auth.protect();
+        else await auth.protect({ unauthenticatedUrl: new URL(signIn, req.url).toString() });
       }
     })
   : noopMiddleware;

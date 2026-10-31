@@ -44,7 +44,9 @@ export default function RealtimeVoice() {
   const modeRef = useRef("greeter");
   const cancelRef = useRef(false);
   const abortRef = useRef<AbortController | null>(null);
-  itemsRef.current = transcript.items;
+  useEffect(() => {
+    itemsRef.current = transcript.items;
+  }, [transcript.items]);
 
   const finish = useCallback(async (viaBeacon = false) => {
     const info = infoRef.current;
