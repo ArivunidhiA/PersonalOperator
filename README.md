@@ -2,7 +2,7 @@
 
 **Talk to it:** [arivsai.app](https://www.arivsai.app)
 
-![The landing page: a dark screen, a slowly turning orb, and one button that says "Ask me"](docs/design/screenshots/landing-idle-desktop.png)
+<p align="center"><img src="docs/readme/orb.svg" alt="" width="260"></p>
 
 ## Why this exists
 
@@ -18,7 +18,7 @@ Go try it, then tell me what felt off. Feedback is the whole point.
 
 Here's the setup, kept short.
 
-<img src="docs/readme/architecture.svg" alt="You talk, Gemini speaks back, a small server handles facts and the calendar, Supabase keeps the transcript, I get the recap" width="300" align="right">
+![You talk, Gemini speaks back, a small server handles facts and the calendar, Supabase keeps the transcript, I get the recap](docs/readme/architecture.svg)
 
 **The flow in four steps**
 

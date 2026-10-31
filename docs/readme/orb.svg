@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" width="320" height="320">
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="60%" stop-color="#8c2f39" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#8c2f39" stop-opacity=".14"/>
+    </radialGradient>
+    <linearGradient id="arc" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f3ede4"/>
+      <stop offset="100%" stop-color="#8c2f39"/>
+    </linearGradient>
+  </defs>
+
+  <!-- soft halo, breathing -->
+  <circle cx="160" cy="160" r="150" fill="url(#glow)">
+    <animate attributeName="r" values="140;152;140" dur="7s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values=".7;1;.7" dur="7s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- faint full ring -->
+  <circle cx="160" cy="160" r="104" fill="none" stroke="#8c8178" stroke-width="1" opacity=".45">
+    <animate attributeName="r" values="104;108;104" dur="7s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- the lit arc, slowly turning -->
+  <g>
+    <circle cx="160" cy="160" r="104" fill="none" stroke="url(#arc)" stroke-width="4" stroke-linecap="round" stroke-dasharray="300 360">
+      <animate attributeName="r" values="104;108;104" dur="7s" repeatCount="indefinite"/>
+      <animate attributeName="stroke-dasharray" values="300 360;360 300;300 360" dur="11s" repeatCount="indefinite"/>
+    </circle>
+    <animateTransform attributeName="transform" type="rotate" from="0 160 160" to="360 160 160" dur="18s" repeatCount="indefinite"/>
+  </g>
+
+  <!-- a second, thinner arc drifting the other way -->
+  <g opacity=".55">
+    <circle cx="160" cy="160" r="92" fill="none" stroke="#8c2f39" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="80 500"/>
+    <animateTransform attributeName="transform" type="rotate" from="360 160 160" to="0 160 160" dur="27s" repeatCount="indefinite"/>
+  </g>
+</svg>

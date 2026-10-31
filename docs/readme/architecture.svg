@@ -1,41 +1,36 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 620" width="360" height="620" font-family="Instrument Sans, Helvetica, Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 170" width="1200" height="170" font-family="Instrument Sans, Helvetica, Arial, sans-serif">
   <defs>
     <style>
-      .n{fill:#f3ede4;font-size:17px;font-weight:600;text-anchor:middle}
-      .m{fill:#8c8178;font-size:12px;text-anchor:middle;letter-spacing:.4px}
-      .line{stroke:#8c2f39;stroke-width:1.6;fill:none}
+      .n{fill:#8c8178;font-size:18px;font-weight:600;text-anchor:middle}
+      .m{fill:#8c8178;font-size:12px;text-anchor:middle;opacity:.75}
+      .line{stroke:#8c2f39;stroke-width:1.6}
       .dot{fill:#8c2f39}
     </style>
   </defs>
-  <rect width="360" height="620" fill="#0b0a09"/>
 
   <!-- orb -->
-  <circle cx="180" cy="80" r="36" fill="none" stroke="#f3ede4" stroke-width="1.4" opacity=".85"/>
-  <circle cx="180" cy="80" r="36" fill="none" stroke="#8c2f39" stroke-width="3" stroke-dasharray="90 140" transform="rotate(-40 180 80)"/>
-  <text class="n" x="180" y="146">you</text>
-  <text class="m" x="180" y="166">talk</text>
+  <circle cx="110" cy="62" r="30" fill="none" stroke="#8c8178" stroke-width="1.4" opacity=".8"/>
+  <circle cx="110" cy="62" r="30" fill="none" stroke="#8c2f39" stroke-width="3" stroke-dasharray="75 120" transform="rotate(-40 110 62)"/>
 
   <!-- spine -->
-  <path class="line" d="M180 176 V222"/>
-  <circle class="dot" cx="180" cy="222" r="3"/>
+  <line class="line" x1="150" y1="62" x2="1090" y2="62"/>
+  <circle class="dot" cx="355" cy="62" r="4"/>
+  <circle class="dot" cx="600" cy="62" r="4"/>
+  <circle class="dot" cx="845" cy="62" r="4"/>
+  <circle class="dot" cx="1090" cy="62" r="4"/>
 
-  <text class="n" x="180" y="262">Gemini Live</text>
-  <text class="m" x="180" y="282">speaks back</text>
+  <text class="n" x="110" y="124">you</text>
+  <text class="m" x="110" y="144">talk</text>
 
-  <path class="line" d="M180 292 V338"/>
-  <circle class="dot" cx="180" cy="338" r="3"/>
+  <text class="n" x="355" y="124">Gemini Live</text>
+  <text class="m" x="355" y="144">speaks back</text>
 
-  <text class="n" x="180" y="378">a small server</text>
-  <text class="m" x="180" y="398">facts · calendar · fact-check</text>
+  <text class="n" x="600" y="124">a small server</text>
+  <text class="m" x="600" y="144">facts · calendar · fact-check</text>
 
-  <path class="line" d="M180 408 V454"/>
-  <circle class="dot" cx="180" cy="454" r="3"/>
+  <text class="n" x="845" y="124">Supabase</text>
+  <text class="m" x="845" y="144">the transcript</text>
 
-  <text class="n" x="180" y="494">Supabase</text>
-  <text class="m" x="180" y="514">the transcript</text>
-
-  <path class="line" d="M180 524 V570"/>
-  <circle class="dot" cx="180" cy="570" r="3"/>
-
-  <text class="n" x="180" y="606">me</text>
+  <text class="n" x="1090" y="124">me</text>
+  <text class="m" x="1090" y="144">a recap email</text>
 </svg>
