@@ -72,9 +72,29 @@ export const FACTS: Fact[] = [
   {
     id: "bio",
     topic: "Who Ariv is",
-    card: "Ariv (Arivunidhi Anna Arivan) lives in Alabama. Master's in Business Analytics from Northeastern, B.Tech in Computer Science from SRM in India.",
-    text: "Ariv (full name Arivunidhi Anna Arivan) lives in Alabama. He has a master's in Business Analytics from Northeastern University in Boston and a B.Tech in Computer Science from SRM Institute of Science and Technology in India. He's most drawn to AI engineering, product management and software engineering, including applied AI and forward-deployed roles.",
-    keywords: ["who", "about", "background", "education", "degree", "school", "university", "northeastern", "srm", "master", "masters", "live", "location", "where", "alabama", "looking", "roles"],
+    card: "Ariv (Arivunidhi Anna Arivan) is 25 and lives in Alabama. Came to the US in 2023, to Boston, for Northeastern. Master's in Business Analytics from Northeastern, B.Tech in Computer Science from SRM in India.",
+    text: "Ariv (full name Arivunidhi Anna Arivan) is 25 and lives in Alabama. He came to the US in 2023, to Boston, for Northeastern. He has a master's in Business Analytics from Northeastern University in Boston and a B.Tech in Computer Science from SRM Institute of Science and Technology in India. He's most drawn to AI engineering, product management and software engineering, including applied AI and forward-deployed roles.",
+    keywords: ["who", "about", "background", "education", "degree", "school", "university", "northeastern", "srm", "master", "masters", "live", "location", "where", "alabama", "looking", "roles", "age", "old", "came", "move", "moved", "us"],
+  },
+  {
+    id: "languages",
+    topic: "Languages",
+    card: "Speaks Tamil and English, plus a little Korean, French and Spanish, enough to survive. You yourself only speak English.",
+    text: "Ariv speaks Tamil and English. He also has a little Korean, French and Spanish, very little but enough to survive.",
+    keywords: ["language", "languages", "speak", "speaks", "tamil", "english", "korean", "french", "spanish", "fluent"],
+  },
+  {
+    id: "the-move",
+    topic: "Moving to the US",
+    text: "Ariv came to the US in 2023, to Boston, for his master's at Northeastern. Moving countries for grad school means juggling a lot at once, and he fought through all of it. That's who he is.",
+    keywords: ["move", "moved", "moving", "immigrant", "grad", "story", "journey", "tough", "hard", "hardest", "challenge", "struggle", "came", "boston"],
+  },
+  {
+    id: "team",
+    topic: "The team he wants",
+    card: "A team that works fast and expects the same from him, that would rather see lots on his plate than nothing, with a good direction and moving forward.",
+    text: "The team Ariv wants works fast and expects the same from him, would be happier with lots on his plate than nothing, and has a good direction and keeps moving forward.",
+    keywords: ["team", "culture", "environment", "manager", "kind", "ideal", "fast", "plate", "looking"],
   },
   {
     id: "direction",
@@ -214,9 +234,9 @@ export const FACTS: Fact[] = [
   {
     id: "skills",
     topic: "Skills",
-    card: "Strongest: Python, TypeScript, FastAPI, Next.js, PostgreSQL with pgvector, realtime voice APIs, AI agents with tool calling and RAG. Also React, Node.js, Supabase, Docker, AWS (S3, EC2, Lambda), GitHub Actions, LangChain, Stripe webhooks.",
-    text: "Ariv's strongest technical skills: Python, TypeScript, FastAPI, Next.js, PostgreSQL with pgvector, realtime voice APIs, and building AI agents with tool calling and RAG. Also comfortable with React, Node.js, Supabase, Docker, AWS (S3, EC2, Lambda), GitHub Actions CI, LangChain and Stripe webhooks. On the non-technical side he's good at project coordination: running follow-ups, keeping owners and due dates straight, and working with non-technical teams.",
-    keywords: ["skills", "skill", "good", "strong", "strongest", "stack", "languages", "python", "typescript", "react", "aws", "cloud", "docker", "sql", "postgres", "tech", "technical", "know"],
+    card: "Strongest: Python, TypeScript, FastAPI, Next.js, PostgreSQL with pgvector, realtime voice APIs, AI agents with tool calling and RAG. Also React, Node.js, Supabase, Docker, AWS (S3, EC2, Lambda), GitHub Actions, LangChain, Stripe webhooks. Has used Rust, Go, Kubernetes, fine-tuning and model training.",
+    text: "Ariv's strongest technical skills: Python, TypeScript, FastAPI, Next.js, PostgreSQL with pgvector, realtime voice APIs, and building AI agents with tool calling and RAG. Also comfortable with React, Node.js, Supabase, Docker, AWS (S3, EC2, Lambda), GitHub Actions CI, LangChain and Stripe webhooks. He has also used Rust, Go, Kubernetes, fine-tuning and model training. On the non-technical side he's good at project coordination: running follow-ups, keeping owners and due dates straight, and working with non-technical teams.",
+    keywords: ["skills", "skill", "good", "strong", "strongest", "stack", "languages", "python", "typescript", "react", "aws", "cloud", "docker", "sql", "postgres", "tech", "technical", "know", "rust", "go", "golang", "kubernetes", "k8s", "fine-tuning", "training", "tuning"],
   },
   {
     id: "experience",
@@ -233,8 +253,8 @@ export const FACTS: Fact[] = [
   {
     id: "limits",
     topic: "Relocation and logistics",
-    card: "Relocation: yes, open to it for the right opportunity, especially to work closely with strong engineering and AI teams.",
-    text: "Ariv is open to relocating for the right opportunity, especially to work closely with strong engineering and AI teams. Visa or work authorization, salary, start dates and remote preferences are his to answer.",
+    card: "Authorized to work. Open to relocating for the right opportunity, especially to work closely with strong engineering and AI teams.",
+    text: "Ariv is authorized to work. He's open to relocating for the right opportunity, especially to work closely with strong engineering and AI teams. Salary, start dates and remote preferences are his to answer.",
     keywords: ["visa", "h1b", "h-1b", "sponsorship", "authorization", "salary", "relocate", "relocating", "start", "remote", "pay", "compensation"],
   },
   {
@@ -258,7 +278,7 @@ export const FACTS: Fact[] = [
 ];
 
 /** Numbers the agent may say about Ariv (anything else is invented). */
-export const ALLOWED_NUMBERS = ["2023", "2024", "2026", "601", "2", "3", "3.8", "4", "15", "16", "24"];
+export const ALLOWED_NUMBERS = ["2023", "2024", "2026", "601", "2", "3", "3.8", "4", "15", "16", "24", "25"];
 
 /** The short version, inlined in the prompt. */
 export function renderFactCard(): string {
@@ -284,6 +304,7 @@ const SPOKEN_VARIANTS: [RegExp, string][] = [
   [/\bnemo curator\b|\bnimo\b/g, "nemo"],
   [/\bpg vector\b|\bpostgres vector\b/g, "pgvector"],
   [/\bbarge in\b/g, "barge-in"],
+  [/\bfine tuning\b/g, "fine-tuning"],
   [/\bh ?1 ?b\b/g, "h1b"],
 ];
 

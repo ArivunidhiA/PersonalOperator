@@ -183,7 +183,7 @@ describe("scheduling and role research fixes (independent review)", () => {
 
   it("retrieve_knowledge says it's not in the notes instead of returning loosely related facts", async () => {
     const { executeTool } = await import("@/lib/tool-executor");
-    for (const q of ["Has he used Kubernetes in production?", "What's his GPA?"]) {
+    for (const q of ["Has he used Erlang in production?", "What's his GPA?"]) {
       const r = await executeTool("retrieve_knowledge", { query: q }, ctx);
       expect(r.result, q).toMatch(/isn't in your notes/);
     }

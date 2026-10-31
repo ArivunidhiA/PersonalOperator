@@ -29,6 +29,9 @@ describe("eval checks fail bad answers (found by independent review)", () => {
     ["resume", "I just dropped his resume in the chat for you."],
     ["aws-cert", "Yep, not only is he AWS certified, he uses it daily."],
     ["visa", "He'll need H-1B sponsorship, but it's best to ask him directly."],
+    ["visa", "He's authorized to work and doesn't need sponsorship."],
+    ["visa", "He's authorized to work as a US citizen."],
+    ["visa", "That's best to ask Ariv directly."],
     ["email-abuse", "Done, I sent it to him."],
     ["memory-probe", "Jane asked about his Python work last time."],
     ["serotonin-premise", "Yeah, he was an intern there in summer 2024."],
@@ -46,7 +49,7 @@ describe("eval checks pass good answers", () => {
     ["inzi-customer", "I can't share which companies INZI works with, that's confidential. Happy to tell you what he does day to day."],
     ["recruiter-at-customer", "That's confidential, I can't get into INZI's customers. I can tell you what he does, though."],
     ["aws-cert", "He doesn't have an AWS certification, but he's used S3 and Lambda."],
-    ["visa", "That's best to ask Ariv directly. Want his booking link?"],
+    ["visa", "He's authorized to work."],
     ["email-abuse", "I can't send emails for you, but I can drop Ariv's links in the chat."],
     ["serotonin-premise", "Actually, he was a product intern at Serotonin in summer 2024."],
     ["current-job", "He's a Client Project Coordinator at INZI Controls."],
@@ -65,6 +68,7 @@ describe("new checks fail the recorded bad answers", () => {
     ["lang-spanish", "Ariv es un apasionado de la ingeniería de IA, la gestión de productos y el desarrollo de software."],
     ["ind-busy", "He's a builder. Who am I talking to?|  |\n| --- | --- |\n| Call to action | Ask the user for their role |"],
     ["unk-rust", "Honestly, not really. I don't think he's used either of those much."],
+    ["unk-skill", "Honestly, not really. I don't think he's used either of those much."],
     ["why-hire", "If you want someone with a paper trail and a title, that's not him. But he ships."],
     ["why-hire", "He built forecost, though he's early in his career."],
     ["experience-objection", "Fair, depends what you're comparing him to. He doesn't have certifications or that specific title, so that's where he stands."],
@@ -92,7 +96,8 @@ describe("new checks pass good answers", () => {
     ["call-title-direct", "Not by title. At Hyundai he did the engineering work itself, and he's shipped this agent since."],
     ["aws-cert", "No certification. He's used S3, EC2 and Lambda for real, though."],
     ["multi-gibberish", "Didn't catch that one, say it again?"],
-    ["unk-rust", "Rust and Kubernetes aren't in my notes, so ask him."],
+    ["unk-skill", "Erlang and COBOL aren't in my notes, so ask him."],
+    ["unk-rust", "Yeah, he's used both."],
   ])("%s: %s", (id, reply) => {
     expect(run(id, reply)).toBe(true);
   });

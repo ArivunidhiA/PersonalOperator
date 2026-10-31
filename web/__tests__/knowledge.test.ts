@@ -95,6 +95,9 @@ describe("searchFacts (retrieve_knowledge)", () => {
     ["does he have any certifications", "credentials"],
     ["has he held a software engineer title", "credentials"],
     ["how many years of experience does he have", "experience"],
+    ["what languages does he speak", "languages"],
+    ["what kind of team does he want", "team"],
+    ["does he know rust", "skills"],
   ])("%s -> %s", (q, id) => {
     expect(top(q)).toBe(id);
   });

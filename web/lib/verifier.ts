@@ -44,6 +44,10 @@ const INVENTED_PREFERENCE =
   /\b(?:ariv|he)(?: \w+)? (?:prefers|favors|swears by|recommends)\b|\b(?:ariv|he)'?(?:s| is)? (?:\w+ )?(?:favorite|go-to)\b|\bhis (?:favorite|go-to|preferred)\b|\b(?:ariv|he) builds with both\b/i;
 const PREFERENCE_EXEMPT = /\b(?:ask|don't know|not sure|no idea|not in my notes|whether)\b/i;
 
+// Ariv's line is "authorized to work". Any status, visa type or sponsorship claim goes past it.
+const WORK_STATUS_CLAIM =
+  /\b(?:he|ariv)(?:'s| is| has| holds| was| got)? (?:an? |on an? |on )?(?:us |u\.s\. |american )?(?:citizen|green card|permanent resident|h-?1-?b|f-?1|stem opt|opt)\b|\b(?:doesn't|does not|won't|will not|wouldn't|never|no) (?:\w+ )?(?:need|needs|require|requires)?\s?(?:\w+ )?sponsorship\b|\b(?:he|ariv)(?:'ll| will)? (?:needs?|requires?) (?:[\w-]+ ){0,2}sponsorship\b/i;
+
 // Only full replies in another language, so a stray "hola" or a project name never counts.
 const OTHER_SCRIPT = /[\p{Script=Han}\p{Script=Hangul}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Cyrillic}\p{Script=Arabic}\p{Script=Devanagari}\p{Script=Tamil}]/u;
 const FOREIGN_WORDS =
@@ -108,6 +112,8 @@ export function verifyUtterance(raw: string, extraAllowedNumbers: string[] = [])
   if (preference && !negatedBefore(text, preference.index ?? 0) && !PREFERENCE_EXEMPT.test(sentenceAt(text, preference.index ?? 0))) {
     out.push({ rule: "invented preference", excerpt: excerpt(text, preference.index ?? 0) });
   }
+  const status = text.match(WORK_STATUS_CLAIM);
+  if (status) out.push({ rule: "work status claim", excerpt: excerpt(text, status.index ?? 0) });
   if (isNonEnglish(text)) out.push({ rule: "non-English output", excerpt: excerpt(text, 0) });
 
   const small = text.match(SMALL_COUNT_CLAIM);

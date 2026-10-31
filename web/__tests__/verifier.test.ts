@@ -128,11 +128,20 @@ describe("probe and call failures, 2026-10-31 (items 36)", () => {
     ["아리브는 AI 엔지니어링에 관심이 많습니다.", "non-English output"],
     ["Ariv is an AI engineer and product manager.", "software engineer title"],
     ["He was a software engineering intern at Hyundai.", "software engineer title"],
+    ["He's authorized to work and doesn't need sponsorship.", "work status claim"],
+    ["He's a US citizen.", "work status claim"],
+    ["He's on an H-1B.", "work status claim"],
+    ["He has a green card.", "work status claim"],
+    ["He'll need H-1B sponsorship.", "work status claim"],
+    ["No sponsorship needed.", "work status claim"],
   ])("%s", (line, rule) => {
     expect(rules(line)).toContain(rule);
   });
   it.each([
     "At Hyundai he did real software engineering work as an intern.",
+    "He's authorized to work.",
+    "He has work authorization, so that's not a blocker.",
+    "He's 25, and he speaks Tamil and English.",
     "Ariv's an engineer at heart.",
     "He's aiming for software engineer roles.",
     "Not in my notes whether he prefers Rust, so ask him.",
