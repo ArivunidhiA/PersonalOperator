@@ -21,10 +21,10 @@ Tick only when done and verified. Each item ships as its own PR.
 - [ ] Verified: spec run locally against `next start` (NOT run: Chromium 1208 download stalled)
 
 ## Item 32 - Lighthouse CI
-- [ ] Code: `web/lighthouserc.json` (JS <= 450KB, performance >= 90 mobile) + PR workflow
-- [ ] Test: assertions are the test
-- [ ] Docs/env: workflow comments
-- [ ] Verified: `lhci autorun` locally
+- [x] Code: `web/lighthouserc.json` (JS <= 450KB, performance >= 90 mobile) + PR workflow
+- [x] Test: assertions are the test
+- [x] Docs/env: workflow comments
+- [x] Verified: `lhci autorun` locally
 
 ## Item 33 - size-limit
 - [x] Code: size-limit config for `/` client JS + CI step

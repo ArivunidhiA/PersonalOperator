@@ -49,3 +49,6 @@ test-results/
 playwright-report/
 e2e/corpus/audio/
 e2e/corpus/out/
+
+# lighthouse ci
+/.lighthouseci
