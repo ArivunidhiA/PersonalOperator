@@ -1,0 +1,28 @@
+# NeMo Speech Data Processor, stage 2: normalize the reference text.
+# Input manifest = stage 1 output plus lowercase `text` (and raw_text, voice, speed, noise)
+# attached by build_manifest.py. Keep the regex list in sync with NORMALIZE in build_manifest.py.
+documentation: |
+  Reference text normalization for the ASR-WER step.
+processors_to_run: all
+workspace_dir: ???
+input_manifest_file: ???
+final_manifest: ${workspace_dir}/manifest_normalized.json
+
+processors:
+  - _target_: sdp.processors.SubRegex
+    input_manifest_file: ${input_manifest_file}
+    text_key: text
+    regex_params_list:
+      - {pattern: "&", repl: " and "}
+      - {pattern: "[‘’ʼ′]", repl: "'"}
+      - {pattern: "[^a-z' ]", repl: " "}
+      - {pattern: "\\s+", repl: " "}
+      - {pattern: "^ | $", repl: ""}
+    output_manifest_file: ${workspace_dir}/manifest1.json
+
+  - _target_: sdp.processors.DropNonAlphabet
+    alphabet: " abcdefghijklmnopqrstuvwxyz'"
+    test_cases:
+      - {input: {text: "where does ariv work"}, output: {text: "where does ariv work"}}
+      - {input: {text: "where? 42"}, output: null}
+    output_manifest_file: ${final_manifest}
