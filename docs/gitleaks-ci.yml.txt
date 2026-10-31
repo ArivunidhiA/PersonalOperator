@@ -1,0 +1,11 @@
+# Fallback snippet, used only if the workflow edit cannot be pushed (needs `workflow` token scope).
+# In .github/workflows/ci.yml: make checkout fetch full history, then add the step.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Secret scan (gitleaks)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_CONFIG: .gitleaks.toml

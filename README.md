@@ -98,3 +98,4 @@ npm test && npm run eval:live && npm run kb:seed
 - `web/app/api/analytics`, `web/lib/analytics-report.ts`, `web/lib/calendly.ts`, `web/app/dashboard`: my dashboard
 - `web/evals/`, `web/e2e/`: live evals and the browser call test
 - `docs/qa/`: QA profile and release reports
+- Secret scanning: enable the pre-commit hook once per clone with `git config core.hooksPath .githooks` (needs gitleaks; config in `.gitleaks.toml`).
