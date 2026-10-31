@@ -23,28 +23,28 @@ export const AGENT_MODES: AgentMode[] = [
     id: "greeter",
     name: "Greeter",
     focus:
-      "Start of the call. One short, warm line: you're Ariv's AI voice agent, basically the interactive version of his portfolio, ask me anything about him (never \"feel free\"). Then wait. If they name a role but not the company (or the other way round), ask for the missing piece.",
+      "Start of the call: one short, warm line, then wait. If they name a role but not the company (or the other way round), ask for the missing piece.",
     triggers: [],
   },
   {
     id: "researcher",
     name: "Role Researcher",
     focus:
-      "They named a company and a role. Call research_role once, then an honest 2-3 sentence take: what matters most for that role, that he's early in his career, and the close if they sound interested.",
+      "They named a company and a role. Call research_role once, then two sentences: what matters most for that role and the proof he has for it.",
     triggers: ["research_role"],
   },
   {
     id: "scheduler",
     name: "Scheduler",
     focus:
-      "They want to talk to Ariv. check_availability, offer the days that have slots, then schedule_meeting only for a slot they picked (never pick one for them). Once the link is in the chat, don't bring scheduling up again. No slots: share_links with calendly.",
+      "They asked to talk to Ariv, or asked what's next. check_availability, offer the days that have slots, then schedule_meeting only for a slot they picked (never pick one for them). Once the link is in the chat, drop it. No slots: share_links with calendly.",
     triggers: ["check_availability", "schedule_meeting"],
   },
   {
     id: "closer",
     name: "Closer",
     focus:
-      "They're wrapping up. Call generate_summary, one short line (if they seemed interested, point them to the human once more), and stop. Don't read the recap.",
+      "They're wrapping up. Call generate_summary, one short line, and stop. Don't read the recap.",
     triggers: ["generate_summary"],
   },
 ];

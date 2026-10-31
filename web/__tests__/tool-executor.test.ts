@@ -33,7 +33,8 @@ describe("executeTool", () => {
   it("retrieve_knowledge tells the model not to guess when nothing matches", async () => {
     const { executeTool } = await import("@/lib/tool-executor");
     const r = await executeTool("retrieve_knowledge", { query: "quantum basketwork" }, ctx);
-    expect(r.result).toMatch(/not sure rather than guessing/);
+    expect(r.result).toMatch(/isn't in your notes/);
+    expect(r.result).toMatch(/Don't say he hasn't done it/);
   });
 
   it("share_links only renders known links, as a structured card", async () => {
@@ -114,7 +115,8 @@ describe("executeTool", () => {
   it("research_role without an LLM uses the honest registry fallback", async () => {
     const { executeTool } = await import("@/lib/tool-executor");
     const r = await executeTool("research_role", { company: "Acme", role: "Forward Deployed Engineer" }, ctx);
-    expect(r.result).toMatch(/early in his career/);
+    expect(r.result).not.toMatch(/early in his career/); // item 34: not pushed on every role
+    expect(r.result).toMatch(/Agno/);
     expect(r.result).not.toMatch(/production experience|systems at scale/i);
     const missing = await executeTool("research_role", { company: "Acme" }, ctx);
     expect(missing.result).toMatch(/Need both/);
@@ -179,11 +181,11 @@ describe("scheduling and role research fixes (independent review)", () => {
     expect(evil.result).not.toMatch(/about Acme\. Also/);
   });
 
-  it("retrieve_knowledge says 'not sure' instead of returning loosely related facts", async () => {
+  it("retrieve_knowledge says it's not in the notes instead of returning loosely related facts", async () => {
     const { executeTool } = await import("@/lib/tool-executor");
     for (const q of ["Has he used Kubernetes in production?", "What's his GPA?"]) {
       const r = await executeTool("retrieve_knowledge", { query: q }, ctx);
-      expect(r.result, q).toMatch(/not sure rather than guessing/);
+      expect(r.result, q).toMatch(/isn't in your notes/);
     }
   });
 });
