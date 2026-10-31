@@ -32,7 +32,7 @@ const FALSE_HISTORY: [string, RegExp, RegExp?][] = [
 
 const URL_SPOKEN = /\bhttps?:\/\/|\bwww\b|\b[a-z0-9-]+\s?(?:\.|dot)\s?(?:com|io|app|dev|org|net|edu|ai)\b/i;
 const TIME_OR_DATE =
-  /\b\d{1,2}(?::\d{2})?\s?(?:a\.?m\.?|p\.?m\.?)|\b\d{1,2}(?:st|nd|rd|th)\b|\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.? \d{1,2}\b/gi;
+  /\b\d{1,2}(?::\d{2})?\s?(?:a\.?m\.?|p\.?m\.?)|\b\w+:(?:fifteen|thirty|forty[- ]five)\b|\b\d{1,2}(?:st|nd|rd|th)\b|\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.? \d{1,2}\b/gi;
 // Small counts are allowed ("two merged fixes") but not as invented metrics ("3 years", "a team of 4").
 const SMALL_COUNT_CLAIM =
   /\b(?:\d+|two|three|four|five|six|seven|eight|nine|ten|dozen)\+? (?:years?(?! old)|yrs|internships|products|engineers|people|reports|direct reports|clients|customers|startups|companies|x\b|times)\b|\b\d+(?:\.\d+)?\s?(?:%|percent|x\b)/i;
@@ -46,7 +46,7 @@ const PREFERENCE_EXEMPT = /\b(?:ask|don't know|not sure|no idea|not in my notes|
 
 // Ariv's line is "authorized to work". Any status, visa type or sponsorship claim goes past it.
 const WORK_STATUS_CLAIM =
-  /\b(?:he|ariv)(?:'s| is| has| holds| was| got)? (?:an? |on an? |on )?(?:us |u\.s\. |american )?(?:citizen|green card|permanent resident|h-?1-?b|f-?1|stem opt|opt)\b|\b(?:doesn't|does not|won't|will not|wouldn't|never|no) (?:\w+ )?(?:need|needs|require|requires)?\s?(?:\w+ )?sponsorship\b|\b(?:he|ariv)(?:'ll| will)? (?:needs?|requires?) (?:[\w-]+ ){0,2}sponsorship\b/i;
+  /\b(?:he|ariv)(?:'s| is| has| holds| was| got)? (?:an? |on an? |on )?(?:us |u\.s\. |american )?(?:citizen|green card|permanent resident|h-?1-?b|f-?1|stem opt|opt)\b|\b(?:doesn't|does not|won't|will not|wouldn't|never|no) (?:\w+ )?(?:need|needs|require|requires)?\s?(?:\w+ )?sponsorship\b|\b(?:he's|he is|ariv is) from india\b|\b(?:he|ariv)(?:'ll| will)? (?:needs?|requires?) (?:[\w-]+ ){0,2}sponsorship\b/i;
 
 // Only full replies in another language, so a stray "hola" or a project name never counts.
 const OTHER_SCRIPT = /[\p{Script=Han}\p{Script=Hangul}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Cyrillic}\p{Script=Arabic}\p{Script=Devanagari}\p{Script=Tamil}]/u;
@@ -60,6 +60,8 @@ function isNonEnglish(text: string): boolean {
   const foreign = (text.match(FOREIGN_WORDS) ?? []).length;
   return foreign >= 3 && foreign > (text.match(ENGLISH_WORDS) ?? []).length;
 }
+
+const SPOKEN_TIME = /\b(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve) (fifteen|thirty|forty[- ]five)\b/gi;
 
 function bannedTerms(): string[] {
   return (process.env.BANNED_TERMS || "")
@@ -77,7 +79,8 @@ const sentenceAt = (text: string, idx: number) => {
 
 export function verifyUtterance(raw: string, extraAllowedNumbers: string[] = []): Violation[] {
   // Spelled numbers ("forty percent") become digits so the number checks see them.
-  const text = normalizeNumbers(normalize(raw));
+  // Clock times said as words ("nine thirty") would otherwise read as 39.
+  const text = normalizeNumbers(normalize(raw).replace(SPOKEN_TIME, "$1:$2"));
   const out: Violation[] = [];
   const lower = text.toLowerCase();
 

@@ -79,7 +79,7 @@ export const FACTS: Fact[] = [
   {
     id: "languages",
     topic: "Languages",
-    card: "Speaks Tamil and English, plus a little Korean, French and Spanish, enough to survive. You yourself only speak English.",
+    card: "Speaks Tamil and English, plus very little Korean, French and Spanish, just enough to survive. Never call those conversational or fluent. You yourself only speak English.",
     text: "Ariv speaks Tamil and English. He also has a little Korean, French and Spanish, very little but enough to survive.",
     keywords: ["language", "languages", "speak", "speaks", "tamil", "english", "korean", "french", "spanish", "fluent"],
   },
