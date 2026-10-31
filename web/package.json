@@ -13,7 +13,8 @@
     "eval:live": "vitest run --config vitest.eval.config.mts",
     "kb:seed": "node scripts/seed-knowledge.mjs",
     "kb:verify": "node scripts/seed-knowledge.mjs --verify",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "knip": "knip"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.39.7",
@@ -48,6 +49,7 @@
     "eslint": "^9",
     "eslint-config-next": "^16.4.3",
     "jsdom": "^28.1.0",
+    "knip": "^6.44.0",
     "puppeteer-core": "^25.16.0",
     "tailwindcss": "^4",
     "typescript": "^5",
