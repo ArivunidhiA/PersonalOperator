@@ -129,3 +129,8 @@ Note: child sessions could not be started from a session-initiated turn, so all 
 - [x] docs updated
 - [x] verified (how: next start: robots 200, sitemap 200, manifest 200)
 
+
+## Handed over from speed (blocked on PR #6 merging)
+- [ ] item 29: `reportError(error, "ErrorBoundary")` in ErrorBoundary.componentDidCatch; `reportError(err, "start")` in RealtimeVoice start catch for non-StartError (needs `lib/report-error.ts` from #6)
+- [ ] item 43: send `liveAt` in `/api/calls/finish` body (needs `liveAt` on SessionInfo/VoiceSession; not yet in #6's types.ts)
+- [ ] test added, verified
