@@ -61,6 +61,52 @@ body {
   clip: rect(0 0 0 0);
 }
 
+/* Orb size depends only on the viewport, never on call state. On a short screen
+   it gives way so the status, strip and card row still fit. */
+.call-orb {
+  --orb: 16rem;
+  width: max(11rem, min(var(--orb), calc(100svh - 23.5rem)));
+  height: max(11rem, min(var(--orb), calc(100svh - 23.5rem)));
+}
+@media (min-width: 40rem) {
+  .call-orb {
+    --orb: 20rem;
+  }
+}
+@media (min-width: 64rem) {
+  .call-orb {
+    --orb: 26rem;
+  }
+}
+
+/* Transcript strip: words older than the box fade out at its top edge. */
+.strip-tail {
+  mask-image: linear-gradient(to bottom, transparent, #000 0.5rem);
+}
+.strip-enter {
+  animation: strip-enter 180ms ease-out;
+}
+.strip-leave {
+  animation: strip-leave 180ms ease-out forwards;
+}
+@keyframes strip-enter {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes strip-leave {
+  to {
+    opacity: 0;
+    transform: translateY(-0.5rem);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .strip-enter,
+  .strip-leave {
+    animation: none;
+  }
+}
+
 /* Print / Save as PDF: only the transcript, as dark text on white. */
 @media print {
   body * {
