@@ -69,4 +69,4 @@ Topic checklists with sub-steps live beside this file: `security.md`, `speed-qua
 - [x] All 56 items merged (PRs #6-#33, 2026-10-31)
 - [x] `npm run lint && npm run typecheck && npm test` green on main (261 tests, 0 prod vulns, 2026-10-31)
 - [x] Production verified 2026-10-31 (head 6c3c37a): landing minimal (desktop + 375 px), CSP/COOP/CORP/HSTS headers, /privacy, /opengraph-image, robots/sitemap/manifest, /api/health ok, session route mints a Gemini token; full call not exercised (no mic in the verification browser)
-- [x] Items needing Ari listed in the PM closing report (Supabase migrations v5/v6, Turnstile keys, Clerk sign-in URL, GEMINI_API_KEY and STRIX_LLM_API_KEY repo secrets, VAD A/B, Impeccable critique/audit)
+- [x] Items needing Ari listed in the PM closing report (Supabase migrations v5/v6 run by the PM 2026-10-31, Turnstile keys, Clerk sign-in URL, GEMINI_API_KEY and STRIX_LLM_API_KEY repo secrets, VAD A/B, Impeccable critique/audit)
