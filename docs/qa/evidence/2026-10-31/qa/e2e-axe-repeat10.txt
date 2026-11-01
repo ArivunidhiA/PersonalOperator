@@ -1,0 +1,57 @@
+(node:45291) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+Running 20 tests using 1 worker
+
+[1A[2K(node:45332) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+[1A[2K[1/20] e2e/transcript-ui.spec.ts:406:9 › axe › no serious violations in a call and in the popup on desktop
+[1A[2K[2/20] e2e/transcript-ui.spec.ts:406:9 › axe › no serious violations in a call and in the popup on phone
+[1A[2K(node:45397) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+[1A[2K[3/20] e2e/transcript-ui.spec.ts:406:9 › axe › no serious violations in a call and in the popup on desktop
+[1A[2K[4/20] e2e/transcript-ui.spec.ts:406:9 › axe › no serious violations in a call and in the popup on phone
+[1A[2K(node:45436) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+[1A[2K[5/20] e2e/transcript-ui.spec.ts:406:9 › axe › no serious violations in a call and in the popup on desktop
+[1A[2K[6/20] e2e/transcript-ui.spec.ts:406:9 › axe › no serious violations in a call and in the popup on phone
+[1A[2K(node:45485) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+[1A[2K[7/20] e2e/transcript-ui.spec.ts:406:9 › axe › no serious violations in a call and in the popup on desktop
+[1A[2K[8/20] e2e/transcript-ui.spec.ts:406:9 › axe › no serious violations in a call and in the popup on phone
+[1A[2K(node:45553) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+[1A[2K[9/20] e2e/transcript-ui.spec.ts:406:9 › axe › no serious violations in a call and in the popup on desktop
+[1A[2K[10/20] e2e/transcript-ui.spec.ts:406:9 › axe › no serious violations in a call and in the popup on phone
+[1A[2K(node:45613) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+[1A[2K[11/20] e2e/transcript-ui.spec.ts:406:9 › axe › no serious violations in a call and in the popup on desktop
+[1A[2K[12/20] e2e/transcript-ui.spec.ts:406:9 › axe › no serious violations in a call and in the popup on phone
+[1A[2K(node:45672) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+[1A[2K[13/20] e2e/transcript-ui.spec.ts:406:9 › axe › no serious violations in a call and in the popup on desktop
+[1A[2K[14/20] e2e/transcript-ui.spec.ts:406:9 › axe › no serious violations in a call and in the popup on phone
+[1A[2K(node:45709) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+[1A[2K[15/20] e2e/transcript-ui.spec.ts:406:9 › axe › no serious violations in a call and in the popup on desktop
+[1A[2K[16/20] e2e/transcript-ui.spec.ts:406:9 › axe › no serious violations in a call and in the popup on phone
+[1A[2K(node:45748) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+[1A[2K[17/20] e2e/transcript-ui.spec.ts:406:9 › axe › no serious violations in a call and in the popup on desktop
+[1A[2K[18/20] e2e/transcript-ui.spec.ts:406:9 › axe › no serious violations in a call and in the popup on phone
+[1A[2K(node:45788) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+[1A[2K[19/20] e2e/transcript-ui.spec.ts:406:9 › axe › no serious violations in a call and in the popup on desktop
+[1A[2K[20/20] e2e/transcript-ui.spec.ts:406:9 › axe › no serious violations in a call and in the popup on phone
+[1A[2K  20 passed (1.4m)
+exit=0

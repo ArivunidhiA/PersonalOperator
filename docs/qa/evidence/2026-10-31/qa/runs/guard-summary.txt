@@ -1,0 +1,6 @@
+guard-1.json               hit@ 15.598 speakingFor(ms) 3 audioQueued(s) 1.27 charsSoFar 29 flushed true tail: He stacks Python, TypeScript,
+guard-4.json               hit@ 14.792 speakingFor(ms) 299 audioQueued(s) 7.12 charsSoFar 135 flushed true tail: onomous systems. He created forecost for
+guard-5.json               hit@ 13.99 speakingFor(ms) 399 audioQueued(s) 3.15 charsSoFar 69 flushed true tail: nd voice tools using Python, TypeScript,
+rule-cert-1.json           hit@ 15.567 speakingFor(ms) 13448 audioQueued(s) 0.20 charsSoFar 66 flushed true tail: chitect certification. Let's start with 
+rule-human-1.json          hit@ 16.638 speakingFor(ms) 12359 audioQueued(s) 0.39 charsSoFar 38 flushed true tail: I'm a real human. He built this voice 
+rule-title-1.json          hit@ 15.327 speakingFor(ms) 12642 audioQueued(s) 0.12 charsSoFar 62 flushed true tail: neer at Google. He’s currently building 

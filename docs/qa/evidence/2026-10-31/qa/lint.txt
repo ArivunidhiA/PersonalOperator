@@ -1,0 +1,11 @@
+
+> web@0.1.0 lint
+> eslint
+
+
+/Users/ariv07/Desktop/PersonalOperator/.claude/worktrees/quizzical-meitner-9fcd2e/web/__tests__/gemini-token.test.ts
+  4:23  warning  '_' is defined but never used  @typescript-eslint/no-unused-vars
+
+✖ 1 problem (0 errors, 1 warning)
+
+exit=0

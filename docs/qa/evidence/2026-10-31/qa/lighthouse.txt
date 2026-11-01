@@ -1,0 +1,25 @@
+✅  .lighthouseci/ directory writable
+✅  Configuration file found
+✅  Chrome installation found
+⚠️   GitHub token not set
+Healthcheck passed!
+
+Started a web server with "npx next start -p 3100"...
+Running Lighthouse 3 time(s) on http://localhost:3100/
+Run #1...done.
+Run #2...done.
+Run #3...done.
+Done running Lighthouse!
+
+Checking assertions against 1 URL(s), 3 total run(s)
+
+All results processed!
+
+Dumping 3 reports to disk at /Users/ariv07/Desktop/PersonalOperator/.claude/worktrees/quizzical-meitner-9fcd2e/web/.lighthouseci...
+Done writing reports to disk.
+
+Done running autorun.
+exit=0
+lhr-1793511157080.json perf 0.93 LCP 3191 TBT 26 CLS 0.000 scriptKB 192
+lhr-1793511167503.json perf 0.93 LCP 3164 TBT 16 CLS 0.000 scriptKB 192
+lhr-1793511177670.json perf 0.93 LCP 3165 TBT 15 CLS 0.000 scriptKB 192
