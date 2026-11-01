@@ -57,3 +57,15 @@ Production build on localhost, Chromium 141.0.7390.37 with a muted fake mic, liv
 | After (same replay, 2 runs) | 1.4, 1.5 | 1.5 |
 
 Normal turns are not faster, and the end signal waits 1.5 s of caller silence by design. The gain is the worst case. Small sample and a flaky baseline, so this does not prove a rate. In the browser, server activity end to first output was 0.0 to 0.3 s over 9 turns.
+
+## Live guard in the call (item 11, added 2026-10-31)
+Same browser setup, after merging `integration/voice-overhaul`.
+
+| Scenario | Result | Trace |
+|---|---|---|
+| Clean calls with the real `BANNED_TERMS`, 4 runs | PASS: 0 corrections, no cut | browser-guard-clean.json, browser-guard-clean-2.json |
+| Forced hit with a temporary local `BANNED_TERMS=coordinator`, 3 runs | PASS: model interrupted within 0.2 s of the correction, corrected reply followed, later turns normal | browser-guard-hit.json |
+| Term ends a transcript chunk, before the hold-back | FAIL: audio cut, but the term stayed on screen | browser-guard-hit-before-holdback.json |
+| Same, after the hold-back | PASS: "Client Project" shown, term not shown | browser-guard-hit.json |
+
+Offline, the guard fired on 0 of the agent turns in all stored traces. Only the confidential-term rule was hit live; the other rules were checked in unit tests. Audio already played before a hit cannot be recalled, and how much was heard was not measured at the speaker.

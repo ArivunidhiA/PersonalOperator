@@ -1,3 +1,4 @@
+import { createLiveGuard, type GuardHit, type GuardRule } from "../live-guard";
 import { createStallGuard, STALL_MS } from "./stall-guard";
 import { createVadGate } from "./vad-gate";
 import { runTool, type EndReason, type SessionInfo, type VoiceHandlers, type VoiceSession } from "./types";
@@ -132,6 +133,15 @@ const NUDGES = {
   2: "(The caller is waiting and can't hear you. Say something now, out loud, in one short line. Don't call a tool.)",
 };
 const RESUME_NUDGE = "(The caller is waiting: the line dropped for a moment. Continue from where you stopped, without repeating yourself or mentioning the drop.)";
+// Never name the term or quote the line: this goes back to the model as plain text.
+const CORRECTIONS: Record<GuardRule, string> = {
+  "confidential term": "(Correction: you started to mention something you can't discuss. Don't repeat it. In one short line, say you can't get into that and offer something else about Ariv.)",
+  "claims to be human": "(Correction: you are Ariv's AI voice agent, not a person. Say so in one short line, then carry on.)",
+  "claimed title": "(Correction: you stated a job title Ariv doesn't hold. In one short line, give his real title from your notes, then carry on.)",
+  "claimed certification": "(Correction: you stated a certification Ariv doesn't hold. In one short line, correct that, then carry on.)",
+  "markdown or planning text": "(Correction: that wasn't meant to be spoken. Answer the caller again in plain spoken words, in one or two short lines.)",
+};
+const CUT_TURN_MAX_MS = 2500; // the cut turn should end by itself; never stay muted longer than this
 const GIVE_UP_LINE = "Sorry, I'm having trouble answering right now. Try saying that again, or reach Ariv with the links on this page.";
 
 export async function startGemini(info: SessionInfo, prepared: Prepared, h: VoiceHandlers): Promise<VoiceSession> {
@@ -198,6 +208,41 @@ export async function startGemini(info: SessionInfo, prepared: Prepared, h: Voic
     history.splice(0, Math.max(0, history.length - MAX_SEEDED_TURNS));
   };
 
+  // Live guard. A failure here switches it off for the call and changes nothing else.
+  let liveGuard: ReturnType<typeof createLiveGuard> | null = createLiveGuard(info.guard);
+  const checked = (run: (c: NonNullable<typeof liveGuard>) => GuardHit | null | void) => {
+    try {
+      return (liveGuard && run(liveGuard)) || null;
+    } catch {
+      liveGuard = null;
+      return null;
+    }
+  };
+  let corrected = false; // one correction per caller turn, so it can't loop with the model
+  let cutTurn: ReturnType<typeof setTimeout> | null = null; // dropping the rest of a cut turn
+  const endCut = () => {
+    if (cutTurn) clearTimeout(cutTurn);
+    cutTurn = null;
+  };
+  // The last word stays off the screen until the guard has judged it.
+  let heldText = "";
+  const showAgent = (text: string) => {
+    if (!text) return;
+    agentText += text;
+    h.onAgentDelta(text);
+  };
+  const cut = (hit: GuardHit, turnOver = false) => {
+    heldText = "";
+    player.port.postMessage("flush");
+    h.onAgentFinal();
+    endCut();
+    if (!turnOver) cutTurn = setTimeout(endCut, CUT_TURN_MAX_MS);
+    guard.owe();
+    if (corrected) return;
+    corrected = true;
+    say(CORRECTIONS[hit.rule]);
+  };
+
   const guard = createStallGuard({
     playing: () => speaking,
     nudge: (level) => say(NUDGES[level]),
@@ -239,6 +284,7 @@ export async function startGemini(info: SessionInfo, prepared: Prepared, h: Voic
 
   const teardown = () => {
     guard.stop();
+    endCut();
     timers.forEach(clearTimeout);
     try {
       capture.port.onmessage = null;
@@ -318,6 +364,10 @@ export async function startGemini(info: SessionInfo, prepared: Prepared, h: Voic
     moving = false;
     activityOpen = false;
     guard.reset();
+    endCut();
+    checked((c) => c.reset());
+    showAgent(heldText);
+    heldText = "";
     const old = ws;
     old.onclose = null;
     old.onmessage = null;
@@ -369,6 +419,7 @@ export async function startGemini(info: SessionInfo, prepared: Prepared, h: Voic
     if (activityType === "ACTIVITY_START") {
       activityOpen = true;
       activitySinceOutput = true;
+      corrected = false;
       guard.callerStart();
     } else if (activityType === "ACTIVITY_END") {
       activityOpen = false;
@@ -387,7 +438,11 @@ export async function startGemini(info: SessionInfo, prepared: Prepared, h: Voic
     if (sc) {
       if (sc.interrupted) {
         player.port.postMessage("flush");
+        showAgent(heldText);
+        heldText = "";
         h.onAgentFinal();
+        endCut();
+        checked((c) => c.reset());
       }
       if (sc.inputTranscription?.text) {
         userText += sc.inputTranscription.text;
@@ -397,6 +452,7 @@ export async function startGemini(info: SessionInfo, prepared: Prepared, h: Voic
       if (sc.inputTranscription?.finished) h.onUserFinal();
       // Only audio counts as an answer: the model can send junk text and no sound.
       const audio = (sc.modelTurn?.parts ?? []).flatMap((p) => (p.inlineData?.data ? [p.inlineData.data] : []));
+      if (cutTurn) audio.length = 0;
       if (audio.length) {
         lastModelOutput = Date.now();
         activitySinceOutput = false;
@@ -407,17 +463,39 @@ export async function startGemini(info: SessionInfo, prepared: Prepared, h: Voic
         const pcm = bufferFromB64(data);
         player.port.postMessage({ pcm }, [pcm]);
       }
-      if (sc.outputTranscription?.text) {
-        agentText += sc.outputTranscription.text;
-        h.onAgentDelta(sc.outputTranscription.text);
+      if (sc.outputTranscription?.text && !cutTurn) {
+        const text = sc.outputTranscription.text;
+        const hit = checked((c) => c.push(text));
+        if (hit) cut(hit);
+        else {
+          const all = heldText + text;
+          const at = liveGuard ? all.search(/\S*$/) : all.length;
+          heldText = all.slice(at);
+          showAgent(all.slice(0, at));
+        }
+      }
+      // Generation ends seconds before playback does, so a last sentence can still be cut.
+      if (sc.generationComplete && !cutTurn) {
+        const hit = checked((c) => c.flush());
+        if (hit) cut(hit);
+        else {
+          showAgent(heldText);
+          heldText = "";
+        }
       }
       if (sc.turnComplete) {
+        const hit = cutTurn ? null : checked((c) => c.flush());
+        endCut();
+        checked((c) => c.reset());
+        if (!hit) showAgent(heldText);
+        heldText = "";
         if (turnAudio) lastModelOutput = Date.now();
         else guard.emptyTurn();
         turnAudio = false;
         commitTurn();
         h.onAgentFinal();
-        if (moving) reconnect(0);
+        if (hit) cut(hit, true);
+        else if (moving) reconnect(0);
       }
     }
     const cancel = msg.toolCallCancellation as { ids?: string[] } | undefined;
