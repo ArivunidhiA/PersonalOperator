@@ -59,6 +59,9 @@ export function chooseProvider(country: string | null | undefined): VoiceProvide
   return null;
 }
 
+/** Names the transcript should get right. Google suggests up to 100 terms. */
+const CUSTOM_VOCABULARY = ["Ariv", "Arivunidhi", "INZI", "forecost", "Registrum", "Malbit", "Agno", "NeMo Curator", "pgvector"];
+
 const GREETING_NUDGE =
   "(The caller just connected. In your own words, under 20 words: you're Ariv's AI voice agent, basically the interactive version of his portfolio, ask me anything about him. No \"feel free\", no \"how can I help\". Then wait.)";
 export { GREETING_NUDGE };
@@ -79,11 +82,13 @@ export function buildGeminiLiveConfig(now = new Date()) {
       },
     ],
     speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: GEMINI_VOICE } } },
-    inputAudioTranscription: {},
+    inputAudioTranscription: { customVocabulary: CUSTOM_VOCABULARY },
     outputAudioTranscription: {},
     realtimeInputConfig: {
       automaticActivityDetection: {
         // Low start sensitivity: fewer false barge-ins from speaker echo and room noise.
+        // 800 ms over 500: same latency on the long-turn corpus, fewer split turns. The client
+        // ends a turn the server holds open (see CALLER_END_SILENCE_MS in voice/gemini.ts).
         startOfSpeechSensitivity: "START_SENSITIVITY_LOW",
         endOfSpeechSensitivity: "END_SENSITIVITY_LOW",
         prefixPaddingMs: 300,
