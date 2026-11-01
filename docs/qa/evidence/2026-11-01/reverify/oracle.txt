@@ -1,0 +1,8 @@
+A session keys provider,sessionId,ticket,maxCallSeconds,gemini no guard gemini keys token,model,wsUrl,greeting
+A hash-like strings 1 term in response false
+A term in home html false
+B wrong guess finish 200 {"ok":true,"summary":"The caller asked to hear more about Ariv's work  share 200 {"ok":true,"share_token":"<token>",
+B real term finish 200 {"ok":true,"summary":"The caller asked for more details about the cand share 422 {"error":"This transcript can't be shared."}
+B wrong guess finish 200 {"ok":true,"summary":"The caller asked about Ariv's work history and w share 200 {"ok":true,"share_token":"<token>",
+200 wrong names [ 200, 200 ]
+200 names incl real [ 200, 422 ]
