@@ -47,7 +47,7 @@ Here's the setup, kept short.
 
 - The agent runs in four modes (greeter, role researcher, scheduler, closer) that live in one prompt, so no rule disappears mid-call.
 - No tool can email anyone or read another caller's data. Your name or email never passes through the model.
-- Transcripts are assembled in your browser, so share links are opt-in and labelled as unverified, and they expire after 30 days.
+- Transcripts are assembled in your browser, so new share links are off. Older links stay labelled as unverified and expire after 30 days.
 - Visitors in the EEA, UK and Switzerland see links instead of voice (the free tier can't serve them) and stay anonymous in analytics. Do Not Track and Global Privacy Control turn tracking off entirely.
 - Everything about data use is on the [privacy page](https://www.arivsai.app/privacy).
 

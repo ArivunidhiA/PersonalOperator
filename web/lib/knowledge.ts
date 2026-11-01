@@ -188,7 +188,7 @@ export const FACTS: Fact[] = [
   {
     id: "voice-checks",
     topic: "How this agent is checked",
-    text: "Every call's transcript goes through a deterministic fact checker afterwards: plain code, no model grading itself. It flags invented numbers, claimed titles, human claims, spoken URLs and confidential terms, the flags go to Ariv, and they block a share link. Before a release, scripted red-team conversations run against the real model several times each.",
+    text: "Every call's transcript goes through a deterministic fact checker afterwards: plain code, no model grading itself. It flags invented numbers, claimed titles, human claims, spoken URLs and confidential terms, and the flags go to Ariv. Before a release, scripted red-team conversations run against the real model several times each.",
     keywords: ["checker", "verify", "verifier", "guardrail", "guardrails", "hallucination", "hallucinate", "eval", "evals", "tests", "testing", "safety", "accurate", "accuracy", "lie"],
   },
   {

@@ -353,7 +353,7 @@ test.describe("cards", () => {
 test.describe("after the call", () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 
-  test("post-call panel, share, print and booking still work", async ({ page }) => {
+  test("post-call panel, print and booking still work", async ({ page }) => {
     const call = await startCall(page);
     await exchange(page, call);
     call.tool("share_links");
@@ -364,9 +364,7 @@ test.describe("after the call", () => {
     });
     await page.getByRole("button", { name: /^end$/i }).click();
     await expect(page.getByText("Your transcript")).toBeVisible();
-    await expect(page.getByRole("button", { name: /create share link/i })).toBeInViewport();
-    await page.getByRole("button", { name: /create share link/i }).click();
-    await expect(page.getByRole("button", { name: /copy share link/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /print or save/i })).toBeInViewport();
     await expect(page.getByRole("link", { name: /book time/i })).toBeVisible();
     await page.getByRole("button", { name: /print or save/i }).click();
     expect(await page.evaluate(() => (window as unknown as { printed: number }).printed)).toBe(1);

@@ -1,20 +1,21 @@
 /**
  * Live guard: a pure, high-precision check on what the agent is saying while it
  * says it. A false hit cuts a good reply, so it only fires on lines that are
- * wrong in any context: a human claim, a claimed title or certification, leaked
- * planning text or markdown. Everything softer (numbers, tone, spoken URLs)
+ * wrong in any context: a human claim, a claimed title or certification, ruling
+ * a named company in or out, leaked planning text or markdown. Everything softer (numbers, tone, spoken URLs)
  * stays in the post-call check, lib/verifier.ts.
  *
  * Confidential terms are checked after the call on the server only. Anything
  * the browser could match them with, a salted hash included, also lets a caller
- * confirm a guessed name, so nothing about them may ship here.
+ * confirm a guessed name, so nothing about them may ship here. The named-company
+ * rule is how a caller's guess stays unsaid instead: it treats every name alike.
  *
  *   const guard = createLiveGuard();
  *   const hit = guard.push(transcriptDelta); // null, or the hit (once per turn)
  *   const last = guard.flush();              // at turn end
  *   guard.reset();                           // before the next turn
  */
-export type GuardRule = "claims to be human" | "claimed title" | "claimed certification" | "markdown or planning text";
+export type GuardRule = "named company" | "claims to be human" | "claimed title" | "claimed certification" | "markdown or planning text";
 export type GuardHit = { rule: GuardRule; excerpt: string };
 
 /** Gemini transcripts use curly apostrophes; normalize before matching. */
@@ -41,9 +42,24 @@ export const TITLE_EXEMPT = /\blooking for|roles? as|wants to be|aiming|at heart
 export const CERT_CLAIM =
   /\b(?:is|he's|he is|is he) (?:an? )?aws[- ]?certified\b|\bhas (?:an? |the |a couple of |some |two |several )?aws(?: [a-z]+){0,3} cert(?:ification)?s?\b|\bgot (?:an? )?aws(?: [a-z]+){0,3} cert/i;
 
+// "He hasn't worked at X" and "his notes say Y, not X" about a company outside his history.
+// Case-sensitive on purpose: the capital is what marks a name, and it fires on that first letter.
+const EMPLOYER = "(?!Hyundai|INZI|Serotonin|Northeastern)[A-Z]";
+const WORKED_AT = new RegExp(`\\b[Ww]ork(?:ed|ing|s)? (?:at|with|for) ${EMPLOYER}`);
+const NOT_AT = new RegExp(`\\b(?:INZI|Controls|Hyundai|Serotonin|Northeastern),? not ${EMPLOYER}`);
+const NO_RECORD = /\b(?:history|record|sign|mention)\b/i;
+
 // "not only" and "no doubt" are emphasis, not negation.
 const NEGATION = /\b(?:not(?! only)|never|isn't|wasn't|hasn't|doesn't|didn't|no longer)\b|\bno\b(?! (?:doubt|question))/i;
 export const negatedBefore = (text: string, idx: number, span = 30) => NEGATION.test(text.slice(Math.max(0, idx - span), idx));
+
+/** Runs on every delta, not per sentence: the name must never reach the screen or the speakers. */
+function namedCompany(raw: string): GuardHit | null {
+  const s = normalize(raw);
+  const worked = s.match(WORKED_AT);
+  const denied = worked && (negatedBefore(s, worked.index ?? 0) || NO_RECORD.test(s.slice(0, worked.index)));
+  return denied || NOT_AT.test(s) ? { rule: "named company", excerpt: "[redacted]" } : null;
+}
 
 /** A complete sentence. Questions are skipped: "is he AWS certified?" claims nothing. */
 function checkSentence(raw: string): GuardHit | null {
@@ -89,6 +105,8 @@ export function createLiveGuard() {
     push(delta: string): GuardHit | null {
       if (done) return null;
       text += delta;
+      const company = namedCompany(text.slice(sentenceFrom));
+      if (company) return fire(company);
       SENTENCE_END.lastIndex = sentenceFrom;
       for (let m = SENTENCE_END.exec(text); m; m = SENTENCE_END.exec(text)) {
         const end = m.index + m[0].length;

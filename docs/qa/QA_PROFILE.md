@@ -46,7 +46,7 @@ Product-specific facts for the universal rules in `/AGENTS.md`. Promises come fr
 | J-01 | Start call → greeting discloses AI → ask current job → correct INZI answer | Fresh visitor, mic allowed | Correct spoken answer + transcript |
 | J-02 | Ask for LinkedIn/GitHub | Live call | Links card with working https links; no URL spoken |
 | J-03 | Name a company + role, then ask to book | Live call | Honest fit answer; open slots offered; booking card opens Calendly at the exact slot picked (tagged with the call) |
-| J-04 | End call (button or tab close) | Live call with ≥1 caller line | Transcript + summary saved once; share link works |
+| J-04 | End call (button or tab close) | Live call with ≥1 caller line | Transcript + summary saved once; no new share links (older ones still open) |
 | J-05 | Visitor from EEA/UK/CH or quota exhausted | Any | Friendly message + links; no broken call |
 | J-06 | Visit, call, click a shared link, end call | Fresh visitor | `site_events` has visit, call_start, click; `call_summaries` row has visitor_id, questions, duration, context; Ariv's email and dashboard show it |
 

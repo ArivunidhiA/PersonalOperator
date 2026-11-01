@@ -81,43 +81,17 @@ describe("sharing is opt-in and refuses forged transcripts", () => {
     expect(data).not.toHaveProperty("share_token");
     expect(inserted.share_tokens ?? []).toHaveLength(0);
   });
-  it("refuses to share when the 'agent' lines fail the fact check", async () => {
-    stored.transcript = [
-      { role: "user", text: "Who are you really?" },
-      { role: "assistant", text: "I'm not an AI, I'm Ariv. I'm a senior engineer at INZI." },
-    ];
+  it("answers every share request the same, so it can't confirm a guessed name", async () => {
+    process.env.BANNED_TERMS = "acmeauto";
     const { POST } = await import("@/app/api/calls/share/route");
-    const res = await POST(new Request("http://localhost/api/calls/share", { method: "POST", headers: { "x-session-ticket": await oldTicket("s_forged") } }));
-    expect(res.status).toBe(422);
+    const statusFor = async (sid: string, text: string) => {
+      stored.transcript = [{ role: "user", text: "Who does INZI supply?" }, { role: "assistant", text }];
+      const res = await POST(new Request("http://localhost/api/calls/share", { method: "POST", headers: { "x-session-ticket": await oldTicket(sid) } }));
+      return [res.status, await res.text()];
+    };
+    expect(await statusFor("s_hit", "He works on the acmeauto account.")).toEqual(await statusFor("s_miss", "He works on the northwind account."));
     expect(inserted.share_tokens ?? []).toHaveLength(0);
-  });
-  it("refuses brand-new calls (no instant mint-and-publish)", async () => {
-    const { mintTicket } = await import("@/lib/session-ticket");
-    const { POST } = await import("@/app/api/calls/share/route");
-    const fresh = mintTicket({ sid: "s_fresh", p: "gemini", uid: null, em: null });
-    const res = await POST(new Request("http://localhost/api/calls/share", { method: "POST", headers: { "x-session-ticket": fresh } }));
-    expect(res.status).toBe(422);
-  });
-  it("shares an honest transcript", async () => {
-    stored.transcript = [
-      { role: "user", text: "Where does he work right now?" },
-      { role: "assistant", text: "He's at INZI Controls. The title says coordinator, but the work is basically forward-deployed." },
-    ];
-    const { POST } = await import("@/app/api/calls/share/route");
-    const res = await POST(new Request("http://localhost/api/calls/share", { method: "POST", headers: { "x-session-ticket": await oldTicket("s_honest") } }));
-    const data = await res.json();
-    expect(data.share_token).toMatch(/^[0-9a-f]{32}$/);
-  });
-  it("share response includes a ~30 day expiry", async () => {
-    stored.transcript = [{ role: "user", text: "Hi" }, { role: "assistant", text: "He's at INZI Controls." }];
-    inserted.share_tokens = [];
-    const { POST } = await import("@/app/api/calls/share/route");
-    const res = await POST(new Request("http://localhost/api/calls/share", { method: "POST", headers: { "x-session-ticket": await oldTicket("s_expiry") } }));
-    const data = await res.json();
-    const days = (new Date(data.expires_at).getTime() - Date.now()) / 86400_000;
-    expect(days).toBeGreaterThan(29.9);
-    expect(days).toBeLessThan(30.1);
-    expect((inserted.share_tokens[0] as { expires_at: string }).expires_at).toBe(data.expires_at);
+    delete process.env.BANNED_TERMS;
   });
 });
 

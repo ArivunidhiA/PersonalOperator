@@ -1,4 +1,4 @@
-import { test, expect, type APIRequestContext, type Page } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import { appendFileSync, mkdirSync, readFileSync } from "fs";
 import { createClient } from "@supabase/supabase-js";
 import { config } from "dotenv";
@@ -9,7 +9,7 @@ import path from "path";
  * open the site -> start a call -> the agent greets -> the caller (fake mic)
  * asks where Ariv works -> correct answer -> asks for links -> clickable links
  * card -> asks for the booking link -> tagged Calendly link, clicked -> end
- * call -> transcript saved and shareable (public share API) -> analytics rows
+ * call -> transcript saved -> analytics rows
  * (visit, call start, click, call context) checked in the database, then the
  * test's own rows are deleted.
  */
@@ -35,7 +35,7 @@ const entries: CorpusEntry[] = corpus
   ? readFileSync(path.join(corpusDir, "manifest.jsonl"), "utf8").split("\n").filter(Boolean).map((l) => JSON.parse(l) as CorpusEntry)
   : [];
 
-async function journey({ page, request }: { page: Page; request: APIRequestContext }, entry?: CorpusEntry) {
+async function journey({ page }: { page: Page }, entry?: CorpusEntry) {
   const errors = errorsOf(page);
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "Ariv's AI" })).toBeVisible();
@@ -99,22 +99,9 @@ async function journey({ page, request }: { page: Page; request: APIRequestConte
   expect((await finishRes.json()).ok).toBe(true);
   await expect(page.getByText("Your transcript")).toBeVisible({ timeout: 30_000 });
 
-  const shared = page.waitForResponse((r) => r.url().includes("/api/calls/share"), { timeout: 30_000 });
-  await page.getByRole("button", { name: /create share link/i }).click();
-  const shareRes = await shared;
-  expect(shareRes.status()).toBe(200);
-  const saved = await shareRes.json();
-  expect(saved.share_token).toMatch(/^[0-9a-f]{32}$/);
-  await expect(page.getByRole("button", { name: /copy share link/i })).toBeVisible();
+  await expect(page.getByRole("button", { name: /share link/i })).toHaveCount(0);
 
-  const view = await request.get(`/api/calls/${saved.share_token}`);
-  expect(view.status()).toBe(200);
-  expect(view.headers()["x-robots-tag"]).toContain("noindex");
-  const call = await view.json();
-  expect(JSON.stringify(call.transcript)).toMatch(/INZI/i);
-  expect(call.verified).toBe(false);
-
-  test.info().annotations.push({ type: "greeting_ms", description: String(greetMs) }, { type: "share_token", description: saved.share_token }, { type: "session_id", description: sid });
+  test.info().annotations.push({ type: "greeting_ms", description: String(greetMs) }, { type: "session_id", description: sid });
 
   // Analytics, checked at the source of truth (Supabase), then this test's rows are removed.
   if (db) {
@@ -163,11 +150,11 @@ if (corpus) {
           ],
         },
       });
-      test("voice call: greeting, facts, links card, saved transcript", async ({ page, request }) => journey({ page, request }, entry));
+      test("voice call: greeting, facts, links card, saved transcript", async ({ page, request }) => journey({ page }, entry));
     });
   }
 } else {
-  test("voice call: greeting, facts, links card, saved transcript", async ({ page, request }) => journey({ page, request }));
+  test("voice call: greeting, facts, links card, saved transcript", async ({ page, request }) => journey({ page }));
 }
 
 test("security surface: old open endpoints are gone, new ones need a live-call ticket", async ({ request }) => {

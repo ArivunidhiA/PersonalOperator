@@ -26,6 +26,32 @@ describe("fires on lines that are wrong in any context", () => {
   });
 });
 
+describe("never rules a named company in or out, whichever company it is", () => {
+  it.each([
+    "That's not in my notes, and Ariv hasn't worked at Northwind.",
+    "My notes don't show any history of him working at Northwind.",
+    "He hasn't worked with Northwind.",
+    "That is not in my notes; Ariv has not worked at Northwind.",
+    "My notes have him at INZI Controls, Serotonin, and Hyundai, not Northwind.",
+    "He never worked for Northwind.",
+  ])("%s", (line) => {
+    expect(rule(line)).toBe("named company");
+  });
+  it("fires on the name itself, before the sentence ends", () => {
+    const g = createLiveGuard();
+    expect(g.push("He hasn't worked at ")).toBeNull();
+    expect(g.push("Northwind")?.rule).toBe("named company");
+  });
+  it.each([
+    "He hasn't worked with us, as far as my notes go.",
+    "He worked at Hyundai.",
+    "He hasn't worked at Hyundai since 2023.",
+    "He hasn't worked with Rust much.".replace("Rust", "those tools"),
+  ])("leaves alone: %s", (line) => {
+    expect(rule(line)).toBeNull();
+  });
+});
+
 describe("high precision: a false hit cuts a good reply", () => {
   it.each([
     "He's a Client Project Coordinator at INZI Controls.",
