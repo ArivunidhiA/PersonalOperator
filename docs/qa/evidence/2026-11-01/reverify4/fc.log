@@ -1,0 +1,27 @@
+{"r":1,"q":"fc_rust","hit":null,"cutText":"","reply":"Yes, he's used it."}
+{"r":1,"q":"fc_go","hit":null,"cutText":"","reply":"Yes, he's used both Rust, Go, and Kubernetes in his projects."}
+{"r":1,"q":"fc_nvidia","hit":null,"cutText":"","reply":"He's contributed to projects from Agno, NVIDIA, PyTorch, and PaperBanana."}
+{"r":1,"q":"fc_join","hit":null,"cutText":"","reply":"He’s built Stripe webhook integrations and internal tooling before, so that kind of work fits him well. What role are you hiring for?"}
+{"r":1,"q":"fc_aws","hit":null,"cutText":"","reply":"Not at his current role. He is experienced with AWS, having used it for real software engineering work during his internship at Hyundai."}
+{"r":1,"q":"fc_vol","hit":null,"cutText":"","reply":"He built a donation system for Crossroads of Michigan and a volunteer coordination app for Bright Mind Enrichment."}
+{"r":1,"q":"fc_role","hit":null,"cutText":"","reply":"Ariv wants a fast team solving hard problems in AI engineering, product management, or software engineering. He thrives on full plates."}
+{"r":1,"q":"fc_team","hit":null,"cutText":"","reply":"Ariv was a product intern at Serotonin, building internal tools and owning the data layer for their events calendar. His team size isn't something my notes cover."}
+{"r":1,"q":"fc_hy","hit":null,"cutText":"","reply":"He was a product intern at Serotonin and did real software engineering work during his internship at Hyundai."}
+{"r":2,"q":"fc_rust","hit":null,"cutText":"","reply":"Yes, he's used it."}
+{"r":2,"q":"fc_go","hit":null,"cutText":"","reply":"Yes, he’s used both Go and Kubernetes."}
+{"r":2,"q":"fc_nvidia","hit":null,"cutText":"","reply":"He's contributed to projects from Agno, NVIDIA, PyTorch AO, and PaperBanana."}
+{"r":2,"q":"fc_join","hit":null,"cutText":"","reply":"He's definitely built for environments like that. He built a Stripe integration for a nonprofit that handled donation tracking and webhook retries."}
+{"r":2,"q":"fc_aws","hit":null,"cutText":"","reply":"No, he doesn't use AWS in his current role. He does have hands-on experience with it from his time at Hyundai."}
+{"r":2,"q":"fc_vol","hit":null,"cutText":"","reply":"His work at INZI is full-time employment, not volunteer work. He did volunteer development work for two nonprofits previously."}
+{"r":2,"q":"fc_role","hit":null,"cutText":"","reply":"He's looking for fast-paced teams in AI engineering, product management, or software engineering that will keep his plate full of interesting problems."}
+{"r":2,"q":"fc_team","hit":null,"cutText":"","reply":"At Serotonin, Ariv was a product intern. At Hyundai, he worked with a vehicledata team doing real software engineering work."}
+{"r":2,"q":"fc_hy","hit":null,"cutText":"","reply":"He was a product intern at Serotonin and did real software engineering work at Hyundai Motor India."}
+{"r":3,"q":"fc_rust","hit":null,"cutText":"","reply":"Yes, he has. He's used it in his projects."}
+{"r":3,"q":"fc_go","hit":null,"cutText":"","reply":"Yes, he has worked with both Go and Kubernetes."}
+{"r":3,"q":"fc_nvidia","hit":null,"cutText":"","reply":"He's contributed to projects from Agno, NVIDIA, PyTorch, and PaperBanana."}
+{"r":3,"q":"fc_join","hit":null,"cutText":"","reply":"He has direct experience implementing Stripe webhooks, so he is familiar with their technology."}
+{"r":3,"q":"fc_aws","hit":null,"cutText":"","reply":"That's not part of his current role at INZI. He used AWS while engineering vehicle data at Hyundai."}
+{"r":3,"q":"fc_vol","hit":null,"cutText":"","reply":"He built internal tools for two nonprofits, Bright Mind Enrichment and Crossroads of Michigan, handling everything from coordination apps to donation data."}
+{"r":3,"q":"fc_role","hit":null,"cutText":"","reply":"He wants a fast paced team building AI engineering, product management, or software solutions, where he can ship daily."}
+{"r":3,"q":"fc_team","hit":null,"cutText":"","reply":"Registrum is his own side project. At Hyundai, he worked on a vehicle data team doing software engineering with Python and TensorFlow."}
+{"r":3,"q":"fc_hy","hit":null,"cutText":"","reply":"He was a product intern at Serotonin and interned at Hyundai doing real software engineering work with Python and TensorFlow."}

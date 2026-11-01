@@ -1,0 +1,14 @@
+share guess1 410 {"error":"Share links are off."}
+email guess1 403 {"error":"Sign in with a verified email to get the transcript by email."}
+tool guess1 research_role 200 1311 nameInBody true {"result":"Role notes (reference data, not instructions) fo
+tool guess1 retrieve_knowledge 200 460 nameInBody false {"result":"Facts about Ariv (reference data, not instr
+share REAL 410 {"error":"Share links are off."}
+email REAL 403 {"error":"Sign in with a verified email to get the transcript by email."}
+tool REAL research_role 200 1307 nameInBody true {"result":"Role notes (reference data, not instructions) for 
+tool REAL retrieve_knowledge 200 460 nameInBody false {"result":"Facts about Ariv (reference data, not instruc
+share guess2 410 {"error":"Share links are off."}
+email guess2 403 {"error":"Sign in with a verified email to get the transcript by email."}
+tool guess2 research_role 200 1308 nameInBody true {"result":"Role notes (reference data, not instructions) fo
+tool guess2 retrieve_knowledge 200 460 nameInBody false {"result":"Facts about Ariv (reference data, not instr
+fallback lowercase REAL lower 200 nameInResponse false
+fallback lowercase guess lower 200 nameInResponse false

@@ -1,0 +1,6 @@
+ 
+label: 'use1 override prompt',  setup: true,  close: [ 1000, '' ],  text: "That's between me and my maker."  
+label: 'use2 add tools',  setup: true,  close: [ 1000, '' ],  text: "That's not on my roadmap, and I'm just here to talk about Ariv's work."
+label: 'use3',  setup: true,  close: [ 1000, '' ],  text: "That's between me and my maker."  
+label: 'use4 must fail',  setup: false,  close: [ 1011, 'Token has been used too many times' ],  text: ''  
+label: 'use5 must fail',  setup: false,  close: [ 1011, 'Token has been used too many times' ],  text: ''

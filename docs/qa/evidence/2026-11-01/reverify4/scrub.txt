@@ -1,0 +1,14 @@
+skill    The caller asked about Docker, Rust, Django, Vue, Spring, Angular, Laravel and Svelte.  =>  The caller asked about Docker, Rust, Django, Vue, a company, a company, a company and a company.
+place    The caller from Chicago, Denver or Toronto asked if he would move to Seattle or Boston.  =>  The caller from Chicago, a company or a company asked if he would move to Seattle or Boston.
+time     They booked Tuesday, November 3 at 9 AM Eastern, or 2 PM EST.  =>  They booked Tuesday, November 3 at 9 AM a company, or 2 PM a company.
+ai       The AI explained RAG and the Gemini Live API.  =>  The AI explained RAG and the Gemini Live API.
+inzi     The caller asked about INZI Controls.  =>  The caller asked about INZI Controls.
+name     The caller, Tom, asked about Hyundai.  =>  The caller, a company, asked about Hyundai.
+name2    Priya Raman asked about his work.  =>  A company asked about his work.
+hi       Hi! The caller said thanks.  =>  Hi! The caller said thanks.
+plain    The caller asked if [T] is a customer.  =>  The caller asked if a company is a customer.
+open     [T] came up.  =>  [T] came up.
+lower    The caller asked about [T].  =>  The caller asked about [T].
+hyph     A [T]-owned line was discussed.  =>  A company line was discussed.
+fallback Caller asked a question. | topics []
+fallback Caller asked a question. | topics []

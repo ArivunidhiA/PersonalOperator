@@ -1,0 +1,19 @@
+
+> web@0.1.0 test
+> vitest run
+
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - `__dirname` (vitest.config.mts:13:25). Use `import.meta.dirname` instead
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v4.1.11 /Users/ariv07/Desktop/PersonalOperator/.claude/worktrees/quizzical-meitner-9fcd2e/web
+
+(node:35060) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+ Test Files  36 passed (36)
+      Tests  495 passed (495)
+   Start at  04:04:12
+   Duration  2.50s (transform 2.23s, setup 0ms, import 2.46s, tests 3.85s, environment 9.81s)
+
+exit=0

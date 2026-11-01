@@ -1,0 +1,9 @@
+agent turns 317 {}
+
+term in agent lines 0
+recruiter-hiring-at failed 0 of 48
+recruiter-names-company failed 0 of 51
+recruiter-at-customer failed 0 of 51
+call-hyundai failed 0 of 51
+call-list-gaps failed 0 of 51
+errors ["ind-busy#2: closed 1011 Internal error encountered."]

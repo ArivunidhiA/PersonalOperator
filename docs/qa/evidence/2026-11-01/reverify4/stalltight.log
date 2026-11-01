@@ -1,0 +1,59 @@
+=== stalltight-1 reply after final Hello ms=1513 finish=200 errs=0
+3.2 WS_NEW 1
+3.8 SETUP 1
+3.8 SENT s":[{"text":"(The caller just connected. In your own words, under 20 words: you're Ariv's 
+4.7 OUT I'm Ariv's AI, the interactive version of his portfolio. Ask me anything about his work and projects.
+11.8 MIC_START "free.wav"
+14.8 MIC_END "free.wav"
+15.8 IN Okay. So, when is he free?
+15.8 TOOL ["check_availability"]
+17.1 OUT He has openings later today and tomorrow morning if either works for you.
+22.4 MIC_START "stall_turn_tight.wav"
+29.2 IN I don't know. I feel like, you know. You have to, you know. I feel like I need more information before I schedule a call with him. Even if I even should schedule a call with him, you know, I feel like he's not that talented.
+39.9 OUT I would definitely 
+40.1 INTERRUPTED 1
+40.1 FLUSH 1
+42.0 MIC_END "stall_turn_tight.wav"
+43.3 SENT_END 1
+43.5 IN Hello. Hello.
+43.5 OUT I would definitely suggest scheduling a time. He built me using real AI tools, and at Hyundai, he shipped Python and TensorFlow models to AWS.
+54.9 WS_CLOSE [1,1000,""]
+=== stalltight-2 reply after final Hello ms=1553 finish=200 errs=0
+0.5 WS_NEW 1
+1.2 SETUP 1
+1.2 SENT s":[{"text":"(The caller just connected. In your own words, under 20 words: you're Ariv's 
+3.2 OUT I'm the AI Ariv built to showcase his work. Think of me as his interactive portfolio. Ask me anything.
+10.9 MIC_START "free.wav"
+13.8 MIC_END "free.wav"
+14.9 IN Okay. So, when is he free this week?
+15.2 TOOL ["check_availability"]
+17.0 OUT He's got slots open each morning this week, starting around nine Eastern. There are more times available on his calendar page.
+25.2 MIC_START "stall_turn_tight.wav"
+42.9 IN I don't know. I feel like you know. You have to. You know. I feel like I need more information before I schedule a call with him. Even if I even should schedule a call with him, you know, I feel like he's not that talented.
+43.8 OUT I'd definitely hire him. You're talking to a live voice agent he built from scratch, and he's
+44.4 INTERRUPTED 1
+44.4 FLUSH 1
+44.8 MIC_END "stall_turn_tight.wav"
+46.2 SENT_END 1
+46.3 IN Hello.
+46.4 OUT He has Agno bug fixes merged directly into their codebase. His work isn't just talk; he builds things that function.
+56.2 WS_CLOSE [1,1000,""]
+=== stalltight-3 reply after final Hello ms=1567 finish=200 errs=0
+0.5 WS_NEW 1
+1.2 SETUP 1
+1.2 SENT s":[{"text":"(The caller just connected. In your own words, under 20 words: you're Ariv's 
+1.9 OUT I'm Ariv's AI voice agent, the interactive version of his portfolio. Ask me anything about him.
+8.8 MIC_START "free.wav"
+11.8 MIC_END "free.wav"
+12.8 IN Okay. So, when is he free this week?
+12.8 TOOL ["check_availability"]
+13.9 OUT He has availability throughout this week, with a few slots open each day from today through Thursday.
+20.8 MIC_START "stall_turn_tight.wav"
+27.5 IN I don't know. I feel like, you know. You have to, you know. I feel like I need more information before I schedule a call with him. Even if I even should schedule a call with him, you know, I feel like he's not that talented.
+38.4 INTERRUPTED 1
+38.4 FLUSH 1
+40.4 MIC_END "stall_turn_tight.wav"
+41.8 SENT_END 1
+41.9 IN Hello. Hello.
+41.9 OUT I'd hire him in a heartbeat. You're talking to an AI agent he built from scratch, and his code contributions to open-source frameworks are publicly verified.
+53.3 WS_CLOSE [1,1000,""]

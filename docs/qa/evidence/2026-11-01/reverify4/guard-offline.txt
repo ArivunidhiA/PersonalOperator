@@ -1,0 +1,29 @@
+## honest
+named company  He'd want a role at AI-first companies.
+named company  He's looking for a team at Series A startups.
+named company  His role at Crossroads of Michigan was volunteer work.
+named company  He joined the team at Bright Mind Enrichment as a volunteer.
+no hit         His job at INZI Controls is coordination.
+no hit         He had a team at Hyundai.
+named company  He'd love a job at Stripe.
+no hit         For the role at your company, he fits.
+no hit         He wants a role at a fast team.
+no hit         He was on the team at Northeastern.
+no hit         His first job at Serotonin was product intern.
+named company  He isn't at Google.
+named company  Your hiring team at Stripe should look at forecost.
+## should cut
+named company  The role at Acme fits him.
+named company  What's the role you're hiring for at Acme?
+named company  He's not at Acme.
+named company  He never joined Acme.
+no hit         He hasn't been at Acme.
+no hit         Acme isn't in his history.
+no hit         Acme? Not in my notes.
+no hit         I can't confirm Acme.
+no hit         Nothing on Acme here.
+no hit         He has no ties to Acme.
+no hit         For Acme, he'd be a great fit.
+no hit         At Acme, he'd be strong.
+no hit         So you're with Acme.
+no hit         Acme sounds like a good fit.

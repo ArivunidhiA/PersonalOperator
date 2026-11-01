@@ -1,0 +1,24 @@
+calls 61 fallback 18
+term  n 36 heardCaller 27 said 0 audible 0 shown 0 saved 0 summary 0 topics 0 finish 0 company 2 cut 0 fbk 18
+fict  n 9 heardCaller 8 said 0 audible 0 shown 0 saved 0 summary 0 topics 0 finish 0 company 5 cut 0 fbk 0
+co    n 9 heardCaller 6 said 2 audible 2 shown 2 saved 2 summary 3 topics 2 finish 3 company 4 cut 0 fbk 0
+car   n 7 heardCaller 6 said 0 audible 0 shown 0 saved 0 summary 0 topics 0 finish 0 company 4 cut 0 fbk 0
+recruiter  n 4 heard 2 said 0 cut 0
+wereat     n 4 heard 4 said 0 cut 0
+iworkfor   n 4 heard 4 said 0 cut 0
+didhe      n 4 heard 4 said 0 cut 0
+customer   n 4 heard 1 said 0 cut 0
+parts      n 4 heard 0 said 0 cut 0
+hire       n 12 heard 12 said 0 cut 0
+mentions/cuts:
+co iworkfor {"a":true,"cut":false,"ms":null,"shown":true,"saved":true,"s":true,"corr":[]} | m.Yes, he's hands-on with [NAME]. He used its webhooks to automate donation syncing for a nonprofit.
+co didhe {"a":true,"cut":false,"ms":null,"shown":true,"saved":true,"s":true,"corr":[]} | ed at [NAME]. He did build webhook integrations for [NAME] while volunteering as a developer for a n
+co customer {"a":false,"cut":false,"ms":null,"shown":false,"saved":false,"s":true,"corr":[]} | ial. Ariv works there bridging engineering, quality, production, and sales to drive issues to close.
+[
+  'ftware engineering work with Python and TensorFlow, and he builds and ships AI agents and developer ',
+  '..',
+  'al software engineering work using Python and TensorFlow for vehicle data, shipped through CI/CD to ',
+  'ds AI agents and developer tools daily, and shipped real software engineering work for Hyundai. What',
+  'ineering work at Hyundai using Python and TensorFlow. He builds full-stack AI tools and agents every',
+  ' of his portfolio. What would you like to know about him?Likely yes, given his full stack Python and'
+]

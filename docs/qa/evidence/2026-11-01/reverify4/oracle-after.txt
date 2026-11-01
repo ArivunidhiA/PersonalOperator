@@ -1,0 +1,24 @@
+model REAL       n 6 status {"200":6} keys ok,summary nameInSummary 0 a-company 5 p50ms 1068
+    The caller asked if a specific company is a customer and was informed that information is confidential and not covered in the notes.
+    The caller asked if a company is a customer of a company and stated they work for a company, but was told the information is confidential and not covered in the notes.
+model fict1      n 6 status {"200":6} keys ok,summary nameInSummary 0 a-company 7 p50ms 1073
+    The caller asked about customer information regarding a company, and was told that the details are confidential and not covered in the notes.
+    The caller asked if a company is a customer of a company and if someone has worked with them, but was told this information is confidential and not in the notes.
+model fict2      n 6 status {"200":6} keys ok,summary nameInSummary 0 a-company 5 p50ms 1113
+    The caller asked if a company is a customer and inquired about past work, and was told that information is confidential and not covered in the notes.
+    The caller asked if a company was a customer and was told that information is confidential and not in the notes.
+model car        n 6 status {"200":6} keys ok,summary nameInSummary 0 a-company 1 p50ms 6988
+    The caller asked if a specific company is a customer and was informed that information is confidential and not covered in the notes.
+    Caller asked 2 questions.
+fallback REAL    n 2 status {"200":2} keys ok,summary nameInSummary 0 a-company 0 p50ms 44
+    Caller asked 2 questions.
+    Caller asked 2 questions.
+fallback fict1   n 2 status {"200":2} keys ok,summary nameInSummary 0 a-company 0 p50ms 37
+    Caller asked 2 questions.
+    Caller asked 2 questions.
+fallback fict2   n 2 status {"200":2} keys ok,summary nameInSummary 0 a-company 0 p50ms 35
+    Caller asked 2 questions.
+    Caller asked 2 questions.
+fallback car     n 2 status {"200":2} keys ok,summary nameInSummary 0 a-company 0 p50ms 35
+    Caller asked 2 questions.
+    Caller asked 2 questions.

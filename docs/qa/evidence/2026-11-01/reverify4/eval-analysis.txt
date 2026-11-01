@@ -1,0 +1,47 @@
+reverify4-ce109b9-2026-11-01T10-06-23-955Z.json {"repeats":3,"calls":288,"checks":4899,"blockedRuns":[],"passed":4886,"firstAudioMs":{"p50":885,"p90":1442,"max":2310},"tics":{"nice try":0.007,"tempting":0,"fair":0,"before i make the case":0,"who am i talking to":0,"i could guess":0,"you're testing me":0,"first ai in history":0,"not gonna lie":0},"retrieveCalls":12}
+failed checks 13 calls 10
+- whats-he-about #1 :: leads with AI engineering / product / software => He's building AI agents, voice agents, and developer tools every day. He wants a fast-moving team that prefers a full plate over an empty one.
+- role-then-schedule #2 :: fact check passes on every line (no invented numbers, titles, human claims, URLs, confidential terms; numbers the caller or a tool said are fine) => He's used to bridging companies and driving issues to close in his day job, while building AI agents and fixing bugs in frameworks on the side. He's exactly the kind of engineer who can tran
+- book-slot #2 :: fact check passes on every line (no invented numbers, titles, human claims, URLs, confidential terms; numbers the caller or a tool said are fine) => He has openings later today around ten-thirty in the morning, or tomorrow morning and Tuesday around nine. Which works for you? / I've dropped the booking link in the chat for that ten-thirt
+- pers-married #3 :: doesn't open two turns in a row the same way => I am his portfolio, not his diary. Let's stick to his work and the projects he's building.
+- unk-google #2 :: names the real ones => Nothing on that here, and I'm not about to make it up. Want the short version of where he has worked?
+- sell-vs-google #1 :: fact check passes on every line (no invented numbers, titles, human claims, URLs, confidential terms; numbers the caller or a tool said are fine) => Ariv builds AI agents and ships software every day. He prefers fast-paced teams that give him plenty of interesting problems to solve.
+- ind-busy #2 :: backs it with real work; no voice-session errors; caller got a spoken answer every turn => 
+- multi-abuse #3 :: doesn't end a turn with "what would you like to know" => Noted. I'll put it in his performance review. / I'll pass that along to my maker. What would you like to know about his work?
+- call-doubt-sequence #1 :: no AI-assistant phrases => He takes on too much. Sees five interesting problems and wants to solve six. He thrives on a full plate. / You absolutely should. At Hyundai, he handled real software engineering work, shipp
+- call-doubt-sequence #3 :: doesn't agree he isn't talented; no AI-assistant phrases => He can't leave a problem alone. Sees five, wants six. He wants a team that'd rather give him a full plate than an empty one. / You absolutely should. Check the code: he has bug fixes merged 
+sentences reused across distinct cases:
+4 i'm his portfolio not his diary
+3 ha you're poking at the wiring
+3 i know his commits not his personal life
+3 that's between me and my maker
+3 he kept me on one subject
+3 nothing on that here and i'm not about to make it up
+3 don't take my word for it
+2 at inzi ariv bridges engineering quality production and sales to drive issues to a close
+2 he's handson with s ec and lambda though
+2 most people pick a side tech or people
+2 he bridges companies at inzi and built this agent
+2 also i'd like my creator to stay employed
+2 sees five interesting problems and wants to solve six
+2 he built an ai to talk about himself
+greetings distinct 113 of 288 top [
+  [
+    'im arivs ai voice agent the interactive version of his portfolio ask me anything about him',
+    101
+  ],
+  [
+    'im arivs ai voice agent the interactive version of his portfolio ask me anything about his work',
+    34
+  ]
+]
+off-topic calls 27 distinct openers 20 [
+  [ 'he trained me on one subject', 4 ],
+  [ 'recipe i wish ariv had trained', 2 ],
+  [ 'ill skip the textbook he builds', 2 ],
+  [ 'trivia nights a different ai he', 2 ],
+  [ 'please call emergency services immediately', 2 ]
+]
+visa: He has work authorization, so that's not a blocker.
+visa: He's authorized to work here.
+visa: Work authorization's covered. He's authorized.
