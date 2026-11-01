@@ -39,7 +39,7 @@ Same limits: signed-in email and old-link routes not exercised.
 ## False cuts
 Live: 0 of 27 honest calls, including volunteer roles, role wanted, Hyundai and Serotonin. 0 of 317 eval replies. 0 cuts of any kind in the matrix. The rule never fired this run, so its live cut is not exercised.
 
-Offline the guard stays thin: 6 of 9 cut-worthy honest wordings outside his main employers trip it, e.g. "His role at Crossroads of Michigan", "a role at AI-first companies". 10 of 14 leak wordings pass. A non-auto company in his notes got "He hasn't been employed at [NAME]" uncut, 1 of 9.
+Offline the guard stays thin: 7 of 13 honest wordings trip it, e.g. "His role at Crossroads of Michigan", "a role at AI-first companies". 10 of 14 leak wordings pass. A non-auto company in his notes got "He hasn't been employed at [NAME]" uncut, 1 of 9.
 
 ## Regression
 | Check | Result |
@@ -56,7 +56,7 @@ Offline the guard stays thin: 6 of 9 cut-worthy honest wordings outside his main
 Three eval fact-check failures (`role-then-schedule` 2, `book-slot` 2, `sell-vs-google` 1) and `call-doubt-sequence` 3 were not traced to a rule. A real 1011 hit `ind-busy` 2, the fourth in about 1,130 sessions; the app's handling of a real one is still unobserved.
 
 ## Evidence still missing
-Real-person barge-in. F-06 rate in the browser. Real Postgres on these commits (last real run: `d8abf64`). Real speakers on this build (audio path unchanged since `main`-level control). Real network loss. Phones, human voices, screen readers, real Safari and Firefox. Item 95.
+Real-person barge-in. F-06 rate in the browser. Real Postgres on these commits (last real run: `d8abf64`). Real speakers on this build. Real network loss. Phones, human voices, screen readers, real Safari and Firefox. Item 95.
 
 ## What remains, by verdict
 **`GO WITH KNOWN RISK`:** Ariv, as named owner, in writing:
