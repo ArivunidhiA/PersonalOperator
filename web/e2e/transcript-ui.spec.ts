@@ -95,7 +95,14 @@ for (const [name, viewport] of [["desktop", { width: 1440, height: 900 }], ["sho
       await exchange(page, call);
       call.tool("share_links");
       await expect(page.getByText("GitHub").first()).toBeAttached();
+      // The live guard holds a turn's last word until the turn ends: nothing may move either side of that.
       call.agent(LONG_REPLY);
+      await expect(page.getByText(/word88/).first()).toBeAttached();
+      await expect(page.getByText(/word89/)).toHaveCount(0);
+      await page.waitForTimeout(400);
+      expect(await box()).toEqual(before);
+      expect(await pill()).toEqual(pillBefore);
+      call.agentDone();
       await expect(page.getByText(/word89/).first()).toBeAttached();
       await page.waitForTimeout(400);
       expect(await box()).toEqual(before);
@@ -143,22 +150,31 @@ test("strip is an invisible box with only the latest user line and AI reply", as
 
 test("a long reply keeps a fixed height and follows the newest words", async ({ page }) => {
   const call = await startCall(page);
-  call.agent("Short.");
-  await expect(strip(page)).toContainText("Short.");
+  call.agent("Short answer");
+  await expect(strip(page)).toContainText("Short");
   const h = (await strip(page).boundingBox())!;
+  // The bottom edge of the text sits inside the strip, so the last words are the visible ones.
+  const expectEndInView = async (last: ReturnType<Page["locator"]>) => {
+    const bottoms = await last.evaluate((el) => {
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      const rects = [...range.getClientRects()];
+      const clip = el.closest("[data-tail]")!.getBoundingClientRect();
+      return { text: rects[rects.length - 1].bottom, clip: clip.bottom };
+    });
+    expect(bottoms.text).toBeLessThanOrEqual(bottoms.clip + 1);
+  };
   call.agent(` ${LONG_REPLY}`);
+  const streaming = strip(page).getByText(/word88/).first();
+  await expect(streaming).toBeAttached();
+  expect(await strip(page).boundingBox()).toEqual(h);
+  await expectEndInView(streaming);
+  // The word the live guard held arrives with the end of the turn.
+  call.agentDone();
   const last = strip(page).getByText(/word89/).first();
   await expect(last).toBeAttached();
   expect(await strip(page).boundingBox()).toEqual(h);
-  // The bottom edge of the text sits inside the strip, so the last words are the visible ones.
-  const bottoms = await last.evaluate((el) => {
-    const range = document.createRange();
-    range.selectNodeContents(el);
-    const rects = [...range.getClientRects()];
-    const clip = el.closest("[data-tail]")!.getBoundingClientRect();
-    return { text: rects[rects.length - 1].bottom, clip: clip.bottom };
-  });
-  expect(bottoms.text).toBeLessThanOrEqual(bottoms.clip + 1);
+  await expectEndInView(last);
 });
 
 test("a long caller line keeps its newest words in view, on one row", async ({ page }) => {
@@ -204,7 +220,9 @@ test("hover reveals the fullscreen icon on desktop", async ({ page }) => {
   expect(icon.x + icon.width).toBeGreaterThan(s.x + s.width * 0.8);
   // Keyboard users reach it without a mouse.
   await page.mouse.move(0, 0);
-  await expand(page).focus();
+  await expect(expand(page)).toHaveCSS("opacity", "0");
+  for (let i = 0; i < 10 && !(await expand(page).evaluate((b) => b === document.activeElement)); i++) await page.keyboard.press("Tab");
+  await expect(expand(page)).toBeFocused();
   await expect(expand(page)).toHaveCSS("opacity", "1");
 });
 
@@ -281,7 +299,7 @@ test.describe("popup", () => {
     const log = popup(page).getByRole("log");
     const gap = () => log.evaluate((el) => el.scrollHeight - el.scrollTop - el.clientHeight);
     await expect.poll(gap).toBeLessThan(2);
-    call.agent("Still pinned here.");
+    call.agent("Still pinned here. Held");
     await expect(log).toContainText("Still pinned here.");
     await expect.poll(gap).toBeLessThan(2);
 
@@ -289,13 +307,13 @@ test.describe("popup", () => {
     await log.dispatchEvent("scroll");
     await page.waitForTimeout(50);
     const top = await log.evaluate((el) => el.scrollTop);
-    call.agent(" More words while reading.");
+    call.agent(" More words while reading. Held");
     await expect(log).toContainText("More words while reading.");
     expect(await log.evaluate((el) => el.scrollTop)).toBe(top);
 
     await popup(page).getByRole("button", { name: /latest/i }).click();
     await expect.poll(gap).toBeLessThan(2);
-    call.agent(" Pinned again.");
+    call.agent(" Pinned again. Held");
     await expect(log).toContainText("Pinned again.");
     await expect.poll(gap).toBeLessThan(2);
   });
@@ -379,8 +397,10 @@ test("reduced motion: no animation on the strip", async ({ page }) => {
 
 test.describe("axe", () => {
   const serious = async (page: Page) => {
+    // Fades pass through low contrast for 180 ms. Axe has to judge the colours people read.
+    await expect.poll(() => page.evaluate(() => document.getAnimations().length)).toBe(0);
     const { violations } = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
-    return violations.filter((v) => v.impact === "serious" || v.impact === "critical").map((v) => `${v.id}: ${v.nodes.map((n) => n.target).join(" | ")}`);
+    return violations.filter((v) => v.impact === "serious" || v.impact === "critical").map((v) => `${v.id}: ${v.nodes.map((n) => `${n.target} ${JSON.stringify(n.any[0]?.data ?? {})}`).join(" | ")}`);
   };
   for (const [name, viewport] of [["desktop", { width: 1440, height: 900 }], ["phone", { width: 375, height: 812 }]] as const) {
     test(`no serious violations in a call and in the popup on ${name}`, async ({ page }) => {
@@ -395,7 +415,6 @@ test.describe("axe", () => {
       await expand(page).focus();
       await page.keyboard.press("Enter");
       await expect(popup(page)).toBeVisible();
-      await expect.poll(() => popup(page).evaluate((d) => d.getAnimations().length)).toBe(0);
       expect(await serious(page)).toEqual([]);
     });
   }
