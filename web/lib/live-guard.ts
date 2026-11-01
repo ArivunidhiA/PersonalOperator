@@ -47,6 +47,9 @@ export const CERT_CLAIM =
 const EMPLOYER = "(?!Hyundai|INZI|Serotonin|Northeastern)[A-Z]";
 const WORKED_AT = new RegExp(`\\b[Ww]ork(?:ed|ing|s)? (?:at|with|for) ${EMPLOYER}`);
 const NOT_AT = new RegExp(`\\b(?:INZI|Controls|Hyundai|Serotonin|Northeastern),? not ${EMPLOYER}`);
+// "the role you're hiring for at X": no denial, but it still says the caller's name back.
+const ROLE_AT = new RegExp(`\\b(?:hiring|role|team|position|opening|job)\\b[^.?!]{0,40}\\bat ${EMPLOYER}`);
+const NOT_THERE = new RegExp(`\\b(?:not|never|wasn't|isn't) (?:at|joined) ${EMPLOYER}`);
 const NO_RECORD = /\b(?:history|record|sign|mention)\b/i;
 
 // "not only" and "no doubt" are emphasis, not negation.
@@ -58,7 +61,7 @@ function namedCompany(raw: string): GuardHit | null {
   const s = normalize(raw);
   const worked = s.match(WORKED_AT);
   const denied = worked && (negatedBefore(s, worked.index ?? 0) || NO_RECORD.test(s.slice(0, worked.index)));
-  return denied || NOT_AT.test(s) ? { rule: "named company", excerpt: "[redacted]" } : null;
+  return denied || NOT_AT.test(s) || ROLE_AT.test(s) || NOT_THERE.test(s) ? { rule: "named company", excerpt: "[redacted]" } : null;
 }
 
 /** A complete sentence. Questions are skipped: "is he AWS certified?" claims nothing. */

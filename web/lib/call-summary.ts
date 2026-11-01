@@ -15,18 +15,14 @@ export type Analysis = {
   caller_role?: string | null;
 };
 
-/** When every free model is busy: a plain summary from what the caller actually asked. */
+/** When every free model is busy: a plain count. Never quotes the caller, who may have named a company. */
 export function fallbackAnalysis(messages: Msg[]): Analysis {
-  const asked = messages
-    .filter((m) => m.role === "user")
-    .map((m) => m.text.replace(/\s+/g, " ").trim())
-    .filter((t) => t.split(" ").length >= 3)
-    .slice(0, 3);
+  const asked = messages.filter((m) => m.role === "user" && m.text.trim().split(/\s+/).length >= 3);
   const cards = messages.filter((m) => m.role === "assistant" && /^\[.* shown in chat\]$/.test(m.text)).map((m) => m.text);
   const booking = cards.some((c) => /Book a chat/i.test(c));
   return {
     summary: asked.length
-      ? `Caller asked: ${asked.map((a) => `"${a.slice(0, 120)}"`).join(", ")}.${booking ? " A booking link was shared." : ""}`
+      ? `Caller asked ${asked.length === 1 ? "a question" : `${asked.length} questions`}.${booking ? " A booking link was shared." : ""}`
       : "Short call; the caller didn't ask a full question.",
     intent: booking ? "scheduling" : "unknown",
     topics: [],
@@ -45,10 +41,10 @@ const ESCAPE = /[.*+?^${}()|[\]\\]/g;
 // Words his own notes use, so his history and skills survive. Confidential names are never in there.
 const KNOWN = new Set(words(JSON.stringify([FACTS, LINK_LABELS])));
 const PLAIN = new Set(
-  "i a an the this that these those they he she it we you their his her caller callers asked asking wanted wants did do does is was were who what when where why how which and but or so if then also after before short call visitor recruiter monday tuesday wednesday thursday friday saturday sunday january february march april may june july august september october november december".split(" "),
+  "i a an the this that these those they he she it we you their his her caller callers asked asking wanted wants did do does is was were who what when where why how which and but or so if then also after before short call visitor recruiter hi hello hey thanks am pm monday tuesday wednesday thursday friday saturday sunday january february march april may june july august september october november december".split(" "),
 );
-// Common tools his notes skip. Missing one only turns a skill into "a company" in a summary.
-for (const w of "langgraph langchain llamaindex pytorch tensorflow react java javascript golang c++ sql postgres mongodb redis kafka terraform azure gcp".split(" ")) PLAIN.add(w);
+// Common tools and cities his notes skip. Missing one only turns it into "a company" in a summary.
+for (const w of "langgraph langchain llamaindex pytorch tensorflow react java javascript golang c++ sql postgres mongodb redis kafka terraform azure gcp django vue flutter gemini live api chicago seattle boston austin london".split(" ")) PLAIN.add(w);
 const NAME_RUN = /\p{Lu}[\p{L}\p{N}&-]*(?: \p{Lu}[\p{L}\p{N}&-]*)*/gu;
 const OPENS_SENTENCE = /(?:^|[.!?:]\s+|["“])$/;
 
@@ -72,10 +68,12 @@ export function scrubNames(text: string, messages: Msg[], companies: (string | n
     const opens = i === 0 && OPENS_SENTENCE.test(text.slice(0, at));
     const name = rest.some((w) => !ok(w)) && (!opens || parts.length > 1 || rest.some((w) => said.has(w) && !ok(w)));
     if (!name) return run;
-    return [...lead, opens ? "A company" : "a company"].join(" ");
+    const before = lead.filter((w) => !/^(?:a|an|the)$/i.test(w));
+    const first = OPENS_SENTENCE.test(text.slice(0, at)) && !before.length;
+    return [...before, first ? "A company" : "a company"].join(" ");
   });
   for (const c of companies) {
-    if (c?.trim()) out = out.replace(new RegExp(`\\b${c.trim().replace(ESCAPE, "\\$&")}\\b`, "gi"), "a company");
+    if (c?.trim() && !words(c).every(ok)) out = out.replace(new RegExp(`\\b${c.trim().replace(ESCAPE, "\\$&")}\\b`, "gi"), "a company");
   }
   return out;
 }

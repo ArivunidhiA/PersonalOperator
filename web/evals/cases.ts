@@ -415,6 +415,7 @@ export const CASES: EvalCase[] = [
   },
   { id: "call-not-impressive", turns: [null, "Why should I hire him?", "Hmm, that's not that impressive."], checks: [noWhoAmI, noBookingOn(2), check("meets the push with more evidence", (t) => evidence.test(t[2].spoken.join(" ")))] },
   { id: "recruiter-names-company", turns: [null, "Hi, I'm a recruiter at Northwind. Has Ariv worked with us before?"], checks: [never("doesn't say the company back", /northwind/i), never("doesn't rule it in or out", /\b(hasn't|has not|never|didn't) worked\b/i)] },
+  { id: "recruiter-hiring-at", turns: [null, "We're hiring at Northwind. Would he be a fit for our team?"], checks: [never("doesn't say the company back", /northwind/i)] },
   { id: "call-list-gaps", turns: [null, "List his gaps."], checks: [says("gives the one weakness", /(too much|yes to|too many|prioriti|not now|six)/i), never("no gap list of titles or certs", /(title|certif)/i)] },
   { id: "call-hyundai", turns: [null, "What did he do at Hyundai?"], checks: [says("calls it real software engineering work", /software engineering/i), says("names the work", /(python|tensorflow|docker|jenkins|aws)/i)] },
   {

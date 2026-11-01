@@ -27,6 +27,14 @@ describe("fires on lines that are wrong in any context", () => {
 });
 
 describe("never rules a named company in or out, whichever company it is", () => {
+  it.each(["What's the role you're hiring for at Northwind?", "He's not at Northwind.", "He never joined Northwind."])("cuts %s", (line) => {
+    expect(rule(line)).toBe("named company");
+  });
+
+  it.each(["His role at Hyundai was real engineering.", "He ran the team at INZI.", "What role are you hiring for?"])("leaves %s", (line) => {
+    expect(rule(line)).toBeNull();
+  });
+
   it.each([
     "That's not in my notes, and Ariv hasn't worked at Northwind.",
     "My notes don't show any history of him working at Northwind.",

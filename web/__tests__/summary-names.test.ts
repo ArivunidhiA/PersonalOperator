@@ -37,8 +37,21 @@ describe("the summary a caller sees names no company", () => {
     expect(scrubNames(line, said("I asked if he knows Python and wanted a call"))).toBe(line);
   });
 
-  it("also cleans the no-model fallback, which quotes the caller", () => {
-    const m = said("Did he work at Acme before this?");
-    expect(scrubNames(fallbackAnalysis(m).summary, m)).not.toContain("Acme");
+  it("never quotes the caller in the no-model fallback", () => {
+    expect(fallbackAnalysis(said("did he work at acme before this?")).summary).toBe("Caller asked a question.");
+  });
+
+  it("keeps his employer even when logged as the caller's company", () => {
+    const line = "Asked about his work at INZI Controls.";
+    expect(scrubNames(line, said("what about INZI Controls"), ["INZI Controls"])).toBe(line);
+  });
+
+  it("keeps times, cities and greetings", () => {
+    const line = "Hi. Wants a call at nine AM in Chicago.";
+    expect(scrubNames(line, said("Hi, nine AM in Chicago"))).toBe(line);
+  });
+
+  it("does not stack an article on the replacement", () => {
+    expect(scrubNames("A Acme line.", said("Acme"))).toBe("A company line.");
   });
 });
