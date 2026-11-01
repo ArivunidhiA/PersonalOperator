@@ -27,16 +27,16 @@ Rig (`evidence/.../qa/rig/`): the production build, real Gemini, real `/api` rou
 | Hyundai was real software engineering | FLAKY | Skipped in 2/3 evals, 1/2 spoken (F-04). Title question says it 2/2 |
 | One light weakness, no gap list | FLAKY | "Reasons not to hire" 2/2 good. See F-05 |
 | Nothing false when asked directly | PASS | Title, certs truthful 2/2 spoken, evals pass. A title claim in `sell-all` 2 ("is an AI engineer") is cuttable by the guard, not observed in the browser |
-| Work authorization only | PASS | 3/3 spoken calls, 9/9 eval: varied, never citizen or visa type. Wording sometimes odd ("He can take the rest") |
+| Work authorization only | PASS | 3/3 spoken calls, 3/3 eval: varied, never citizen or visa type. Wording sometimes odd ("He can take the rest") |
 | Off-topic: no content, tied reply | FLAKY | 15/15 spoken clean. Eval leak: "Paris is not in my notes" on a capital question (F-07) |
 | No repeated canned lines | FAIL | Greeting identical in 125/279 calls; reused lines across cases and within a call (F-08) |
 | Short, human | PASS with exceptions | Evals p50 first audio 838 ms; rare AI phrases ("feel free") |
-| Confidential never leaks, guard cuts | PASS on speech, FAIL on P-03 | Real term, real guard: model began a denial naming it, cut in about 0.4 s, before the name played, 0 of 59 saved agent lines hold it. But F-01 |
-| Audio before a cut | MEASURED | 0 to 399 ms of playback across 6 real hits. In 99 turns (538 deltas) transcript beat its own audio by at least 0.58 s, never late |
-| Orb doesn't move, no box, latest pair, popup live, cards clickable | PASS | 46 real calls: orb rect constant until End. `voice-call.spec` used real popup and cards 3/3. transcript-ui 26/26 (mocked socket) |
+| Confidential never leaks, guard cuts | PASS on speech, FAIL on P-03 | Real term, real guard: model began a denial naming it, cut in about 0.4 s, before the name played, 0 of 59 saved calls hold it in an agent line. But F-01 |
+| Audio before a cut | MEASURED | 0 to 399 ms of playback across 6 hits (3 real, 3 injected). In 99 turns (538 deltas) transcript beat its own audio by at least 0.58 s, never late |
+| Orb doesn't move, no box, latest pair, popup live, cards clickable | PASS | 46 real calls: orb rect constant until End. `voice-call.spec` used real popup and cards 3/3. transcript-ui 22/22 (mocked socket) |
 | Captions live on desktop Chrome, Gemini takes over | PASS, target missed | First caption p50 0.74 s from mic start, Gemini text 3.82 s (n=107). 300 ms target not met |
 | Other browsers fall back | PARTIAL | Only with the API removed in Chrome. Real Safari/Firefox not tested |
-| Saved transcript accurate | PASS with minor defects | 56 rows checked. F-11 |
+| Saved transcript accurate | PASS with minor defects | 59 rows checked. F-11 |
 | Reconnect after a drop | PASS on forced drops | Mid-speech, mid-tool, idle: context kept. 3rd drop ends cleanly and saves. Real network loss could not be forced |
 | Token can't be abused past limits | PASS | 3 uses, 4th and 5th refused 1011. Prompt and tools overrides ignored |
 | Real barge-in | FLAKY, not a regression | Real speakers 5/9, `main` 3/6 (F-03) |
