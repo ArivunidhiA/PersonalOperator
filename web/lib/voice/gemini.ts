@@ -468,7 +468,6 @@ export async function startGemini(info: SessionInfo, prepared: Prepared, h: Voic
   const onClose = (e: CloseEvent) => {
     if (ended) return;
     const reason = e.reason || "";
-    if (e.code === 1000) return end("hangup");
     if (/RESOURCE_EXHAUSTED|quota/i.test(reason)) {
       return end("quota", "The free voice quota ran out for now. Try again later, or book a call with Ariv below.");
     }

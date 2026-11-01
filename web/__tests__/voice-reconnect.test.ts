@@ -148,7 +148,14 @@ describe("session resumption", () => {
     s.stop();
   });
 
-  it("does not reconnect on quota, on a normal close, or before the call was live", async () => {
+  it("reconnects when the server closes with 1000, since the app starts every real hang-up itself (F-11)", async () => {
+    const { ws, h } = await start();
+    drop(ws, 1000, "");
+    await reconnected(ws);
+    expect(h.onEnded).not.toHaveBeenCalled();
+  });
+
+  it("does not reconnect on quota, after the caller hangs up, or before the call was live", async () => {
     const a = await start();
     drop(a.ws, 1011, "RESOURCE_EXHAUSTED");
     await vi.advanceTimersByTimeAsync(3000);
@@ -156,6 +163,7 @@ describe("session resumption", () => {
     expect(a.h.onEnded).toHaveBeenCalledWith("quota", expect.anything());
 
     const b = await start();
+    b.s.stop();
     drop(b.ws, 1000, "");
     await vi.advanceTimersByTimeAsync(3000);
     expect(FakeWS.last).toBe(b.ws);

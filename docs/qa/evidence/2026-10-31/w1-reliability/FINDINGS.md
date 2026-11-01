@@ -15,6 +15,11 @@ Method: `gemini-3.8-live` through the real locked token and constrained endpoint
 | F-9 | Low | NOT reproduced, 0/5 calls + 0 in about 20 traces | Duplicate sentence after a tool call. No production record has it (2 rows retained). Pre-tool line plus post-tool line is normal; the model restating itself is the likely cause (hypothesis) | p_dup |
 | F-10 | Low | 1/1 vs baseline | `customVocabulary` is accepted through the token; "Ariv" heard correctly, baseline heard "Arav" | trace-k_vocab, tool1 |
 
+## Found after the fix, in the real-browser check
+| ID | Severity | Repro | Finding |
+|---|---|---|---|
+| F-11 | Medium | 1/1 | A socket closed with code 1000 that the app did not start ends the call as a hang-up, with no reconnect. The app ends real hang-ups itself, so an unexpected 1000 is a drop. Forced in Chromium 141 with `close(4000)`, which came back as 1000. Whether the server ever sends this unprompted is unknown. |
+
 ## VAD (item 7)
 Long turn plus check-ins, 2 runs each, speech end to first output. Transcript complete in all.
 
@@ -34,3 +39,21 @@ Small sample; the 9 to 12 s runs were in a batch with other sessions on the key,
 
 ## For W2
 F-4: the model treats a doubtful caller as wrapping up. `generate_summary` should fire only on an explicit goodbye.
+
+## Real-browser results after the fix (added 2026-10-31, not part of the frozen set)
+Production build on localhost, Chromium 141.0.7390.37 with a muted fake mic, live `gemini-3.8-live`. One run each. Playwright's own Chromium 1208 was incomplete, so this is the cached older build.
+
+| Scenario | Result | Trace |
+|---|---|---|
+| Long disfluent turn, then "Hello?" twice | PASS: full turn kept, reply at the `audioStreamEnd`, both "Hello" answered | browser-stall.json |
+| Injected 1011 at 28 s | PASS: new socket in 0.4 s, setup in 0.9 s, same token and handle. Then "What did I just ask you about?" answered correctly | browser-drop-1011.json |
+| Forced close at 28 s, before F-11 fix | FAIL: call ended as a hang-up | browser-drop-before-f11.json |
+| Forced close at 74 s, after F-11 fix | PASS: reconnected in 1.1 s, past the old 60 s token limit, context re-seeded | browser-drop-1000-at-74s.json |
+
+## Turn latency (item 12), speech end to first output, seconds
+| | Normal turn | Worst seen |
+|---|---|---|
+| Before (LOW/800, 4 runs) | 0.9, 1.5 | 9.3, 12.0 |
+| After (same replay, 2 runs) | 1.4, 1.5 | 1.5 |
+
+Normal turns are not faster, and the end signal waits 1.5 s of caller silence by design. The gain is the worst case. Small sample and a flaky baseline, so this does not prove a rate. In the browser, server activity end to first output was 0.0 to 0.3 s over 9 turns.
