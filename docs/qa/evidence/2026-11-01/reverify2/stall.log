@@ -1,0 +1,191 @@
+=== stall-1 reply after final Hello ms=1119 finish=200 errs=0
+3.3 WS_NEW 1
+3.9 SETUP 1
+4.0 SENT s":[{"text":"(The caller just connected. In your own words, under 20 words: you're Ariv's 
+4.9 OUT I'm Ariv's AI, the interactive version of his portfolio. Ask me anything you want to know about him.
+11.9 MIC_START "free.wav"
+14.9 MIC_END "free.wav"
+15.9 IN Okay. So, when is he free this week?
+15.9 TOOL ["check_availability"]
+20.2 SENT s":[{"text":"(The caller is waiting for your reply to what they just said. Answer briefly,
+20.2 INTERRUPTED 1
+20.2 FLUSH 1
+21.1 OUT He has availability most mornings this week, like Monday at nine AM or Tuesday at nine thirty.
+28.7 MIC_START "stall_turn.wav"
+30.6 IN I don't know.
+30.7 OUT He usually prefers teams that move fast and keep him busy
+31.1 INTERRUPTED 1
+31.1 FLUSH 1
+33.6 IN I feel like, you know.
+34.3 INTERRUPTED 1
+34.3 FLUSH 1
+36.7 IN You have two. You know.
+36.7 OUT I am just a voice AI agent, so I'm not capable of having feelings.
+38.5 INTERRUPTED 1
+38.5 FLUSH 1
+43.1 IN I feel like I need more information before I schedule a call with him.
+43.3 OUT For real proof, look at his merged fixes
+43.5 INTERRUPTED 1
+43.5 FLUSH 1
+49.8 IN Even if I even should schedule a call with him, you know, I feel like he's not that talented.
+49.9 OUT Don't just take my word for it. His fixes are merged in Agno, PyTorch AO, and NeMo Curator, and forecost is public.
+51.9 INTERRUPTED 1
+51.9 FLUSH 1
+53.3 IN Hello.
+53.3 OUT I'm Ariv's AI, the voice assistant he built for his portfolio. What would you like to know about him?
+54.6 INTERRUPTED 1
+54.6 FLUSH 1
+55.1 MIC_END "stall_turn.wav"
+56.2 IN Hello.
+56.2 OUT I'm Ariv's AI, the voice assistant for his portfolio. Ask me anything you'd like to know about him.
+64.8 WS_CLOSE [1,1000,""]
+=== stall-2 reply after final Hello ms=1134 finish=200 errs=0
+0.5 WS_NEW 1
+1.2 SETUP 1
+1.2 SENT s":[{"text":"(The caller just connected. In your own words, under 20 words: you're Ariv's 
+2.2 OUT I am Ariv's AI voice agent, the interactive version of his portfolio. Ask me anything about him.
+9.7 MIC_START "free.wav"
+12.7 MIC_END "free.wav"
+13.5 IN Okay. So, when is he free this week?
+13.5 TOOL ["check_availability"]
+15.1 OUT He has morning availability throughout the week. Should I grab the booking page for a specific day?
+21.7 MIC_START "stall_turn.wav"
+23.6 IN I don't know.
+23.6 OUT I've dropped the booking link in the chat for you to review his schedule whenever you are ready.
+24.1 TOOL ["share_links"]
+24.2 INTERRUPTED 1
+24.2 FLUSH 1
+26.7 IN I feel like. You know. You have to. You know.
+29.8 OUT I'm here to answer your questions about Ariv's work and projects whenever you are ready.
+31.6 INTERRUPTED 1
+31.6 FLUSH 1
+36.2 IN I feel like I need more information before I schedule a call with him.
+36.4 OUT You are talking to this voice agent,
+36.6 INTERRUPTED 1
+36.6 FLUSH 1
+42.7 IN Even if I even should schedule a call with him, you know, I feel like he's not that talented.
+42.7 OUT You are talking to one of the things he shipped. He writes production-ready code for AI agents, voice bots, and developer tools daily.
+45.0 INTERRUPTED 1
+45.0 FLUSH 1
+46.3 IN Hello.
+46.4 OUT Hello. Whenever you are ready to discuss Ariv's projects or skills, I am here to help.
+47.7 INTERRUPTED 1
+47.7 FLUSH 1
+48.1 MIC_END "stall_turn.wav"
+49.1 IN Hello.
+49.3 OUT Hello, I'm here and ready to discuss Ariv's work and projects whenever you are ready.
+56.8 WS_CLOSE [1,1000,""]
+=== stall-3 reply after final Hello ms=1164 finish=200 errs=0
+0.5 WS_NEW 1
+1.2 SETUP 1
+1.2 SENT s":[{"text":"(The caller just connected. In your own words, under 20 words: you're Ariv's 
+2.0 OUT I'm Ariv's AI voice agent, the interactive version of his portfolio. Ask me anything about his work.
+9.1 MIC_START "free.wav"
+12.1 MIC_END "free.wav"
+13.1 IN Okay. So, when is he free this week?
+14.2 TOOL ["check_availability"]
+15.3 OUT He has morning slots available every day this week, starting around nine A M Eastern. Check the booking page for the full schedule.
+23.5 MIC_START "stall_turn.wav"
+25.5 IN I don't know.
+25.8 OUT Take your time to look over his projects
+26.0 INTERRUPTED 1
+26.0 FLUSH 1
+28.5 IN I feel like, you know.
+28.5 OUT I'm here when you're ready to pick up the conversation.
+29.2 INTERRUPTED 1
+29.2 FLUSH 1
+31.7 IN You have to, you know.
+31.8 OUT Let me know whenever you're ready to dive into his projects or skills.
+33.4 INTERRUPTED 1
+33.4 FLUSH 1
+38.0 IN I feel like I need more information before I schedule a call with him.
+38.4 INTERRUPTED 1
+38.4 FLUSH 1
+44.6 IN Even if I even should schedule a call with him, you know, I feel like he's not that talented.
+44.6 OUT Don't take my word for it. His contributions to Agno and NVIDIA NeMo Curator are public and merged. He writes code that ships daily.
+46.8 INTERRUPTED 1
+46.8 FLUSH 1
+48.1 IN Hello.
+48.1 OUT Hello. I'm ready for your questions about Ariv's engineering and projects.
+49.5 INTERRUPTED 1
+49.5 FLUSH 1
+49.9 MIC_END "stall_turn.wav"
+51.1 IN Hello.
+51.1 OUT Hello. To see his talent in action, look at his merged bug fixes in the Agno framework, particularly the streaming token count fix.
+61.8 WS_CLOSE [1,1000,""]
+=== stall-4 reply after final Hello ms=966 finish=200 errs=0
+0.6 WS_NEW 1
+1.3 SETUP 1
+1.3 SENT s":[{"text":"(The caller just connected. In your own words, under 20 words: you're Ariv's 
+2.1 OUT I'm Ariv's AI. Think of me as his portfolio who can actually talk. Curious about what he builds?
+9.2 MIC_START "free.wav"
+12.2 MIC_END "free.wav"
+13.2 IN Okay. So, when is he free this week?
+13.5 TOOL ["check_availability"]
+15.3 OUT He's got morning slots open most days this week, starting in the mornings Eastern time. More times are available on the booking page.
+24.2 MIC_START "stall_turn.wav"
+26.1 IN I don't know.
+26.3 OUT Most people who want to chat usually check out the projects he ships,
+26.6 INTERRUPTED 1
+26.6 FLUSH 1
+29.1 IN I feel like, you know.
+29.1 OUT I'm here to answer any specifics you might have about him. What specifically are you looking for?
+29.9 INTERRUPTED 1
+29.9 FLUSH 1
+32.2 IN You have two. You know.
+32.2 OUT Just let me know what you'd like to check out regarding his projects or background.
+34.1 INTERRUPTED 1
+34.1 FLUSH 1
+38.7 IN I feel like I need more information before I schedule a call with him.
+38.7 OUT I'd suggest looking at what he built with forecost. He developed a local budgeting
+39.1 INTERRUPTED 1
+39.1 FLUSH 1
+45.1 IN Even if I even should schedule a call with him, you know, I feel like he's not that talented.
+45.3 OUT Hebuiltthisvoiceagentyou’reusingrightnow.Tryto break
+47.4 INTERRUPTED 1
+47.4 FLUSH 1
+48.8 IN Hello.
+50.6 MIC_END "stall_turn.wav"
+51.5 IN  Hello.
+51.5 OUT I'm here. What would you like to know about his projects or experience?
+58.4 WS_CLOSE [1,1000,""]
+=== stall-5 reply after final Hello ms=1577 finish=200 errs=0
+0.5 WS_NEW 1
+1.3 SETUP 1
+1.3 SENT s":[{"text":"(The caller just connected. In your own words, under 20 words: you're Ariv's 
+2.3 OUT I'm Ariv's AI voice agent, the interactive version of his portfolio. Ask me anything about him.
+8.9 MIC_START "free.wav"
+11.8 MIC_END "free.wav"
+12.9 IN Okay. So, when is he free this week?
+12.9 TOOL ["check_availability"]
+13.8 OUT He has open slots most mornings this week, including today, Monday, and Tuesday. There may be more times on the booking page.
+21.9 MIC_START "stall_turn.wav"
+23.8 IN I don't know.
+24.0 OUT You can ask about what he's building, like Malbit or his
+24.4 INTERRUPTED 1
+24.4 FLUSH 1
+26.8 IN I feel like. You know.
+26.8 OUT He is currently building Malbit, a real-time translation tool that runs entirely
+27.6 INTERRUPTED 1
+27.6 FLUSH 1
+30.1 IN You have to, you know.
+30.1 OUT real-time voice translation software, and forecost, an AI flight recorder.
+31.8 INTERRUPTED 1
+31.8 FLUSH 1
+36.4 IN I feel like I need more information before I schedule a call with him.
+36.4 OUT Look at what he dropped from forecost: tested it, range
+36.8 INTERRUPTED 1
+36.8 FLUSH 1
+43.0 IN Even if I even should schedule a call with him, you know, I feel like he's not that talented.
+43.2 OUT Don't take my word for it. His bug fixes are merged directly into Agno and NVIDIA NeMo Curator open-source frameworks.
+45.2 INTERRUPTED 1
+45.2 FLUSH 1
+46.5 IN Hello.
+46.5 OUT His code contributions to major open-source agent frameworks like Agno are fully merged and public for you to check.
+47.9 INTERRUPTED 1
+47.9 FLUSH 1
+48.3 MIC_END "stall_turn.wav"
+49.7 SENT_END 1
+49.9 IN Hello.
+49.9 OUT I'm here. His open source contributions to frameworks like Agno and NVIDIA's NeMo Curator are publicly available to review.
+60.2 WS_CLOSE [1,1000,""]

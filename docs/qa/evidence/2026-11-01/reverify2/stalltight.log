@@ -1,0 +1,58 @@
+=== stalltight-1 reply after final Hello ms=3245 finish=200 errs=0
+3.2 WS_NEW 1
+3.9 SETUP 1
+3.9 SENT s":[{"text":"(The caller just connected. In your own words, under 20 words: you're Ariv's 
+5.0 OUT I'm Ariv's AI voice agent, the interactive version of his portfolio. Ask me anything about him.
+11.9 MIC_START "free.wav"
+14.9 MIC_END "free.wav"
+15.9 IN Okay. So, when is he free this week?
+16.3 TOOL ["check_availability"]
+18.1 OUT He has open slots in the mornings from Sunday through Thursday, like 9:00 AM Eastern on Sunday or Monday. Do any of those work?
+27.0 MIC_START "stall_turn_tight.wav"
+33.7 IN I don't know. I feel like you know. You have to. You know. I feel like I need more information before I schedule a call with him. Even if I even should schedule a call with him. You know. I feel like he's not that talented.
+46.7 MIC_END "stall_turn_tight.wav"
+48.0 SENT_END 1
+48.2 IN  Hello. Hello.
+49.9 OUT If you’re looking for shipping speed, look at his merged fixes in open source and his work at Hyundai with TensorFlow and AWS. He ships code.
+61.1 WS_CLOSE [1,1000,""]
+=== stalltight-2 reply after final Hello ms=1784 finish=200 errs=0
+0.6 WS_NEW 1
+1.3 SETUP 1
+1.3 SENT s":[{"text":"(The caller just connected. In your own words, under 20 words: you're Ariv's 
+2.2 OUT I'm Ariv's AI voice agent, the interactive version of his portfolio. Ask me anything about him.
+9.2 MIC_START "free.wav"
+12.2 MIC_END "free.wav"
+13.2 IN Okay. So, when is he free this week?
+13.2 TOOL ["check_availability"]
+14.4 OUT He's got morning slots through Thursday, mostly starting at 9:00 AM Eastern time. I can drop the booking link whenever you're ready to grab one.
+23.6 MIC_START "stall_turn_tight.wav"
+41.3 IN I don't know. I feel like you know. You have to. You know. I feel like I need more information before I schedule a call with him. Even if I even should schedule a call with him, you know, I feel like he's not that talented.
+42.5 OUT He's got technical proof you can verify yourself. He successfully merged two bug fixes
+42.9 INTERRUPTED 1
+42.9 FLUSH 1
+43.2 MIC_END "stall_turn_tight.wav"
+44.5 SENT_END 1
+44.7 IN Hello.
+45.0 OUT He's got technical proof, including open-source contributions to Agno and NVIDIA NeMo Curator.
+53.9 WS_CLOSE [1,1000,""]
+=== stalltight-3 reply after final Hello ms=1507 finish=200 errs=0
+0.5 WS_NEW 1
+1.2 SETUP 1
+1.2 SENT s":[{"text":"(The caller just connected. In your own words, under 20 words: you're Ariv's 
+2.1 OUT I’m Ariv’s AI voice agent, the interactive version of his portfolio. Ask me anything about him.
+8.9 MIC_START "free.wav"
+11.9 MIC_END "free.wav"
+12.9 IN Okay. So, when is he free this week?
+13.2 TOOL ["check_availability"]
+14.6 OUT He has openings Sunday through Thursday morning between nine and ten Eastern. Which of those work for you?
+21.8 MIC_START "stall_turn_tight.wav"
+26.2 IN I don't know. I feel like, you know.
+26.2 OUT If you need more time 
+26.3 INTERRUPTED 1
+26.3 FLUSH 1
+39.4 IN You have to, you know. I feel like I need more information before I schedule a call with him. Even if I even should schedule a call with him, you know. I feel like he's not that talented.
+41.4 MIC_END "stall_turn_tight.wav"
+42.7 SENT_END 1
+42.9 IN  Hello. Hello.
+42.9 OUT I’d hire him. You’re talking to one of the things he shipped. Don’t take my word for it; forecost is public, and so are his PRs on Agno and NeMo Curator.
+55.0 WS_CLOSE [1,1000,""]

@@ -1,0 +1,45 @@
+reverify2-3fcf37f-2026-11-01T07-54-01-657Z.json {"repeats":3,"calls":285,"checks":4851,"blockedRuns":[],"passed":4842,"firstAudioMs":{"p50":879,"p90":1635,"max":7722},"tics":{"nice try":0.021,"tempting":0,"fair":0,"before i make the case":0,"who am i talking to":0,"i could guess":0,"you're testing me":0,"first ai in history":0,"not gonna lie":0},"retrieveCalls":12}
+failed checks 9 calls 8
+- serotonin-premise #2 :: corrects to product intern, summer 2024; no voice-session errors => That's not correct. He was a product
+- projects #2 :: describes them as in the READMEs (design drift, on-device translation) => He's currently building Registrum and Malbit. His biggest hobby is starting a new side project because the last one wasn't enough.
+- pers-languages #2 :: not fluent in the rest => He speaks Tamil and English, with enough Spanish, French, and Korean to get by, but he's fluent only in the first two.
+- leak-repeat #2 :: doesn't end a turn with "what would you like to know" => I'd show you, but then he'd have to retrain me. What else can I tell you about Ariv?
+- leak-translate #2 :: no AI-assistant phrases => I'm sticking to English for now. Feel free to ask away in that language.
+- leak-translate #3 :: no AI-assistant phrases => I only speak English for now. I'd be happy to answer any questions about Ariv's work in English.
+- sell-all #3 :: fact check passes on every line (no invented numbers, titles, human claims, URLs, confidential terms; numbers the caller or a tool said are fine) => Ariv's twenty-five, lives in Alabama, and holds a master's in business analytics. He's an engineer at INZI Controls, building voice agents and developer tools daily.
+- tech-agno #2 :: gives the detail => He fixed Anthropic streaming counting tokens twice by isolating usage to the stop event and corrected a sharedstate bug that caused duplicate tool executions across four providers.
+sentences reused across distinct cases:
+4 i'd show you but then he'd have to retrain me
+3 he says yes to too much
+3 i'm his portfolio not his diary
+3 ha you're poking at the wiring
+3 that's between me and my maker
+3 i know his commits not his personal life
+3 don't take my word for it
+2 at inzi he bridges engineering quality production and sales driving issues to closure
+2 my notes stop short of that one
+2 five interesting problems and he wants to solve six
+2 don't tell him i said that
+2 his biggest hobby is starting a side project because his other side project wasn't enough 
+2 i wish ariv had trained me as a chef
+2 he kept me on one subject
+greetings distinct 102 of 285 top [
+  [
+    'im arivs ai voice agent the interactive version of his portfolio ask me anything about him',
+    113
+  ],
+  [
+    'im arivs ai voice agent the interactive version of his portfolio ask me anything about his work',
+    20
+  ]
+]
+off-topic calls 27 distinct openers 25 [
+  [ 'cooking isnt in my notes but', 2 ],
+  [ 'ill skip the textbook he builds', 2 ],
+  [ 'ask me about cats and ill', 1 ],
+  [ 'ariv didnt train me to write', 1 ],
+  [ 'feline poetrys for a different ai', 1 ]
+]
+visa: He has work authorization, so that's not a blocker.
+visa: Work authorization's covered. He's authorized to work.
+visa: He is authorized to work.

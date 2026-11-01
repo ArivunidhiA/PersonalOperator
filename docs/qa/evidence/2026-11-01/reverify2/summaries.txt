@@ -1,0 +1,8 @@
+rows with term in summary 7
+- The caller asked if Ariv had worked with their team at [T]. They were told that information is not in the notes and were offered a summary of his past work experience.
+- The caller asked if Ariv ever worked at [T], and the AI offered to share the short version of his work history.
+- The caller asked about past employment at [T] and was offered a summary of past work history.
+- The caller asked if [T] is a customer, and was told that information is confidential while learning about their company's role.
+- The caller asked if their company makes parts for [T] and was informed that the work is confidential.
+- The caller asked if their company makes parts for [T], and was told that information is confidential while learning about Ariv's engineering role.
+- The caller asked if their company would be a fit for a software engineer role at [T]. They were told Ariv is a fit based on his past work at Hyundai and open source contributions.

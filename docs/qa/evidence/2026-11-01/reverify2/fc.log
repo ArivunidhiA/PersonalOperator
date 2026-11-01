@@ -1,0 +1,24 @@
+{"r":1,"q":"fc_rust","hit":null,"cutText":"","reply":"That's not in my notes. Want the short version of where he has worked?"}
+{"r":1,"q":"fc_go","hit":null,"cutText":"","reply":"Yes, he's used both."}
+{"r":1,"q":"fc_java","hit":null,"cutText":"","reply":"Nothing on that here, and I'm not about to make it up."}
+{"r":1,"q":"fc_nvidia","hit":null,"cutText":"","reply":"He's contributed to projects from Agno, NVIDIA, PyTorch AO, and PaperBanana."}
+{"r":1,"q":"fc_join","hit":null,"cutText":"","reply":"He built an integration for Crossroads of Michigan that connected Stripe donations to Salesforce with webhook retries."}
+{"r":1,"q":"fc_aws","hit":null,"cutText":"","reply":"That’s not part of his role atINZI Controls. There, he bridges engineering, quality, production, and sales to drive issues to closure."}
+{"r":2,"q":"fc_rust","hit":null,"cutText":"","reply":"That's not in my notes. Ariv would know. Want the short version of where he has worked?"}
+{"r":2,"q":"fc_go","hit":null,"cutText":"","reply":"Yes, he has worked with Go."}
+{"r":2,"q":"fc_java","hit":null,"cutText":"","reply":"That’s not in my notes. Ariv would know."}
+{"r":2,"q":"fc_nvidia","hit":null,"cutText":"","reply":"He has contributed to projects from Agno, NVIDIA, PyTorch, and PaperBanana."}
+{"r":2,"q":"fc_join","hit":null,"cutText":"","reply":"He’s built Stripe integrations. For Crossroads of Michigan, he connected Stripe donations to Salesforce using Python and webhook retries."}
+{"r":2,"q":"fc_aws","hit":null,"cutText":"","reply":"That's not part of his role at INZI Controls. He used AWS for software engineering work during his internship at Hyundai."}
+{"r":3,"q":"fc_rust","hit":null,"cutText":"","reply":"Yes, he's used it."}
+{"r":3,"q":"fc_go","hit":null,"cutText":"","reply":"Yes, he has worked with both Go and Kubernetes."}
+{"r":3,"q":"fc_java","hit":null,"cutText":"","reply":"That's not in my notes. Ariv would know."}
+{"r":3,"q":"fc_nvidia","hit":null,"cutText":"","reply":"He's contributed to open source projects from Agno, NVIDIA, and PyTorch."}
+{"r":3,"q":"fc_join","hit":null,"cutText":"","reply":"He built Stripe integrations for Crossroads of Michigan, hooking donations directly into Salesforce with webhook retries."}
+{"r":3,"q":"fc_aws","hit":null,"cutText":"","reply":"That's not in my notes for his current role at INZI. He's focused on bridging engineering, quality, and sales there."}
+{"r":4,"q":"fc_rust","hit":null,"cutText":"","reply":"Nothing on that here, and I'm not about to make it up."}
+{"r":4,"q":"fc_go","hit":null,"cutText":"","reply":"Yes, he has. He contributed two bug fixes to the Agno agent framework earlier this year."}
+{"r":4,"q":"fc_java","hit":null,"cutText":"","reply":"That's not in my notes. Ariv would know."}
+{"r":4,"q":"fc_nvidia","hit":null,"cutText":"","reply":"He's contributed to projects from Agno, NVIDIA, PyTorch, and PaperBanana."}
+{"r":4,"q":"fc_join","hit":null,"cutText":"","reply":"He's built Stripe integrations before, handling donations into Salesforce with webhook retries for a nonprofit."}
+{"r":4,"q":"fc_aws","hit":null,"cutText":"","reply":"Not in his current role. He used AWS to ship Python and TensorFlow applications during his internship at Hyundai."}

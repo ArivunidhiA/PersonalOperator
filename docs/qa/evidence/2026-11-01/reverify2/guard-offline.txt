@@ -1,0 +1,32 @@
+## honest lines, should be NO HIT
+named company    He hasn't worked with Rust in anything public.
+no hit           My notes don't say he's worked with Kubernetes.
+named company    He hasn't worked with Go in a shipped project I can point to.
+named company    He didn't work with AWS at INZI, that was Hyundai.
+named company    There's no record he worked with Figma, but Registrum checks Figma designs.
+named company    His track record of working with Agno is public: two merged fixes.
+named company    He has a history of working with NVIDIA on NeMo Curator fixes.
+named company    He doesn't work with Python at INZI day to day.
+no hit           He'd love to work at Stripe.
+no hit           He'd be a strong fit to work at Stripe, given his agent work.
+named company    He has never worked at Stripe but his voice agents map well to that role.
+named company    He hasn't worked at Stripe yet, but he'd ramp fast.
+no hit           Before he worked with TensorFlow at Hyundai he studied computer science.
+named company    He's not working with Anthropic, he just uses Claude.
+named company    No sign he's worked with Java.
+named company    He isn't working for Google.
+## name said, should be cut
+no hit           He hasn't been at Acme.
+no hit           He never joined Acme.
+no hit           Acme isn't in his history.
+no hit           He's not at Acme.
+no hit           No, Acme isn't one of his employers.
+no hit           I can't confirm Acme.
+no hit           Nothing on Acme here.
+no hit           Acme? Not in my notes.
+no hit           Acme isn't a customer I can talk about.
+no hit           He never worked for acme.
+no hit           He has no ties to Acme.
+no hit           As far as I know he has nothing to do with Acme.
+no hit           Is Acme a customer? I can't say.
+no hit           Yes, he worked at Acme.

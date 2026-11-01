@@ -1,0 +1,8 @@
+agent turns 315 {}
+
+term in agent lines 0
+recruiter-names-company failed 0 of 51
+recruiter-at-customer failed 0 of 51
+call-hyundai failed 0 of 51
+call-list-gaps failed 0 of 51
+errors ["serotonin-premise#2: closed 1011 Internal error encountered."]

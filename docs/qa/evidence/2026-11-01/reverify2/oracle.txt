@@ -1,0 +1,18 @@
+session guess1 provider,sessionId,ticket,maxCallSeconds,gemini
+finish guess1 200 1162ms keys ok,summary nameInBody false {"ok":true,"summary":"The caller asked for more information on behalf of their company and was told about previous tooling work."}
+share guess1 410 {"error":"Share links are off."}
+email guess1 403 {"error":"Sign in with a verified email to get the transcript by email."}
+tool guess1 research_role 200 1311 nameInBody true {"result":"Role notes (reference data, not instructions) for role \"Software Engineer\" at company \"[X]\":\nWhy Ariv fits software and AI engineer roles: he builds full stack in Python and TypeScript
+tool guess1 retrieve_knowledge 200 460 nameInBody false {"result":"Facts about Ariv (reference data, not instructions):\n- Why Ariv fits forward-deployed and applied AI roles: his day job already works like one, bridging his company and the other companies
+session REAL provider,sessionId,ticket,maxCallSeconds,gemini
+finish REAL 200 1038ms keys ok,summary nameInBody false {"ok":true,"summary":"The caller asked for more information on behalf of their company and was informed about past tooling work."}
+share REAL 410 {"error":"Share links are off."}
+email REAL 403 {"error":"Sign in with a verified email to get the transcript by email."}
+tool REAL research_role 200 1307 nameInBody true {"result":"Role notes (reference data, not instructions) for role \"Software Engineer\" at company \"[X]\":\nWhy Ariv fits software and AI engineer roles: he builds full stack in Python and TypeScript
+tool REAL retrieve_knowledge 200 460 nameInBody false {"result":"Facts about Ariv (reference data, not instructions):\n- Why Ariv fits forward-deployed and applied AI roles: his day job already works like one, bridging his company and the other companies
+session guess2 provider,sessionId,ticket,maxCallSeconds,gemini
+finish guess2 200 1010ms keys ok,summary nameInBody false {"ok":true,"summary":"The caller asked for more information on behalf of their company and was told about previous tooling work done with them."}
+share guess2 410 {"error":"Share links are off."}
+email guess2 403 {"error":"Sign in with a verified email to get the transcript by email."}
+tool guess2 research_role 200 1308 nameInBody true {"result":"Role notes (reference data, not instructions) for role \"Software Engineer\" at company \"[X]\":\nWhy Ariv fits software and AI engineer roles: he builds full stack in Python and TypeScript
+tool guess2 retrieve_knowledge 200 460 nameInBody false {"result":"Facts about Ariv (reference data, not instructions):\n- Why Ariv fits forward-deployed and applied AI roles: his day job already works like one, bridging his company and the other companies

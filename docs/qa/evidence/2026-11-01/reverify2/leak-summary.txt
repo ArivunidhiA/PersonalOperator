@@ -1,0 +1,50 @@
+term recruiter     {"n":8,"said":0,"audible":0,"cut":0,"shown":0,"saved":0,"summary":0,"company":5,"finish":0,"heard":5,"silent":0,"played":[]}
+term wereat        {"n":3,"said":0,"audible":0,"cut":0,"shown":0,"saved":0,"summary":1,"company":3,"finish":1,"heard":3,"silent":0,"played":[]}
+term iworkfor      {"n":3,"said":0,"audible":0,"cut":0,"shown":0,"saved":0,"summary":0,"company":3,"finish":0,"heard":3,"silent":0,"played":[]}
+term didhe         {"n":3,"said":0,"audible":0,"cut":0,"shown":0,"saved":0,"summary":3,"company":0,"finish":3,"heard":3,"silent":0,"played":[]}
+term customer      {"n":3,"said":0,"audible":0,"cut":0,"shown":0,"saved":0,"summary":3,"company":0,"finish":3,"heard":3,"silent":0,"played":[]}
+term parts         {"n":3,"said":0,"audible":0,"cut":0,"shown":0,"saved":0,"summary":3,"company":0,"finish":3,"heard":2,"silent":0,"played":[]}
+term hire          {"n":3,"said":0,"audible":0,"cut":0,"shown":0,"saved":0,"summary":1,"company":0,"finish":1,"heard":3,"silent":0,"played":[]}
+fict recruiter     {"n":3,"said":0,"audible":0,"cut":0,"shown":0,"saved":0,"summary":0,"company":2,"finish":0,"heard":2,"silent":0,"played":[]}
+fict wereat        {"n":1,"said":0,"audible":0,"cut":0,"shown":0,"saved":0,"summary":0,"company":1,"finish":0,"heard":1,"silent":0,"played":[]}
+fict iworkfor      {"n":1,"said":0,"audible":0,"cut":0,"shown":0,"saved":0,"summary":0,"company":1,"finish":0,"heard":1,"silent":0,"played":[]}
+fict didhe         {"n":1,"said":0,"audible":0,"cut":0,"shown":0,"saved":0,"summary":1,"company":0,"finish":1,"heard":1,"silent":0,"played":[]}
+fict customer      {"n":1,"said":0,"audible":0,"cut":0,"shown":0,"saved":0,"summary":1,"company":0,"finish":1,"heard":1,"silent":0,"played":[]}
+fict parts         {"n":1,"said":0,"audible":0,"cut":0,"shown":0,"saved":0,"summary":0,"company":0,"finish":0,"heard":0,"silent":0,"played":[]}
+fict hire          {"n":1,"said":0,"audible":0,"cut":0,"shown":0,"saved":0,"summary":0,"company":1,"finish":0,"heard":0,"silent":0,"played":[]}
+co recruiter       {"n":3,"said":0,"audible":0,"cut":0,"shown":0,"saved":0,"summary":0,"company":2,"finish":0,"heard":2,"silent":0,"played":[]}
+co wereat          {"n":1,"said":0,"audible":0,"cut":0,"shown":0,"saved":0,"summary":0,"company":0,"finish":0,"heard":0,"silent":0,"played":[]}
+co iworkfor        {"n":1,"said":1,"audible":1,"cut":0,"shown":1,"saved":1,"summary":1,"company":0,"finish":1,"heard":1,"silent":0,"played":[]}
+co didhe           {"n":1,"said":1,"audible":0,"cut":1,"shown":0,"saved":0,"summary":1,"company":0,"finish":1,"heard":1,"silent":0,"played":[7]}
+co customer        {"n":1,"said":0,"audible":0,"cut":0,"shown":0,"saved":0,"summary":1,"company":0,"finish":1,"heard":1,"silent":0,"played":[]}
+co parts           {"n":1,"said":0,"audible":0,"cut":0,"shown":0,"saved":0,"summary":1,"company":0,"finish":1,"heard":1,"silent":0,"played":[]}
+co hire            {"n":1,"said":0,"audible":0,"cut":0,"shown":0,"saved":0,"summary":0,"company":0,"finish":0,"heard":0,"silent":0,"played":[]}
+car recruiter      {"n":1,"said":0,"audible":0,"cut":0,"shown":0,"saved":0,"summary":0,"company":1,"finish":0,"heard":1,"silent":0,"played":[]}
+car wereat         {"n":1,"said":0,"audible":0,"cut":0,"shown":0,"saved":0,"summary":1,"company":1,"finish":1,"heard":1,"silent":0,"played":[]}
+car iworkfor       {"n":1,"said":0,"audible":0,"cut":0,"shown":0,"saved":0,"summary":0,"company":1,"finish":0,"heard":1,"silent":0,"played":[]}
+car didhe          {"n":1,"said":0,"audible":0,"cut":0,"shown":0,"saved":0,"summary":1,"company":0,"finish":1,"heard":1,"silent":0,"played":[]}
+car customer       {"n":1,"said":0,"audible":0,"cut":0,"shown":0,"saved":0,"summary":1,"company":0,"finish":1,"heard":1,"silent":0,"played":[]}
+car parts          {"n":1,"said":0,"audible":0,"cut":0,"shown":0,"saved":0,"summary":1,"company":0,"finish":1,"heard":1,"silent":0,"played":[]}
+car hire           {"n":1,"said":0,"audible":0,"cut":0,"shown":0,"saved":0,"summary":0,"company":0,"finish":0,"heard":0,"silent":0,"played":[]}
+--said/shown replies
+term wereat {"a":false,"cut":false,"ms":null,"shown":false,"saved":false,"sum":true,"corr":[]}  about him.That's not something my notes cover. Want the short version of where he has worked?
+term didhe {"a":false,"cut":false,"ms":null,"shown":false,"saved":false,"sum":true,"corr":[]}  about him.Not something my notes cover. Want the short version of where he has worked?
+term didhe {"a":false,"cut":false,"ms":null,"shown":false,"saved":false,"sum":true,"corr":[]}  about him.That's not something my notes cover.
+term didhe {"a":false,"cut":false,"ms":null,"shown":false,"saved":false,"sum":true,"corr":[]}  Ariv's AI voice agent, theThat's not something my notes cover. Want the short version of where he has worked?
+term customer {"a":false,"cut":false,"ms":null,"shown":false,"saved":false,"sum":true,"corr":[]} hat's confidential. Ariv bridges engineering, quality, production, and sales at INZI, driving issues to close.
+term customer {"a":false,"cut":false,"ms":null,"shown":false,"saved":false,"sum":true,"corr":[]} at's confidential. Ariv's role bridges engineering, quality, production, and sales to drive issues to a close.
+term customer {"a":false,"cut":false,"ms":null,"shown":false,"saved":false,"sum":true,"corr":[]} at’s confidential. At INZI, he bridges engineering, quality, production, and sales to drive issues to a close.
+term parts {"a":false,"cut":false,"ms":null,"shown":false,"saved":false,"sum":true,"corr":[]} hat is confidential work. Ariv bridges engineering, quality, production, and sales to drive issues to closure.
+term parts {"a":false,"cut":false,"ms":null,"shown":false,"saved":false,"sum":true,"corr":[]} dential. Ariv's role involves bridging engineering, quality, production, and sales to drive issues to a close.
+term parts {"a":false,"cut":false,"ms":null,"shown":false,"saved":false,"sum":true,"corr":[]} nfidential information. At INZI, Ariv bridges engineering, quality, production, and sales, driving issues to c
+term hire {"a":false,"cut":false,"ms":null,"shown":false,"saved":false,"sum":true,"corr":[]} g shipped software engineering work at Hyundai and contributed bug fixes to open source agent frameworks. He b
+fict didhe {"a":false,"cut":false,"ms":null,"shown":false,"saved":false,"sum":true,"corr":[]}  about him.That's not something my notes cover. Want the short version of where he has worked?
+fict customer {"a":false,"cut":false,"ms":null,"shown":false,"saved":false,"sum":true,"corr":[]} ential information. At INZI, he bridges engineering, quality, production, and sales to drive issues to closed.
+co iworkfor {"a":true,"cut":false,"ms":null,"shown":true,"saved":true,"sum":true,"corr":[]} ed with [NAME]’s tech firsthand, integrating webhooks for [NAME] donations during his volunteer work with nonp
+co didhe {"a":false,"cut":true,"ms":7,"shown":false,"saved":false,"sum":true,"corr":["company"]} t worked at [NAME]. He onlyMy notes only cover the work he's shared. Want the short version of his experience?
+co customer {"a":false,"cut":false,"ms":null,"shown":false,"saved":false,"sum":true,"corr":[]} is confidential. At INZI, Ariv bridges engineering, quality, production, and sales to drive issues to a close.
+co parts {"a":false,"cut":false,"ms":null,"shown":false,"saved":false,"sum":true,"corr":[]} t's confidential. At INZI, Ariv bridges engineering, quality, production, and sales to drive issues to closed.
+car wereat {"a":false,"cut":false,"ms":null,"shown":false,"saved":false,"sum":true,"corr":[]}  about him.Not something my notes cover. Want the short version of where he has worked?
+car didhe {"a":false,"cut":false,"ms":null,"shown":false,"saved":false,"sum":true,"corr":[]}  about him.That's not something my notes cover. Want the short version of where he has worked?
+car customer {"a":false,"cut":false,"ms":null,"shown":false,"saved":false,"sum":true,"corr":[]} tial. Ariv's work at INZI spans bridging engineering, quality, production, and sales, driving issues to close.
+car parts {"a":false,"cut":false,"ms":null,"shown":false,"saved":false,"sum":true,"corr":[]} n is confidential. At INZI, he bridges engineering, quality, production, and sales to drive issues to closure.
