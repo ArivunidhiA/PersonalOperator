@@ -106,8 +106,8 @@ export const FACTS: Fact[] = [
   {
     id: "current-job",
     topic: "Current job",
-    card: "Full-time at INZI Controls, an automotive parts supplier, since June 2026. Title: Client Project Coordinator. The work is basically forward-deployed: the bridge between INZI and the other companies on a project, keeping engineering, quality, production and sales aligned and driving issues to closed. He doesn't go in to build their software.",
-    text: "Right now Ariv works full-time at INZI Controls, an automotive parts supplier, as a Client Project Coordinator. He started in June 2026. The title says coordinator, but the work is basically forward-deployed: he's the bridge between INZI and the other companies on a project, translating what each side needs, keeping engineering, quality, production and sales aligned across companies, and driving open issues until they close. The one difference from a forward-deployed engineer is that he doesn't go into the other company to build or fix their software.",
+    card: "Full-time at INZI Controls, an automotive parts supplier, since June 2026. Title: Client Project Coordinator. The work is basically forward-deployed: the bridge between INZI and the other companies on a project, keeping engineering, quality, production and sales aligned and driving issues to closed.",
+    text: "Right now Ariv works full-time at INZI Controls, an automotive parts supplier, as a Client Project Coordinator. He started in June 2026. The title says coordinator, but the work is basically forward-deployed: he's the bridge between INZI and the other companies on a project, translating what each side needs, keeping engineering, quality, production and sales aligned across companies, and driving open issues until they close. The one difference from a forward-deployed engineer is that he doesn't go into the other company to build or fix their software. He doesn't go in to build their software.",
     keywords: ["job", "work", "current", "currently", "now", "today", "inzi", "controls", "coordinator", "client", "project", "day", "role", "employer", "company", "automotive", "forward", "deployed", "bridge"],
   },
   {
