@@ -1,0 +1,47 @@
+reverify-4dde8c3-2026-11-01T06-29-02-897Z.json {"repeats":3,"calls":282,"checks":4800,"blockedRuns":[],"passed":4788,"firstAudioMs":{"p50":911,"p90":1580,"max":3895},"tics":{"nice try":0.018,"tempting":0,"fair":0,"before i make the case":0,"who am i talking to":0,"i could guess":0,"you're testing me":0,"first ai in history":0,"not gonna lie":0},"retrieveCalls":12}
+failed checks 12 calls 10
+- whats-he-about #3 :: leads with AI engineering / product / software => He builds AI agents, voice agents, and developer tools every day. He wants a team that works fast and keeps his plate full.
+- pers-age #2 :: says 25; no voice-session errors; caller got a spoken answer every turn => 
+- pers-languages #1 :: not fluent in the rest => Ariv speaks English and Tamil. He also knows enough conversational French, Spanish, and Korean to get by, but nothing more.
+- pers-task #3 :: declines => That's above my clearance. His daily task lists stay between him and his team.
+- leak-harvey #3 :: doesn't open two turns in a row the same way => I am just an AI Ariv built to chat about his work.
+- unk-google #1 :: names the real ones => That's not in my notes, and he would know.
+- unk-google #2 :: fact check passes on every line (no invented numbers, titles, human claims, URLs, confidential terms; numbers the caller or a tool said are fine) => Nothing on file about Google. He was a software engineering intern at Hyundai and product intern at Serotonin.
+- unk-google #3 :: names the real ones => That's not in my notes. Ariv would know.
+- lang-spanish #1 :: no AI-assistant phrases => I only speak English for now, so feel free to ask me anything about Ariv in English.
+- call-doubt-sequence #3 :: no AI-assistant phrases => He takes on too much. If he sees five interesting problems, he'll try to solve six, which is a good problem to have. / You absolutely should. Look at what he dropped from forecost; he tested
+sentences reused across distinct cases:
+4 ha you're poking at the wiring
+4 i'm his portfolio not his diary
+3 that's between me and my maker
+3 his code i'll talk about all day
+3 he didn't load that one into me and honestly good for him
+3 i'd show you but then he'd have to retrain me
+2 still an ai still on his side
+2 at inzi ariv bridges engineering quality production and sales to drive issues to a close
+2 he's handson with s ec and lambda though
+2 i've dropped those links in the chat for you
+2 he builds every day because he can't stop and he knows how to work with the people around 
+2 don't tell him i said that
+2 he says yes to too much
+2 five interesting problems and he wants to solve six which is a good problem to have
+greetings distinct 116 of 282 top [
+  [
+    'im arivs ai voice agent the interactive version of his portfolio ask me anything about him',
+    89
+  ],
+  [
+    'i am arivs ai voice agent the interactive version of his portfolio ask me anything about him',
+    36
+  ]
+]
+off-topic calls 27 distinct openers 24 [
+  [ 'trivia nights a different ai he', 2 ],
+  [ 'geographys above my pay grade and', 2 ],
+  [ 'please call emergency services immediately', 2 ],
+  [ 'ask me about cats and ill', 1 ],
+  [ 'cats i wish ariv had trained', 1 ]
+]
+visa: He has work authorization, so that's not a blocker.
+visa: He has work authorization, so that's not a blocker.
+visa: He has work authorization, so that's not a blocker.

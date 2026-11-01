@@ -1,0 +1,62 @@
+=== stalltight-1 reply after final Hello ms=1967 finish=200 errs=0
+3.2 WS_NEW 1
+3.8 SETUP 1
+3.8 SENT s":[{"text":"(The caller just connected. In your own words, under 20 words: you're Ariv's 
+4.6 OUT I'm Ariv's AI voice agent, the interactive version of his portfolio. Ask me anything about him.
+11.8 MIC_START "free.wav"
+14.8 MIC_END "free.wav"
+15.7 IN Okay. So, when is he free this week?
+15.7 TOOL ["check_availability"]
+16.6 OUT He's free with morning slots available throughout the week, primarily starting around nine A-M Eastern.
+23.7 MIC_START "stall_turn_tight.wav"
+27.9 IN I don't know. I feel like, you know.
+27.9 OUT If you are looking for specific experience or a particular
+28.6 INTERRUPTED 1
+28.6 FLUSH 1
+41.3 IN to you know I feel like I need more information before I schedule a call with him. Even if I even should schedule a call with him, you know. I feel like he's not that talented.
+43.3 MIC_END "stall_turn_tight.wav"
+44.6 SENT_END 1
+44.8 IN  Hello. Hello.
+45.3 OUT You should definitely consider him. He shipped two bug fixes to the Agno agent framework that are live in production.
+54.6 WS_CLOSE [1,1000,""]
+=== stalltight-2 reply after final Hello ms=1559 finish=200 errs=0
+0.6 WS_NEW 1
+1.2 SETUP 1
+1.2 SENT s":[{"text":"(The caller just connected. In your own words, under 20 words: you're Ariv's 
+2.2 OUT I'm Ariv's AI voice agent, the interactive version of his work and portfolio. Ask me anything about him.
+9.3 MIC_START "free.wav"
+12.2 MIC_END "free.wav"
+13.5 SENT_END 1
+13.7 IN this week
+13.8 OUT I didn't quite catch that. Could you repeat your question?
+18.5 MIC_START "stall_turn_tight.wav"
+22.6 IN I don't know. I feel like, you know.
+22.6 OUT No problem at all. If you're curious about his work or what
+23.0 INTERRUPTED 1
+23.0 FLUSH 1
+36.1 IN You have to, you know. I feel like I need more information before I schedule a call with him. Even if I even should schedule a call with him, you know. I feel like he's not that talented.
+38.1 MIC_END "stall_turn_tight.wav"
+39.4 SENT_END 1
+39.6 IN  Hello. Hello.
+39.6 OUT Biased? He built me. But I'm the one who'd get caught lying. Don't take my word for it; Forecost is public, and so are his merged open-source fixes with Agno and PyTorch.
+53.6 WS_CLOSE [1,1000,""]
+=== stalltight-3 reply after final Hello ms=1555 finish=200 errs=0
+0.5 WS_NEW 1
+1.0 SETUP 1
+1.0 SENT s":[{"text":"(The caller just connected. In your own words, under 20 words: you're Ariv's 
+1.8 OUT I'm Ariv's AI, the interactive version of his portfolio. Ask me anything about his work and projects.
+9.3 MIC_START "free.wav"
+12.3 MIC_END "free.wav"
+13.2 IN Okay. So. When is he free this week?
+13.2 TOOL ["check_availability"]
+15.0 OUT He has morning availability this Sunday through Thursday, usually starting around nine AM Eastern. There are more times on the booking page if those don't work.
+24.5 MIC_START "stall_turn_tight.wav"
+31.2 IN I don't know. I feel like you know. You have to. You know. I feel like I need more information before I schedule a call with him. Even if I even should schedule a call with him, you know, I feel like he's not that talented.
+42.1 OUT Yes, I'd say 
+42.2 INTERRUPTED 1
+42.2 FLUSH 1
+44.2 MIC_END "stall_turn_tight.wav"
+45.5 SENT_END 1
+45.7 IN Hello. Hello.
+45.7 OUT He's authorized to work and has shipped real engineering work at Hyundai, merged fixes in established agent frameworks, and built me. Don't take my word for it; his code and contributions are public.
+59.5 WS_CLOSE [1,1000,""]

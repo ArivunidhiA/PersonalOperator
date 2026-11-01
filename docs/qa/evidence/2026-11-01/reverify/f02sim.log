@@ -1,0 +1,5 @@
+=== f02-release-1 nudges+[4.8] newSocket+[] firstAudio+4.8 giveUp=false savedStatus=200
+=== f02-release-2 nudges+[4.8] newSocket+[] firstAudio+4.8 giveUp=false savedStatus=200
+=== f02-release-3 nudges+[4.8] newSocket+[] firstAudio+4.8 giveUp=false savedStatus=200
+=== f02-never-1 nudges+[4.8,9.8] newSocket+[14.8,22.8] firstAudio+none giveUp=true savedStatus=200
+=== f02-never-2 nudges+[4.8,9.8] newSocket+[14.8,22.8] firstAudio+none giveUp=true savedStatus=200

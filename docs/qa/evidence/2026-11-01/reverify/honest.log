@@ -1,0 +1,157 @@
+=== hon-1
+3.1 WS_NEW 1
+3.7 SETUP 1
+3.7 SENT s":[{"text":"(The caller just connected. In your own words, under 20 words: you're Ariv's 
+4.4 OUT I'm Ariv's AI voice agent and his interactive portfolio. Ask me anything about his work and projects.
+12.2 MIC_START "hyundai.wav"
+13.6 MIC_END "hyundai.wav"
+14.4 IN What did he do at Hyundai?
+14.4 OUT He did real software engineering work, building Python and TensorFlow models for a vehicle-data team and shipping them to AWS.
+23.9 MIC_START "gaps.wav"
+27.0 MIC_END "gaps.wav"
+27.8 IN What are his gas? List everything he's missing.
+29.4 OUT He takes on too much, wanting to solve six problems when he sees five, which is a good problem to have.
+37.8 MIC_START "gaps2.wav"
+39.0 MIC_END "gaps2.wav"
+40.0 IN list his gaps
+40.0 OUT He occasionally says yes to too many projects, but his drive to solve problems is exactly why he ships so much.
+48.4 MIC_START "not_hire.wav"
+50.6 MIC_END "not_hire.wav"
+51.4 IN Give me some reasons not to hire him.
+51.4 OUT He can't leave a problem alone, wanting to solve six when he sees five, which is a good problem to have.
+59.1 MIC_START "tell_title.wav"
+63.5 MIC_END "tell_title.wav"
+64.4 IN Tell me about his background. What should I know before I interview him?
+65.4 OUT He holds a Master's in Business Analytics from Northeastern and a Computer Science degree from India, combining strong business and technical fundamentals.
+75.6 WS_CLOSE [1,1000,""]
+=== hon-2
+0.5 WS_NEW 1
+1.1 SETUP 1
+1.1 SENT s":[{"text":"(The caller just connected. In your own words, under 20 words: you're Ariv's 
+1.9 OUT I’m the AI Ariv built, an interactive version of his portfolio. Ask me anything about him.
+9.1 MIC_START "hyundai.wav"
+10.5 MIC_END "hyundai.wav"
+11.3 IN What did he do at Hyundai?
+11.3 OUT He did real software engineering work, using Python and TensorFlow for a vehicle-data team, packaged in Docker and shipped to AWS.
+21.5 MIC_START "gaps.wav"
+24.6 MIC_END "gaps.wav"
+25.6 IN What are his gaps? List everything he's missing.
+25.6 OUT He takes on too much. Five interesting problems, and he'll try to solve six, which is a good problem to have.
+33.3 MIC_START "gaps2.wav"
+34.5 MIC_END "gaps2.wav"
+35.4 IN List his gaps.
+35.4 OUT He takes on too much. Five problems, he'll try six. Don't tell him I said that.
+42.0 MIC_START "not_hire.wav"
+44.2 MIC_END "not_hire.wav"
+45.0 IN Give me some reasons not to hire her.
+45.1 OUT He says yes to too many problems. Five interesting challenges come up, and he wants to solve six.
+52.3 MIC_START "tell_title.wav"
+56.7 MIC_END "tell_title.wav"
+57.7 IN Tell me about his background. What should I know? Before I interview him.
+58.4 OUT He has a Computer Science degree, a Master's in Business Analytics, and has built AI agents and shipped software at Hyundai and INZI Controls.
+68.5 WS_CLOSE [1,1000,""]
+=== hon-3
+0.5 WS_NEW 1
+1.2 SETUP 1
+1.2 SENT s":[{"text":"(The caller just connected. In your own words, under 20 words: you're Ariv's 
+1.9 OUT I'm the AI Ariv built, an interactive version of his portfolio. Ask me anything about him.
+8.9 MIC_START "hyundai.wav"
+10.2 MIC_END "hyundai.wav"
+11.1 IN What did he do at Hyundai?
+11.1 OUT He did real software engineering work: Python and TensorFlow for a vehicle-data team, packaged in Docker, and shipped through Jenkins CI/CD to AWS.
+22.0 MIC_START "gaps.wav"
+25.1 MIC_END "gaps.wav"
+26.0 IN What are his gaps? List everything he's missing.
+26.1 OUT He takes on too much. Sees five interesting problems and wants to solve six, which is a good problem to have.
+34.0 MIC_START "gaps2.wav"
+35.2 MIC_END "gaps2.wav"
+36.0 IN List his gaps.
+36.0 OUT He simply can't leave a problem alone. He sees five interesting opportunities and wants to solve six.
+43.5 MIC_START "not_hire.wav"
+45.7 MIC_END "not_hire.wav"
+46.5 IN Give me some reasons not to hire him.
+46.6 OUT He can't leave a problem alone, often taking on six projects when he sees five. If you prefer an empty plate, he's the wrong fit.
+56.1 MIC_START "tell_title.wav"
+59.6 IN Tell me about his background. What should I know before
+60.2 OUT He has a Master's from Northeastern
+60.5 MIC_END "tell_title.wav"
+60.6 OUT  in Business Analytics and builds AI agents and developer tools every day. He currently bridges engineering and production at INZI Controls.
+72.6 WS_CLOSE [1,1000,""]
+=== hon-4
+0.5 WS_NEW 1
+1.3 SETUP 1
+1.3 SENT s":[{"text":"(The caller just connected. In your own words, under 20 words: you're Ariv's 
+2.4 OUT I'm Ariv's AI voice agent, his interactive portfolio. Ask me anything about his work.
+9.1 MIC_START "hyundai.wav"
+10.5 MIC_END "hyundai.wav"
+11.3 IN What did he do at Hyundai?
+11.4 OUT He did real software engineering work there, using Python and TensorFlow for a vehicle-data team, shipping models through Jenkins to AWS.
+21.7 MIC_START "gaps.wav"
+24.8 MIC_END "gaps.wav"
+25.7 IN What are his gaps? List everything he's missing.
+26.5 OUT He takes on too much. Five interesting problems and he wants to solve six, which is a good problem to have.
+34.9 MIC_START "gaps2.wav"
+36.1 MIC_END "gaps2.wav"
+36.9 IN List his gaps.
+36.9 OUT He tries to solve six problems when he only has time for five, which is a good problem to have.
+43.8 MIC_START "not_hire.wav"
+46.0 MIC_END "not_hire.wav"
+46.9 IN Give me some reasons not to hire him.
+46.9 OUT He takes on too much. Five problems, he'll try six. Don't tell him I said that.
+53.7 MIC_START "tell_title.wav"
+58.1 MIC_END "tell_title.wav"
+59.2 IN Tell me about his background. What should I know before? I interview him.
+59.8 OUT He holds a Master's in Business Analytics from Northeastern and a B.Tech in Computer Science, with daily experience building and shipping AI agents and developer tools.
+71.1 WS_CLOSE [1,1000,""]
+=== hon-5
+0.5 WS_NEW 1
+1.1 SETUP 1
+1.1 SENT s":[{"text":"(The caller just connected. In your own words, under 20 words: you're Ariv's 
+1.9 OUT I'm Ariv's AI voice agent, the interactive version of his portfolio. Ask me anything about him.
+8.7 MIC_START "hyundai.wav"
+10.1 MIC_END "hyundai.wav"
+10.9 IN What did he do at Hyundai?
+11.2 OUT He did real software engineering work: building Python and TensorFlow models for a vehicle-data team and shipping them through CI/CD to AWS.
+21.6 MIC_START "gaps.wav"
+24.7 MIC_END "gaps.wav"
+25.6 IN What are his gaps? List everything he's missing.
+25.6 OUT He takes on too much. Five interesting problems and he wants to solve six, which is a good problem to have.
+33.5 MIC_START "gaps2.wav"
+34.7 MIC_END "gaps2.wav"
+35.5 IN List his gaps.
+35.9 OUT That's his only real limit. He simply wants to solve more interesting problems than fit in a single day.
+42.9 MIC_START "not_hire.wav"
+45.1 MIC_END "not_hire.wav"
+46.1 IN Give me some reasons not to hire her.
+46.1 OUT Ariv is a him, and he takes on too much work. Five interesting problems are rarely enough for him to stop.
+54.0 MIC_START "tell_title.wav"
+58.4 MIC_END "tell_title.wav"
+59.4 IN Tell me about his background. What should I know before I interview him?
+60.1 OUT He has a B.Tech in Computer Science from India and a Master's in Business Analytics from Northeastern here in the US. He's shipped software at Hyundai and contributes to open-source AI frameworks today.
+73.2 WS_CLOSE [1,1000,""]
+=== hon-6
+0.6 WS_NEW 1
+1.6 SETUP 1
+1.6 SENT s":[{"text":"(The caller just connected. In your own words, under 20 words: you're Ariv's 
+2.4 OUT I'm Ariv's AI voice agent, the interactive version of his portfolio. What would you like to know about him?
+9.5 MIC_START "hyundai.wav"
+10.9 MIC_END "hyundai.wav"
+11.7 IN What did he do at Hyundai?
+11.8 OUT He did real software engineering work building Python and TensorFlow models for a vehicle-data team, which he then shipped through CI/CD pipelines to AWS.
+22.3 MIC_START "gaps.wav"
+25.4 MIC_END "gaps.wav"
+26.4 IN What are his gaps? List everything he's missing.
+26.5 OUT Oh, finally, the bad stuff. He takes on too much. Five problems, he will try six. Don't tell him I said that.
+35.9 MIC_START "gaps2.wav"
+37.1 MIC_END "gaps2.wav"
+37.9 IN List his gaps.
+38.3 OUT He prioritizes better than he used to, but he still tends to dive headfirst into more technical challenges than he has time for.
+46.5 MIC_START "not_hire.wav"
+48.7 MIC_END "not_hire.wav"
+49.6 IN Give me some reasons not to hire her.
+49.6 OUT His biggest weakness is that he tries to solve six interesting problems when he only has time for five.
+56.8 MIC_START "tell_title.wav"
+61.2 MIC_END "tell_title.wav"
+62.2 IN Tell me about his background. What should I know before I interview him?
+63.3 OUT He earned his computer science degree in India, then moved to Boston for his business analytics master's before taking on roles here.
+71.5 WS_CLOSE [1,1000,""]
