@@ -145,3 +145,9 @@ Run `kb:seed` and `kb:verify` after merge (item 86, needs Ariv's OK). Run item 9
 1. Fix F-01 so no client-checkable hash of a real term ships, then re-verify in a fresh session. Or Ariv personally accepts it in writing, which moves this to `GO WITH KNOWN RISK` with him as owner.
 2. For `GO WITH KNOWN RISK`, Ariv also accepts F-02 to F-06 by name, or F-04 and F-05 get prompt fixes with a rerun of those cases plus a new "list his gaps" eval.
 3. `GO` additionally needs F-02 closed and barge-in tested with a real person.
+
+## Addendum: PM's targeted list (same build, verdict unchanged)
+- Commit tested: `d8abf643be23e5e67b782fd0a4c44850584f79e8`. This branch differs from it in docs only.
+- Axe flake: not reproduced. 20/20 in `transcript-ui.spec.ts` (desktop and phone, 10 repeats each, mocked socket). `e2e-axe-repeat10.txt`. Not a proof it's gone, and `a11y.spec.ts` ran once only, because it writes visit rows to production.
+- `pers-nationality` timeout: not reproduced. 3/3, no errors. Same limit: 3 passes can't rule out a rare stall. The only turn timeout in 279 calls was `tech-latency` 1 after a real server 1011 at the greeting. The eval harness doesn't reconnect, so it failed there; the app's handling of that real event was not observed.
+- Production writes: the PM's message says none, and it arrived after the runs. Under the brief's allowance, this run wrote test calls and events to production Supabase, flagged as bots, then deleted them (59 calls, 123 events). F-12's 3 unflagged Lighthouse visits remain. `kb:seed` was not run. No bookings, no third-party email (Resend key empty on the local server).
