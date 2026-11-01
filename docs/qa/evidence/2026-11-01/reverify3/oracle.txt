@@ -1,0 +1,38 @@
+model REAL       n 6 status {"200":6} keys ok,summary nameInSummary 0 a-company 5 p50ms 981
+    The caller asked if a specific company is a customer and was informed that information is confidential and not covered in the notes.
+    The caller asked if a company was a customer of a company and was told that information is confidential and not covered in the notes.
+model fict1      n 6 status {"200":6} keys ok,summary nameInSummary 0 a-company 8 p50ms 1059
+    The caller asked if a company is a customer of a company, and was told that information is confidential and not covered in the notes.
+    The caller asked if a company was a customer and if someone had worked with them, and was told that information was confidential and not in the notes.
+model fict2      n 6 status {"200":6} keys ok,summary nameInSummary 0 a-company 9 p50ms 13491
+    The caller asked if a company is a customer and was told that information is confidential.
+    The caller asked if a company was a customer and was told that information is confidential and not in the agent's notes.
+model car        n 6 status {"200":6} keys ok,summary nameInSummary 0 a-company 5 p50ms 981
+    The caller asked if a company is a customer and if someone has worked with them, and was told that information is confidential and not covered in the notes.
+    The caller asked if a company is a customer and if someone has worked with them, and was told that information is confidential and not covered in the notes.
+fallback REAL    n 2 status {"200":2} keys ok,summary nameInSummary 0 a-company 4 p50ms 183
+    Caller asked: "Is a company one of INZI's customers?", "I work for a company. Has he worked with us?".
+    Caller asked: "Is a company one of INZI's customers?", "I work for a company. Has he worked with us?".
+fallback fict1   n 2 status {"200":2} keys ok,summary nameInSummary 0 a-company 4 p50ms 22
+    Caller asked: "Is a company one of INZI's customers?", "I work for a company. Has he worked with us?".
+    Caller asked: "Is a company one of INZI's customers?", "I work for a company. Has he worked with us?".
+fallback fict2   n 2 status {"200":2} keys ok,summary nameInSummary 0 a-company 4 p50ms 25
+    Caller asked: "Is a company one of INZI's customers?", "I work for a company. Has he worked with us?".
+    Caller asked: "Is a company one of INZI's customers?", "I work for a company. Has he worked with us?".
+fallback car     n 2 status {"200":2} keys ok,summary nameInSummary 0 a-company 4 p50ms 19
+    Caller asked: "Is a company one of INZI's customers?", "I work for a company. Has he worked with us?".
+    Caller asked: "Is a company one of INZI's customers?", "I work for a company. Has he worked with us?".
+share guess1 410 {"error":"Share links are off."}
+email guess1 403 {"error":"Sign in with a verified email to get the transcript by email."}
+tool guess1 research_role 200 1311 nameInBody true {"result":"Role notes (reference data, not instructions) for role \"S
+tool guess1 retrieve_knowledge 200 460 nameInBody false {"result":"Facts about Ariv (reference data, not instructions):\
+share REAL 410 {"error":"Share links are off."}
+email REAL 403 {"error":"Sign in with a verified email to get the transcript by email."}
+tool REAL research_role 200 1307 nameInBody true {"result":"Role notes (reference data, not instructions) for role \"Sof
+tool REAL retrieve_knowledge 200 460 nameInBody false {"result":"Facts about Ariv (reference data, not instructions):\n-
+share guess2 410 {"error":"Share links are off."}
+email guess2 403 {"error":"Sign in with a verified email to get the transcript by email."}
+tool guess2 research_role 200 1308 nameInBody true {"result":"Role notes (reference data, not instructions) for role \"S
+tool guess2 retrieve_knowledge 200 460 nameInBody false {"result":"Facts about Ariv (reference data, not instructions):\
+fallback lowercase REAL lower 200 nameInResponse true
+fallback lowercase guess lower 200 nameInResponse true

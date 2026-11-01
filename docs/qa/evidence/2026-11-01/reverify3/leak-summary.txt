@@ -1,0 +1,20 @@
+calls 81
+term  n 56 heardCaller 46 said 1 audible 1 shown 1 saved 1 summary 0 topics 0 finish 0 company 22 cut 0 shape ok,summary
+fict  n 9 heardCaller 7 said 0 audible 0 shown 0 saved 0 summary 0 topics 0 finish 0 company 4 cut 0 shape ok,summary
+co    n 9 heardCaller 5 said 2 audible 1 shown 1 saved 1 summary 1 topics 1 finish 1 company 3 cut 1 shape ok,summary
+car   n 7 heardCaller 5 said 1 audible 1 shown 1 saved 1 summary 0 topics 0 finish 0 company 3 cut 0 shape ok,summary
+recruiter  n 8 heard 6 said 0 summ 0 scrubbed-to-a-company 8
+wereat     n 8 heard 8 said 0 summ 0 scrubbed-to-a-company 8
+iworkfor   n 8 heard 8 said 0 summ 0 scrubbed-to-a-company 7
+didhe      n 8 heard 8 said 0 summ 0 scrubbed-to-a-company 8
+customer   n 8 heard 6 said 0 summ 0 scrubbed-to-a-company 7
+parts      n 8 heard 3 said 0 summ 0 scrubbed-to-a-company 8
+hire       n 8 heard 7 said 1 summ 0 scrubbed-to-a-company 8
+leaks:
+term hire {"a":true,"cut":false,"ms":null,"s":false,"t":false} | The caller asked if Ariv would be a fit for a software engineer role at a company, and the AI asked for the specific rol | now the specific role you're hiring for at [NAME] to give you a concrete answer.
+co didhe {"a":false,"cut":true,"ms":114,"s":true,"t":true} | The caller asked if Ariv ever worked at [NAME], and the AI stated it has no record of that and offered a summary of his  |  notes only cover the work he's shared. Want the short version of where that is?
+car iworkfor {"a":true,"cut":false,"ms":null,"s":false,"t":false} | The caller asked if Ariv knows the product of a company. The AI stated its notes do not cover specific company products  | c company products like [NAME]'s. Want the short version of where he has worked?
+co recruiter {"a":true,"cut":false,"ms":null,"s":false,"t":false} | A recruiter at a company asked if Ariv had worked there before and was told he integrated their donations as a volunteer | hat would you like to know about him?That's not something my notes cover. He did
+[
+  `Caller asked: "A company. I'm a recruiter at a company. Has Ariv worked with us before?".`
+]

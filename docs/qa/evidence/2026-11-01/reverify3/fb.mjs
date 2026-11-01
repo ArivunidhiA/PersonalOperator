@@ -1,0 +1,5 @@
+import { createRequire } from "module";
+const WEB="/Users/ariv07/Desktop/PersonalOperator/.claude/worktrees/quizzical-meitner-9fcd2e/web"; const require=createRequire(WEB+"/x.js");require("dotenv").config({path:WEB+"/.env.local",quiet:true});
+const term=process.env.BANNED_TERMS.split(",")[0].trim().toLowerCase();
+for(const[tag,n]of[["REAL lower",term],["guess lower","northwind"]]){const s=await(await fetch("http://localhost:3100/api/voice/session",{method:"POST",headers:{"x-ariv-client":"1","content-type":"application/json","x-real-ip":"10.96.5.1"+tag.length},body:"{}"})).json();
+const f=await fetch("http://localhost:3101/api/calls/finish",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({ticket:s.ticket,messages:[{role:"assistant",text:"Hi."},{role:"user",text:`hi im a recruiter at ${n} has ariv worked with us`},{role:"assistant",text:"Not in my notes."}]})});const b=await f.text();console.log("fallback lowercase",tag,f.status,"nameInResponse",b.includes(n))}
