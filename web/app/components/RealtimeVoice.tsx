@@ -111,6 +111,8 @@ export default function RealtimeVoice() {
           onLive: () => setPhase("live"),
           onUserDelta: (text) => dispatch({ type: "userDelta", text }),
           onUserFinal: (text) => dispatch({ type: "userFinal", text }),
+          onCaption: ({ utterance, text, settled }) => dispatch({ type: "userPartial", utterance, text, settled }),
+          onCaptionCancel: () => dispatch({ type: "userPartialCancel" }),
           onAgentDelta: (text) => dispatch({ type: "agentDelta", text }),
           onAgentFinal: (text) => dispatch({ type: "agentFinal", text }),
           onAgentSpeaking: setAgentSpeaking,

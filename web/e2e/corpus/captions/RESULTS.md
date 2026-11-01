@@ -24,6 +24,10 @@ Chrome 156 headless, muted, macOS. Gemini `gemini-3.8-live` with production VAD 
 
 Not measured: Web Speech on-device (`processLocally`) gave 0 results headless, with the pack installed and no error. Whisper: not run, it isn't a streaming model. Moonshine and Zipformer inside a browser. Deepgram ($0.0077/min, keyterms $0.0013/min) and AssemblyAI ($0.15/hour, keyterms $0.04/hour): list prices only, no signup. A second Gemini stream: not run separately, it would use the same one-event-per-turn transcription as the Gemini row. Android, iOS, Firefox: gated off, not run.
 
+## Wired into the call
+
+`e2e/live-caption.spec.ts`, Chrome 156 headless and muted. Real Web Speech, real `gemini-3.8-live` with the production token config, a file as the mic, `/api` faked. Synthetic voice, one call, 3 turns answered. Captions showed 2.0 to 3.4 s before Gemini's text on each turn, Gemini's text took over the same line, the saved transcript was correct, no page errors.
+
 Reproduce from `web/` (nothing is played; the live runs use the shared free key, so run a voice at a time):
 
     python3 e2e/corpus/captions/make_captions.py

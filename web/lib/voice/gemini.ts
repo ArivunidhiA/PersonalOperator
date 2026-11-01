@@ -1,5 +1,6 @@
 import { createLiveGuard, type GuardHit, type GuardRule } from "../live-guard";
 import { createStallGuard, STALL_MS } from "./stall-guard";
+import { startLiveCaption, type LiveCaption } from "./live-caption";
 import { createVadGate } from "./vad-gate";
 import { runTool, type EndReason, type SessionInfo, type VoiceHandlers, type VoiceSession } from "./types";
 
@@ -243,6 +244,32 @@ export async function startGemini(info: SessionInfo, prepared: Prepared, h: Voic
     say(CORRECTIONS[hit.rule]);
   };
 
+  // Live captions run beside the call. Nothing in them may reach it, so every touch is fenced.
+  let captions: LiveCaption | null = null;
+  const onCaptions = (run: (c: LiveCaption) => void) => {
+    try {
+      if (captions) run(captions);
+    } catch {
+      captions = null;
+    }
+  };
+  const fenced = <A extends unknown[]>(fn: ((...a: A) => void) | undefined) => (...a: A) => {
+    try {
+      fn?.(...a);
+    } catch {
+      /* a caption display bug stays out of the call */
+    }
+  };
+  const startCaptions = () => {
+    const track = mic.getAudioTracks()[0];
+    if (!h.onCaption || !track) return;
+    try {
+      captions = startLiveCaption(track, { onCaption: fenced(h.onCaption.bind(h)), onCancel: fenced(h.onCaptionCancel?.bind(h)) });
+    } catch {
+      captions = null;
+    }
+  };
+
   const guard = createStallGuard({
     playing: () => speaking,
     nudge: (level) => say(NUDGES[level]),
@@ -279,10 +306,13 @@ export async function startGemini(info: SessionInfo, prepared: Prepared, h: Voic
     if (e.data.speaking !== speaking) {
       speaking = e.data.speaking;
       h.onAgentSpeaking(speaking);
+      onCaptions((c) => c.setAgentSpeaking(speaking));
     }
   };
 
   const teardown = () => {
+    onCaptions((c) => c.stop());
+    captions = null;
     guard.stop();
     endCut();
     timers.forEach(clearTimeout);
@@ -404,6 +434,7 @@ export async function startGemini(info: SessionInfo, prepared: Prepared, h: Voic
       if (liveAt !== null) return onResumed();
       liveAt = Date.now();
       h.onLive();
+      startCaptions();
       // Live waits for input; nudge it to greet first.
       say(g.greeting);
       guard.owe(STALL_MS.next);
@@ -438,6 +469,7 @@ export async function startGemini(info: SessionInfo, prepared: Prepared, h: Voic
     if (sc) {
       if (sc.interrupted) {
         player.port.postMessage("flush");
+        onCaptions((c) => c.bargeIn());
         showAgent(heldText);
         heldText = "";
         h.onAgentFinal();
@@ -463,6 +495,8 @@ export async function startGemini(info: SessionInfo, prepared: Prepared, h: Voic
         const pcm = bufferFromB64(data);
         player.port.postMessage({ pcm }, [pcm]);
       }
+      // Before the guard: captions need the agent's words even when the screen doesn't get them.
+      if (sc.outputTranscription?.text) onCaptions((c) => c.addAgentText(sc.outputTranscription!.text!));
       if (sc.outputTranscription?.text && !cutTurn) {
         const text = sc.outputTranscription.text;
         const hit = checked((c) => c.push(text));
@@ -560,7 +594,10 @@ export async function startGemini(info: SessionInfo, prepared: Prepared, h: Voic
 
   return {
     stop: (reason = "hangup") => end(reason),
-    setMuted: (muted) => capture.port.postMessage({ muted }),
+    setMuted: (muted) => {
+      capture.port.postMessage({ muted });
+      onCaptions((c) => c.setMuted(muted));
+    },
     liveAt: () => liveAt,
     levels: () => ({ mic: micLevel, agent: agentLevel }),
   };

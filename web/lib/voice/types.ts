@@ -1,4 +1,5 @@
 import type { UiCard } from "../ui-cards";
+import type { Caption } from "./live-caption";
 import type { GuardConfig } from "../live-guard";
 
 export type SessionInfo = {
@@ -17,6 +18,9 @@ export interface VoiceHandlers {
   onLive(): void;
   onUserDelta(text: string): void;
   onUserFinal(text?: string): void;
+  /** Live captions of the caller, replaceable until Gemini's text lands. Optional: off without them. */
+  onCaption?(c: Caption): void;
+  onCaptionCancel?(): void;
   onAgentDelta(text: string): void;
   onAgentFinal(text?: string): void;
   onAgentSpeaking(speaking: boolean): void;

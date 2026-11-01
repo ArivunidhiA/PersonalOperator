@@ -34,5 +34,13 @@ with tempfile.TemporaryDirectory() as tmp:
         with wave.open(os.path.join(AUDIO, f"{voice.lower()}.wav"), "wb") as w:
             w.setnchannels(1); w.setsampwidth(2); w.setframerate(RATE); w.writeframes(bytes(out))
         timeline[voice.lower()] = {"duration_ms": len(out) // 2 * 1000 // RATE, "turns": turns}
+# One call for e2e/live-caption.spec.ts: room for the greeting, then turns spaced so the agent can answer.
+with wave.open(os.path.join(AUDIO, "samantha.wav")) as w:
+    pcm = w.readframes(w.getnframes())
+call = bytearray(b"\0\0" * (RATE * 12))
+for t in timeline["samantha"]["turns"][:4]:
+    call += pcm[t["start_ms"] * 32 : t["end_ms"] * 32] + b"\0\0" * (RATE * 13)
+with wave.open(os.path.join(AUDIO, "live-call.wav"), "wb") as w:
+    w.setnchannels(1); w.setsampwidth(2); w.setframerate(RATE); w.writeframes(bytes(call))
 json.dump(timeline, open(os.path.join(AUDIO, "timeline.json"), "w"), indent=1)
 print({k: v["duration_ms"] for k, v in timeline.items()})
