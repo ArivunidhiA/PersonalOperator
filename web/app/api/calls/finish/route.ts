@@ -97,7 +97,7 @@ export async function POST(req: Request) {
     const analysis =
       (await completeJSON<Analysis>({
         system:
-          "You summarize calls between a visitor and Ariv's AI voice agent. Be literal: only report what was actually said. Never invent a name, company or role; use null when the caller didn't clearly state it about themselves. Speech-to-text can garble words, so don't treat one odd word as a name or company. The caller sees the summary: never name any company in it, say \"a company\" instead.",
+          "You summarize calls between a visitor and Ariv's AI voice agent. Be literal: only report what was actually said. Never invent a name, company or role; use null when the caller didn't clearly state it about themselves. Speech-to-text can garble words, so don't treat one odd word as a name or company. The caller sees the summary: never name a company the caller brought up, say \"a company\" instead. Ariv's own employers and school (Hyundai, INZI Controls, Serotonin, Northeastern) are fine to name, and never go in the company field unless the caller works there.",
         user: transcript.slice(0, 30_000),
         schema: ANALYSIS_SCHEMA,
         maxTokens: 500,

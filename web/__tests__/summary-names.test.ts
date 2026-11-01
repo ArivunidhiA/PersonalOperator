@@ -47,8 +47,8 @@ describe("the summary a caller sees names no company", () => {
   });
 
   it("keeps times, cities and greetings", () => {
-    const line = "Hi. Wants a call at nine AM in Chicago.";
-    expect(scrubNames(line, said("Hi, nine AM in Chicago"))).toBe(line);
+    const line = "Hi. Wants a call at nine AM Eastern in Chicago.";
+    expect(scrubNames(line, said("Hi, nine AM Eastern in Chicago"))).toBe(line);
   });
 
   it("does not stack an article on the replacement", () => {
