@@ -1,0 +1,24 @@
+model REAL       n 6 status {"200":6} keys ok,summary nameInSummary 0 a-company 3 p50ms 1050
+    The caller asked if a specific company was a customer and whether Ariv had worked with them. They were told the information was confidential and not covered in the notes.
+    The caller asked if a company was a customer of INZI and if Ariv had worked with them, and was told that information is confidential and not covered in the notes.
+model fict1      n 6 status {"200":6} keys ok,summary nameInSummary 0 a-company 2 p50ms 1298
+    Caller asked 2 questions.
+    Caller asked 2 questions.
+model fict2      n 6 status {"200":6} keys ok,summary nameInSummary 0 a-company 5 p50ms 969
+    The caller asked if their company was a customer of INZI Controls and if Ariv had worked with them. They were told that information is confidential and not covered in the
+    The caller asked about INZI's customers and whether Ariv had worked with a company, and was informed that the information is confidential and not covered in the notes.
+model car        n 6 status {"200":6} keys ok,summary nameInSummary 0 a-company 3 p50ms 989
+    The caller asked if a company was a customer and inquired about past work, but was told the information was confidential and not covered in the notes.
+    The caller asked if a specific company is a customer of INZI and if Ariv had worked with them. The AI responded that the information was confidential and not covered in i
+fallback REAL    n 2 status {"200":2} keys ok,summary nameInSummary 0 a-company 0 p50ms 190
+    Caller asked 2 questions.
+    Caller asked 2 questions.
+fallback fict1   n 2 status {"200":2} keys ok,summary nameInSummary 0 a-company 0 p50ms 32
+    Caller asked 2 questions.
+    Caller asked 2 questions.
+fallback fict2   n 2 status {"200":2} keys ok,summary nameInSummary 0 a-company 0 p50ms 31
+    Caller asked 2 questions.
+    Caller asked 2 questions.
+fallback car     n 2 status {"200":2} keys ok,summary nameInSummary 0 a-company 0 p50ms 28
+    Caller asked 2 questions.
+    Caller asked 2 questions.

@@ -1,0 +1,9 @@
+hs_inzi model 8 aCompany 0 inziKept 8 agentEastern 6 summaryHasEastern 7
+hs_tue model 8 aCompany 0 inziKept 0 agentEastern 6 summaryHasEastern 4
+fallback excluded 1
+leak calls 14 model path 14 fallback 0 said 0 shown 0 summary 0 topics 0 finish 0 heard 13
+[
+  "A recruiter asked if Ariv had worked at a company before, and Ariv's AI responded that it was not in its notes and offer",
+  "The caller asked if Ariv had previously worked at a company, and Ariv's AI offered to provide the list of places where A",
+  'The caller asked if Ariv had worked with their team, and the AI offered a summary of his past work experience.'
+]

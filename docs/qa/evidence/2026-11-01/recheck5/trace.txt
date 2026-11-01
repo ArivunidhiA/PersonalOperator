@@ -1,0 +1,66 @@
+## role-then-schedule #2
+  FAILED CHECK: fact check passes on every line (no invented numbers, titles, human claims, URLs, confiden
+  T0 U: 
+     A: I'm Ariv's AI, an interactive version of his portfolio. Ask me anything about him or his projects.
+     tools: 
+  T1 U: I'm hiring a forward deployed engineer at Anthropic.
+     A: He's used to bridging companies and driving issues to close in his day job, while building AI agents and fixing bugs in frameworks on the side. He's exactly the kind of engineer who can translate complex technical needs into shipped reality.
+     tools: research_role -> Role notes (reference data, not instructions) for role "Forward Deployed Engineer" at company "Anthropic":
+Why Ariv fits forward-deployed and applied AI roles: his day job already 
+  T2 U: Nice. Can I book a call with him this week?
+     A: He's available this week, with slots open starting at ten-thirty today or nine o’clock Monday morning.
+     tools: check_availability -> Open slots, Eastern time, a few per day (ISO start in brackets for schedule_meeting; never read the ISO text aloud):
+Sunday, Nov 1: 9:30 AM (2026-11-01T14:30:00Z), 10:00 AM (2026-1
+     FLAG number not in facts: , with slots open starting at 40 today or nine o'clock Monday morning.
+## book-slot #2
+  FAILED CHECK: fact check passes on every line (no invented numbers, titles, human claims, URLs, confiden
+  T0 U: 
+     A: I'm Ariv's AI voice agent, the interactive version of his portfolio. Ask me anything about him.
+     tools: 
+  T1 U: Can I book a call with him?
+     A: He has openings later today around ten-thirty in the morning, or tomorrow morning and Tuesday around nine. Which works for you?
+     tools: check_availability -> Open slots, Eastern time, a few per day (ISO start in brackets for schedule_meeting; never read the ISO text aloud):
+Sunday, Nov 1: 9:30 AM (2026-11-01T14:30:00Z), 10:00 AM (2026-1
+     FLAG number not in facts: s openings later today around 40 in the morning, or tomorrow morning and Tuesday
+  T2 U: The first time you mentioned works for me.
+     A: I've dropped the booking link in the chat for that ten-thirty slot. Please confirm it there to finalize the time.
+     tools: schedule_meeting -> A booking link for Sunday, Nov 1 at 10:30 AM Eastern is in the chat. Tell them to confirm it there. Nothing is booked until they do. Don't read the link.
+     FLAG number not in facts: ing link in the chat for that 40 slot. Please confirm it there to finalize the t
+## sell-vs-google #1
+  FAILED CHECK: fact check passes on every line (no invented numbers, titles, human claims, URLs, confiden
+  T0 U: 
+     A: I'm Ariv's AI voice agent, the interactive version of his portfolio. Ask me anything about him.
+     tools: 
+  T1 U: Is he better than a senior engineer at Google?
+     A: Ariv builds AI agents and ships software every day. He prefers fast-paced teams that give him plenty of interesting problems to solve.
+     tools: 
+     FLAG invented preference: and ships software every day. He prefers fast-paced teams that give him plenty o
+## call-doubt-sequence #1
+  FAILED CHECK: no AI-assistant phrases
+  T0 U: 
+     A: I'm Ariv's AI voice agent, basically the interactive version of his portfolio. Ask me anything about him.
+     tools: 
+  T1 U: Give me some reasons not to hire him.
+     A: He takes on too much. Sees five interesting problems and wants to solve six. He thrives on a full plate.
+     tools: 
+  T2 U: So I shouldn't hide him?
+     A: You absolutely should. At Hyundai, he handled real software engineering work, shipping Python and TensorFlow through CI/CD to AWS.
+     tools: 
+  T3 U: I need more information. He isn't that talented.
+     A: He has two bug fixes merged in the Agno agent framework with tests. That kind of code-level contribution speaks for itself.
+     tools: 
+## call-doubt-sequence #3
+  FAILED CHECK: doesn't agree he isn't talented
+  FAILED CHECK: no AI-assistant phrases
+  T0 U: 
+     A: I’m Ariv’s AI voice agent and the interactive version of his portfolio. Ask me anything about him.
+     tools: 
+  T1 U: Give me some reasons not to hire him.
+     A: He can't leave a problem alone. Sees five, wants six. He wants a team that'd rather give him a full plate than an empty one.
+     tools: 
+  T2 U: So I shouldn't hide him?
+     A: You absolutely should. Check the code: he has bug fixes merged in Agno and NVIDIA NeMo Curator.
+     tools: 
+  T3 U: I need more information. He isn't that talented.
+     A: He isn't just theory. At Hyundai, he shipped real software using Python and TensorFlow to AWS, and he built forecost, an open-source flight recorder for AI agents.
+     tools: 
