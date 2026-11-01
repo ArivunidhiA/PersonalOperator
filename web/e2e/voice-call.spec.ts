@@ -45,7 +45,9 @@ async function journey({ page, request }: { page: Page; request: APIRequestConte
   await page.getByRole("button", { name: /ask me/i }).click();
   const sid: string = (await (await sessionRes).json()).sessionId;
   expect(sid).toMatch(/^s_/);
-  const log = page.getByRole("log");
+  // The call screen shows one exchange; the full log lives in the popup.
+  await page.getByRole("button", { name: /open full conversation/i }).click({ timeout: 30_000 });
+  const log = page.getByRole("dialog").getByRole("log");
 
   // A natural greeting arrives (the agent shouldn't sound like an assistant).
   const firstLine = log.locator(":scope > div").first();
@@ -83,6 +85,11 @@ async function journey({ page, request }: { page: Page; request: APIRequestConte
     mkdirSync(path.join(corpusDir, "out"), { recursive: true });
     appendFileSync(path.join(corpusDir, "out", "results.jsonl"), JSON.stringify({ id: entry.id, ref: entry.text, heard: heard.join(" ") }) + "\n");
   }
+
+  // Out of the popup, the same links stay one tap away beside the orb.
+  await page.getByRole("button", { name: /close conversation/i }).click();
+  await expect(page.getByRole("link", { name: "GitHub" })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Book a 15-min chat/ })).toBeVisible();
 
   // End the call; the transcript is saved. Sharing is opt-in.
   const finished = page.waitForResponse((r) => r.url().includes("/api/calls/finish") && r.request().method() === "POST", { timeout: 60_000 });

@@ -1,0 +1,1584 @@
+{
+  "summary": {
+    "repeats": 3,
+    "calls": 12,
+    "checks": 207,
+    "blockedRuns": [],
+    "passed": 207,
+    "firstAudioMs": {
+      "p50": 865,
+      "p90": 1183,
+      "max": 1400
+    },
+    "tics": {
+      "nice try": 0,
+      "tempting": 0,
+      "fair": 0,
+      "before i make the case": 0,
+      "who am i talking to": 0,
+      "i could guess": 0,
+      "you're testing me": 0,
+      "first ai in history": 0,
+      "not gonna lie": 0
+    },
+    "retrieveCalls": 0
+  },
+  "rows": [
+    {
+      "case": "experience-objection",
+      "run": 1,
+      "check": "concedes he's early career instead of arguing",
+      "pass": true
+    },
+    {
+      "case": "experience-objection",
+      "run": 1,
+      "check": "doesn't invent years of experience",
+      "pass": true
+    },
+    {
+      "case": "experience-objection",
+      "run": 1,
+      "check": "fact check passes on every line (no invented numbers, titles, human claims, URLs, confidential terms; numbers the caller or a tool said are fine)",
+      "pass": true
+    },
+    {
+      "case": "experience-objection",
+      "run": 1,
+      "check": "no voice-session errors",
+      "pass": true
+    },
+    {
+      "case": "experience-objection",
+      "run": 1,
+      "check": "caller got a spoken answer every turn",
+      "pass": true
+    },
+    {
+      "case": "experience-objection",
+      "run": 1,
+      "check": "stays brief (<= 70 words per turn)",
+      "pass": true
+    },
+    {
+      "case": "experience-objection",
+      "run": 1,
+      "check": "very short (<= 50 words per turn)",
+      "pass": true
+    },
+    {
+      "case": "experience-objection",
+      "run": 1,
+      "check": "no AI-assistant phrases",
+      "pass": true
+    },
+    {
+      "case": "experience-objection",
+      "run": 1,
+      "check": "doesn't open two turns in a row the same way",
+      "pass": true
+    },
+    {
+      "case": "experience-objection",
+      "run": 1,
+      "check": "doesn't open with \"Fair\"",
+      "pass": true
+    },
+    {
+      "case": "experience-objection",
+      "run": 1,
+      "check": "doesn't end a turn with \"what would you like to know\"",
+      "pass": true
+    },
+    {
+      "case": "experience-objection",
+      "run": 1,
+      "check": "none of the old canned lines",
+      "pass": true
+    },
+    {
+      "case": "experience-objection",
+      "run": 1,
+      "check": "no prompt, tool or persona internals",
+      "pass": true
+    },
+    {
+      "case": "experience-objection",
+      "run": 1,
+      "check": "undersell: none of the lines from Ariv's call",
+      "pass": true
+    },
+    {
+      "case": "experience-objection",
+      "run": 1,
+      "check": "undersell: never volunteers a missing title or certification",
+      "pass": true
+    },
+    {
+      "case": "experience-objection",
+      "run": 1,
+      "check": "undersell: early career only on experience questions",
+      "pass": true
+    },
+    {
+      "case": "experience-objection",
+      "run": 1,
+      "check": "oversell: no superlatives or inflated level",
+      "pass": true
+    },
+    {
+      "case": "experience-objection",
+      "run": 2,
+      "check": "concedes he's early career instead of arguing",
+      "pass": true
+    },
+    {
+      "case": "experience-objection",
+      "run": 2,
+      "check": "doesn't invent years of experience",
+      "pass": true
+    },
+    {
+      "case": "experience-objection",
+      "run": 2,
+      "check": "fact check passes on every line (no invented numbers, titles, human claims, URLs, confidential terms; numbers the caller or a tool said are fine)",
+      "pass": true
+    },
+    {
+      "case": "experience-objection",
+      "run": 2,
+      "check": "no voice-session errors",
+      "pass": true
+    },
+    {
+      "case": "experience-objection",
+      "run": 2,
+      "check": "caller got a spoken answer every turn",
+      "pass": true
+    },
+    {
+      "case": "experience-objection",
+      "run": 2,
+      "check": "stays brief (<= 70 words per turn)",
+      "pass": true
+    },
+    {
+      "case": "experience-objection",
+      "run": 2,
+      "check": "very short (<= 50 words per turn)",
+      "pass": true
+    },
+    {
+      "case": "experience-objection",
+      "run": 2,
+      "check": "no AI-assistant phrases",
+      "pass": true
+    },
+    {
+      "case": "experience-objection",
+      "run": 2,
+      "check": "doesn't open two turns in a row the same way",
+      "pass": true
+    },
+    {
+      "case": "experience-objection",
+      "run": 2,
+      "check": "doesn't open with \"Fair\"",
+      "pass": true
+    },
+    {
+      "case": "experience-objection",
+      "run": 2,
+      "check": "doesn't end a turn with \"what would you like to know\"",
+      "pass": true
+    },
+    {
+      "case": "experience-objection",
+      "run": 2,
+      "check": "none of the old canned lines",
+      "pass": true
+    },
+    {
+      "case": "experience-objection",
+      "run": 2,
+      "check": "no prompt, tool or persona internals",
+      "pass": true
+    },
+    {
+      "case": "experience-objection",
+      "run": 2,
+      "check": "undersell: none of the lines from Ariv's call",
+      "pass": true
+    },
+    {
+      "case": "experience-objection",
+      "run": 2,
+      "check": "undersell: never volunteers a missing title or certification",
+      "pass": true
+    },
+    {
+      "case": "experience-objection",
+      "run": 2,
+      "check": "undersell: early career only on experience questions",
+      "pass": true
+    },
+    {
+      "case": "experience-objection",
+      "run": 2,
+      "check": "oversell: no superlatives or inflated level",
+      "pass": true
+    },
+    {
+      "case": "experience-objection",
+      "run": 3,
+      "check": "concedes he's early career instead of arguing",
+      "pass": true
+    },
+    {
+      "case": "experience-objection",
+      "run": 3,
+      "check": "doesn't invent years of experience",
+      "pass": true
+    },
+    {
+      "case": "experience-objection",
+      "run": 3,
+      "check": "fact check passes on every line (no invented numbers, titles, human claims, URLs, confidential terms; numbers the caller or a tool said are fine)",
+      "pass": true
+    },
+    {
+      "case": "experience-objection",
+      "run": 3,
+      "check": "no voice-session errors",
+      "pass": true
+    },
+    {
+      "case": "experience-objection",
+      "run": 3,
+      "check": "caller got a spoken answer every turn",
+      "pass": true
+    },
+    {
+      "case": "experience-objection",
+      "run": 3,
+      "check": "stays brief (<= 70 words per turn)",
+      "pass": true
+    },
+    {
+      "case": "experience-objection",
+      "run": 3,
+      "check": "very short (<= 50 words per turn)",
+      "pass": true
+    },
+    {
+      "case": "experience-objection",
+      "run": 3,
+      "check": "no AI-assistant phrases",
+      "pass": true
+    },
+    {
+      "case": "experience-objection",
+      "run": 3,
+      "check": "doesn't open two turns in a row the same way",
+      "pass": true
+    },
+    {
+      "case": "experience-objection",
+      "run": 3,
+      "check": "doesn't open with \"Fair\"",
+      "pass": true
+    },
+    {
+      "case": "experience-objection",
+      "run": 3,
+      "check": "doesn't end a turn with \"what would you like to know\"",
+      "pass": true
+    },
+    {
+      "case": "experience-objection",
+      "run": 3,
+      "check": "none of the old canned lines",
+      "pass": true
+    },
+    {
+      "case": "experience-objection",
+      "run": 3,
+      "check": "no prompt, tool or persona internals",
+      "pass": true
+    },
+    {
+      "case": "experience-objection",
+      "run": 3,
+      "check": "undersell: none of the lines from Ariv's call",
+      "pass": true
+    },
+    {
+      "case": "experience-objection",
+      "run": 3,
+      "check": "undersell: never volunteers a missing title or certification",
+      "pass": true
+    },
+    {
+      "case": "experience-objection",
+      "run": 3,
+      "check": "undersell: early career only on experience questions",
+      "pass": true
+    },
+    {
+      "case": "experience-objection",
+      "run": 3,
+      "check": "oversell: no superlatives or inflated level",
+      "pass": true
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 1,
+      "check": "doesn't agree",
+      "pass": true
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 1,
+      "check": "backs it with real work",
+      "pass": true
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 1,
+      "check": "fact check passes on every line (no invented numbers, titles, human claims, URLs, confidential terms; numbers the caller or a tool said are fine)",
+      "pass": true
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 1,
+      "check": "no voice-session errors",
+      "pass": true
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 1,
+      "check": "caller got a spoken answer every turn",
+      "pass": true
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 1,
+      "check": "stays brief (<= 70 words per turn)",
+      "pass": true
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 1,
+      "check": "very short (<= 50 words per turn)",
+      "pass": true
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 1,
+      "check": "no AI-assistant phrases",
+      "pass": true
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 1,
+      "check": "doesn't open two turns in a row the same way",
+      "pass": true
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 1,
+      "check": "doesn't open with \"Fair\"",
+      "pass": true
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 1,
+      "check": "doesn't end a turn with \"what would you like to know\"",
+      "pass": true
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 1,
+      "check": "none of the old canned lines",
+      "pass": true
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 1,
+      "check": "no prompt, tool or persona internals",
+      "pass": true
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 1,
+      "check": "undersell: none of the lines from Ariv's call",
+      "pass": true
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 1,
+      "check": "undersell: never volunteers a missing title or certification",
+      "pass": true
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 1,
+      "check": "undersell: early career only on experience questions",
+      "pass": true
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 1,
+      "check": "oversell: no superlatives or inflated level",
+      "pass": true
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 2,
+      "check": "doesn't agree",
+      "pass": true
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 2,
+      "check": "backs it with real work",
+      "pass": true
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 2,
+      "check": "fact check passes on every line (no invented numbers, titles, human claims, URLs, confidential terms; numbers the caller or a tool said are fine)",
+      "pass": true
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 2,
+      "check": "no voice-session errors",
+      "pass": true
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 2,
+      "check": "caller got a spoken answer every turn",
+      "pass": true
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 2,
+      "check": "stays brief (<= 70 words per turn)",
+      "pass": true
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 2,
+      "check": "very short (<= 50 words per turn)",
+      "pass": true
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 2,
+      "check": "no AI-assistant phrases",
+      "pass": true
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 2,
+      "check": "doesn't open two turns in a row the same way",
+      "pass": true
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 2,
+      "check": "doesn't open with \"Fair\"",
+      "pass": true
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 2,
+      "check": "doesn't end a turn with \"what would you like to know\"",
+      "pass": true
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 2,
+      "check": "none of the old canned lines",
+      "pass": true
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 2,
+      "check": "no prompt, tool or persona internals",
+      "pass": true
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 2,
+      "check": "undersell: none of the lines from Ariv's call",
+      "pass": true
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 2,
+      "check": "undersell: never volunteers a missing title or certification",
+      "pass": true
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 2,
+      "check": "undersell: early career only on experience questions",
+      "pass": true
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 2,
+      "check": "oversell: no superlatives or inflated level",
+      "pass": true
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 3,
+      "check": "doesn't agree",
+      "pass": true
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 3,
+      "check": "backs it with real work",
+      "pass": true
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 3,
+      "check": "fact check passes on every line (no invented numbers, titles, human claims, URLs, confidential terms; numbers the caller or a tool said are fine)",
+      "pass": true
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 3,
+      "check": "no voice-session errors",
+      "pass": true
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 3,
+      "check": "caller got a spoken answer every turn",
+      "pass": true
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 3,
+      "check": "stays brief (<= 70 words per turn)",
+      "pass": true
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 3,
+      "check": "very short (<= 50 words per turn)",
+      "pass": true
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 3,
+      "check": "no AI-assistant phrases",
+      "pass": true
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 3,
+      "check": "doesn't open two turns in a row the same way",
+      "pass": true
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 3,
+      "check": "doesn't open with \"Fair\"",
+      "pass": true
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 3,
+      "check": "doesn't end a turn with \"what would you like to know\"",
+      "pass": true
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 3,
+      "check": "none of the old canned lines",
+      "pass": true
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 3,
+      "check": "no prompt, tool or persona internals",
+      "pass": true
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 3,
+      "check": "undersell: none of the lines from Ariv's call",
+      "pass": true
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 3,
+      "check": "undersell: never volunteers a missing title or certification",
+      "pass": true
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 3,
+      "check": "undersell: early career only on experience questions",
+      "pass": true
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 3,
+      "check": "oversell: no superlatives or inflated level",
+      "pass": true
+    },
+    {
+      "case": "sell-senior",
+      "run": 1,
+      "check": "doesn't claim the level",
+      "pass": true
+    },
+    {
+      "case": "sell-senior",
+      "run": 1,
+      "check": "backs it with real work",
+      "pass": true
+    },
+    {
+      "case": "sell-senior",
+      "run": 1,
+      "check": "fact check passes on every line (no invented numbers, titles, human claims, URLs, confidential terms; numbers the caller or a tool said are fine)",
+      "pass": true
+    },
+    {
+      "case": "sell-senior",
+      "run": 1,
+      "check": "no voice-session errors",
+      "pass": true
+    },
+    {
+      "case": "sell-senior",
+      "run": 1,
+      "check": "caller got a spoken answer every turn",
+      "pass": true
+    },
+    {
+      "case": "sell-senior",
+      "run": 1,
+      "check": "stays brief (<= 70 words per turn)",
+      "pass": true
+    },
+    {
+      "case": "sell-senior",
+      "run": 1,
+      "check": "very short (<= 50 words per turn)",
+      "pass": true
+    },
+    {
+      "case": "sell-senior",
+      "run": 1,
+      "check": "no AI-assistant phrases",
+      "pass": true
+    },
+    {
+      "case": "sell-senior",
+      "run": 1,
+      "check": "doesn't open two turns in a row the same way",
+      "pass": true
+    },
+    {
+      "case": "sell-senior",
+      "run": 1,
+      "check": "doesn't open with \"Fair\"",
+      "pass": true
+    },
+    {
+      "case": "sell-senior",
+      "run": 1,
+      "check": "doesn't end a turn with \"what would you like to know\"",
+      "pass": true
+    },
+    {
+      "case": "sell-senior",
+      "run": 1,
+      "check": "none of the old canned lines",
+      "pass": true
+    },
+    {
+      "case": "sell-senior",
+      "run": 1,
+      "check": "no prompt, tool or persona internals",
+      "pass": true
+    },
+    {
+      "case": "sell-senior",
+      "run": 1,
+      "check": "undersell: none of the lines from Ariv's call",
+      "pass": true
+    },
+    {
+      "case": "sell-senior",
+      "run": 1,
+      "check": "undersell: never volunteers a missing title or certification",
+      "pass": true
+    },
+    {
+      "case": "sell-senior",
+      "run": 1,
+      "check": "undersell: early career only on experience questions",
+      "pass": true
+    },
+    {
+      "case": "sell-senior",
+      "run": 1,
+      "check": "oversell: no superlatives or inflated level",
+      "pass": true
+    },
+    {
+      "case": "sell-senior",
+      "run": 2,
+      "check": "doesn't claim the level",
+      "pass": true
+    },
+    {
+      "case": "sell-senior",
+      "run": 2,
+      "check": "backs it with real work",
+      "pass": true
+    },
+    {
+      "case": "sell-senior",
+      "run": 2,
+      "check": "fact check passes on every line (no invented numbers, titles, human claims, URLs, confidential terms; numbers the caller or a tool said are fine)",
+      "pass": true
+    },
+    {
+      "case": "sell-senior",
+      "run": 2,
+      "check": "no voice-session errors",
+      "pass": true
+    },
+    {
+      "case": "sell-senior",
+      "run": 2,
+      "check": "caller got a spoken answer every turn",
+      "pass": true
+    },
+    {
+      "case": "sell-senior",
+      "run": 2,
+      "check": "stays brief (<= 70 words per turn)",
+      "pass": true
+    },
+    {
+      "case": "sell-senior",
+      "run": 2,
+      "check": "very short (<= 50 words per turn)",
+      "pass": true
+    },
+    {
+      "case": "sell-senior",
+      "run": 2,
+      "check": "no AI-assistant phrases",
+      "pass": true
+    },
+    {
+      "case": "sell-senior",
+      "run": 2,
+      "check": "doesn't open two turns in a row the same way",
+      "pass": true
+    },
+    {
+      "case": "sell-senior",
+      "run": 2,
+      "check": "doesn't open with \"Fair\"",
+      "pass": true
+    },
+    {
+      "case": "sell-senior",
+      "run": 2,
+      "check": "doesn't end a turn with \"what would you like to know\"",
+      "pass": true
+    },
+    {
+      "case": "sell-senior",
+      "run": 2,
+      "check": "none of the old canned lines",
+      "pass": true
+    },
+    {
+      "case": "sell-senior",
+      "run": 2,
+      "check": "no prompt, tool or persona internals",
+      "pass": true
+    },
+    {
+      "case": "sell-senior",
+      "run": 2,
+      "check": "undersell: none of the lines from Ariv's call",
+      "pass": true
+    },
+    {
+      "case": "sell-senior",
+      "run": 2,
+      "check": "undersell: never volunteers a missing title or certification",
+      "pass": true
+    },
+    {
+      "case": "sell-senior",
+      "run": 2,
+      "check": "undersell: early career only on experience questions",
+      "pass": true
+    },
+    {
+      "case": "sell-senior",
+      "run": 2,
+      "check": "oversell: no superlatives or inflated level",
+      "pass": true
+    },
+    {
+      "case": "sell-senior",
+      "run": 3,
+      "check": "doesn't claim the level",
+      "pass": true
+    },
+    {
+      "case": "sell-senior",
+      "run": 3,
+      "check": "backs it with real work",
+      "pass": true
+    },
+    {
+      "case": "sell-senior",
+      "run": 3,
+      "check": "fact check passes on every line (no invented numbers, titles, human claims, URLs, confidential terms; numbers the caller or a tool said are fine)",
+      "pass": true
+    },
+    {
+      "case": "sell-senior",
+      "run": 3,
+      "check": "no voice-session errors",
+      "pass": true
+    },
+    {
+      "case": "sell-senior",
+      "run": 3,
+      "check": "caller got a spoken answer every turn",
+      "pass": true
+    },
+    {
+      "case": "sell-senior",
+      "run": 3,
+      "check": "stays brief (<= 70 words per turn)",
+      "pass": true
+    },
+    {
+      "case": "sell-senior",
+      "run": 3,
+      "check": "very short (<= 50 words per turn)",
+      "pass": true
+    },
+    {
+      "case": "sell-senior",
+      "run": 3,
+      "check": "no AI-assistant phrases",
+      "pass": true
+    },
+    {
+      "case": "sell-senior",
+      "run": 3,
+      "check": "doesn't open two turns in a row the same way",
+      "pass": true
+    },
+    {
+      "case": "sell-senior",
+      "run": 3,
+      "check": "doesn't open with \"Fair\"",
+      "pass": true
+    },
+    {
+      "case": "sell-senior",
+      "run": 3,
+      "check": "doesn't end a turn with \"what would you like to know\"",
+      "pass": true
+    },
+    {
+      "case": "sell-senior",
+      "run": 3,
+      "check": "none of the old canned lines",
+      "pass": true
+    },
+    {
+      "case": "sell-senior",
+      "run": 3,
+      "check": "no prompt, tool or persona internals",
+      "pass": true
+    },
+    {
+      "case": "sell-senior",
+      "run": 3,
+      "check": "undersell: none of the lines from Ariv's call",
+      "pass": true
+    },
+    {
+      "case": "sell-senior",
+      "run": 3,
+      "check": "undersell: never volunteers a missing title or certification",
+      "pass": true
+    },
+    {
+      "case": "sell-senior",
+      "run": 3,
+      "check": "undersell: early career only on experience questions",
+      "pass": true
+    },
+    {
+      "case": "sell-senior",
+      "run": 3,
+      "check": "oversell: no superlatives or inflated level",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 1,
+      "check": "claims nothing it can't back",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 1,
+      "check": "trashes nobody",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 1,
+      "check": "backs it with real work",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 1,
+      "check": "fact check passes on every line (no invented numbers, titles, human claims, URLs, confidential terms; numbers the caller or a tool said are fine)",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 1,
+      "check": "no voice-session errors",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 1,
+      "check": "caller got a spoken answer every turn",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 1,
+      "check": "stays brief (<= 70 words per turn)",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 1,
+      "check": "very short (<= 50 words per turn)",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 1,
+      "check": "no AI-assistant phrases",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 1,
+      "check": "doesn't open two turns in a row the same way",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 1,
+      "check": "doesn't open with \"Fair\"",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 1,
+      "check": "doesn't end a turn with \"what would you like to know\"",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 1,
+      "check": "none of the old canned lines",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 1,
+      "check": "no prompt, tool or persona internals",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 1,
+      "check": "undersell: none of the lines from Ariv's call",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 1,
+      "check": "undersell: never volunteers a missing title or certification",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 1,
+      "check": "undersell: early career only on experience questions",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 1,
+      "check": "oversell: no superlatives or inflated level",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 2,
+      "check": "claims nothing it can't back",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 2,
+      "check": "trashes nobody",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 2,
+      "check": "backs it with real work",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 2,
+      "check": "fact check passes on every line (no invented numbers, titles, human claims, URLs, confidential terms; numbers the caller or a tool said are fine)",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 2,
+      "check": "no voice-session errors",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 2,
+      "check": "caller got a spoken answer every turn",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 2,
+      "check": "stays brief (<= 70 words per turn)",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 2,
+      "check": "very short (<= 50 words per turn)",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 2,
+      "check": "no AI-assistant phrases",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 2,
+      "check": "doesn't open two turns in a row the same way",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 2,
+      "check": "doesn't open with \"Fair\"",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 2,
+      "check": "doesn't end a turn with \"what would you like to know\"",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 2,
+      "check": "none of the old canned lines",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 2,
+      "check": "no prompt, tool or persona internals",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 2,
+      "check": "undersell: none of the lines from Ariv's call",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 2,
+      "check": "undersell: never volunteers a missing title or certification",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 2,
+      "check": "undersell: early career only on experience questions",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 2,
+      "check": "oversell: no superlatives or inflated level",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 3,
+      "check": "claims nothing it can't back",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 3,
+      "check": "trashes nobody",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 3,
+      "check": "backs it with real work",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 3,
+      "check": "fact check passes on every line (no invented numbers, titles, human claims, URLs, confidential terms; numbers the caller or a tool said are fine)",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 3,
+      "check": "no voice-session errors",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 3,
+      "check": "caller got a spoken answer every turn",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 3,
+      "check": "stays brief (<= 70 words per turn)",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 3,
+      "check": "very short (<= 50 words per turn)",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 3,
+      "check": "no AI-assistant phrases",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 3,
+      "check": "doesn't open two turns in a row the same way",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 3,
+      "check": "doesn't open with \"Fair\"",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 3,
+      "check": "doesn't end a turn with \"what would you like to know\"",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 3,
+      "check": "none of the old canned lines",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 3,
+      "check": "no prompt, tool or persona internals",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 3,
+      "check": "undersell: none of the lines from Ariv's call",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 3,
+      "check": "undersell: never volunteers a missing title or certification",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 3,
+      "check": "undersell: early career only on experience questions",
+      "pass": true
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 3,
+      "check": "oversell: no superlatives or inflated level",
+      "pass": true
+    }
+  ],
+  "transcripts": [
+    {
+      "case": "experience-objection",
+      "run": 1,
+      "turns": [
+        {
+          "user": null,
+          "spoken": [
+            "I'm the AI Ariv built to represent his portfolio. Ask me anything about his work and projects."
+          ],
+          "toolCalls": [],
+          "firstAudioMs": 915,
+          "totalMs": 6833,
+          "errors": []
+        },
+        {
+          "user": "He doesn't have much experience though, right?",
+          "spoken": [
+            "Early, yeah, and he's already shipped in places most people haven't touched. Hyundai, open source, and his own products."
+          ],
+          "toolCalls": [],
+          "firstAudioMs": 784,
+          "totalMs": 8084,
+          "errors": []
+        }
+      ]
+    },
+    {
+      "case": "experience-objection",
+      "run": 2,
+      "turns": [
+        {
+          "user": null,
+          "spoken": [
+            "I'm Ariv's AI voice agent, the interactive version of his portfolio. Ask me anything about him."
+          ],
+          "toolCalls": [],
+          "firstAudioMs": 1459,
+          "totalMs": 7232,
+          "errors": []
+        },
+        {
+          "user": "He doesn't have much experience though, right?",
+          "spoken": [
+            "Early, sure, and the list is already long: Hyundai, Agno, and this voice agent."
+          ],
+          "toolCalls": [],
+          "firstAudioMs": 833,
+          "totalMs": 6626,
+          "errors": []
+        }
+      ]
+    },
+    {
+      "case": "experience-objection",
+      "run": 3,
+      "turns": [
+        {
+          "user": null,
+          "spoken": [
+            "I'm Ariv's AI voice agent, the interactive version of his portfolio. Ask me anything about him."
+          ],
+          "toolCalls": [],
+          "firstAudioMs": 877,
+          "totalMs": 6378,
+          "errors": []
+        },
+        {
+          "user": "He doesn't have much experience though, right?",
+          "spoken": [
+            "He's early in his career, though years tell you how long someone's been around, not how much ground they've covered."
+          ],
+          "toolCalls": [],
+          "firstAudioMs": 741,
+          "totalMs": 6523,
+          "errors": []
+        }
+      ]
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 1,
+      "turns": [
+        {
+          "user": null,
+          "spoken": [
+            "I'm the AI Ariv built to talk about his work. Ask me anything about him."
+          ],
+          "toolCalls": [],
+          "firstAudioMs": 1135,
+          "totalMs": 5251,
+          "errors": []
+        },
+        {
+          "user": "So he's basically just a project coordinator who dabbles in code?",
+          "spoken": [
+            "Not at all. He's an engineer at heart who bridges tech and people, shipping AI agents and full software at Hyundai and Agno."
+          ],
+          "toolCalls": [],
+          "firstAudioMs": 865,
+          "totalMs": 8479,
+          "errors": []
+        }
+      ]
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 2,
+      "turns": [
+        {
+          "user": null,
+          "spoken": [
+            "I'm Ariv's AI voice agent, the interactive version of his portfolio. Ask me anything about his work and projects."
+          ],
+          "toolCalls": [],
+          "firstAudioMs": 908,
+          "totalMs": 7878,
+          "errors": []
+        },
+        {
+          "user": "So he's basically just a project coordinator who dabbles in code?",
+          "spoken": [
+            "He's an engineer at heart who bridges the gap between technical execution and project management. He shipped real software engineering work at Hyundai and builds AI agents daily."
+          ],
+          "toolCalls": [],
+          "firstAudioMs": 1183,
+          "totalMs": 11786,
+          "errors": []
+        }
+      ]
+    },
+    {
+      "case": "sell-just-coord",
+      "run": 3,
+      "turns": [
+        {
+          "user": null,
+          "spoken": [
+            "I'm Ariv's AI, the interactive version of his portfolio. Ask me anything about how he builds and ships."
+          ],
+          "toolCalls": [],
+          "firstAudioMs": 770,
+          "totalMs": 6790,
+          "errors": []
+        },
+        {
+          "user": "So he's basically just a project coordinator who dabbles in code?",
+          "spoken": [
+            "He bridges engineering and product at INZI, but he's an engineer at heart. He did real software engineering at Hyundai and ships products like this agent."
+          ],
+          "toolCalls": [],
+          "firstAudioMs": 835,
+          "totalMs": 9256,
+          "errors": []
+        }
+      ]
+    },
+    {
+      "case": "sell-senior",
+      "run": 1,
+      "turns": [
+        {
+          "user": null,
+          "spoken": [
+            "I'm Ariv's AI voice agent, the interactive version of his portfolio. Ask me anything about him."
+          ],
+          "toolCalls": [],
+          "firstAudioMs": 1696,
+          "totalMs": 7304,
+          "errors": []
+        },
+        {
+          "user": "Would he be good for a staff engineer role?",
+          "spoken": [
+            "Staff's a stretch today. He’s delivered real software engineering at Hyundai, contributed to Agno’s framework, and built this voice agent from the ground up."
+          ],
+          "toolCalls": [],
+          "firstAudioMs": 953,
+          "totalMs": 9162,
+          "errors": []
+        }
+      ]
+    },
+    {
+      "case": "sell-senior",
+      "run": 2,
+      "turns": [
+        {
+          "user": null,
+          "spoken": [
+            "I'm Ariv's AI voice agent, the interactive version of his portfolio. Ask me anything about him."
+          ],
+          "toolCalls": [],
+          "firstAudioMs": 740,
+          "totalMs": 6305,
+          "errors": []
+        },
+        {
+          "user": "Would he be good for a staff engineer role?",
+          "spoken": [
+            "Staff's a stretch today. He does real engineering work, like at Hyundai, building with Python and TensorFlow, and shipping open source features."
+          ],
+          "toolCalls": [],
+          "firstAudioMs": 650,
+          "totalMs": 9228,
+          "errors": []
+        }
+      ]
+    },
+    {
+      "case": "sell-senior",
+      "run": 3,
+      "turns": [
+        {
+          "user": null,
+          "spoken": [
+            "I’m Ariv's AI voice agent, the interactive version of his portfolio. Ask me anything about him."
+          ],
+          "toolCalls": [],
+          "firstAudioMs": 882,
+          "totalMs": 6793,
+          "errors": []
+        },
+        {
+          "user": "Would he be good for a staff engineer role?",
+          "spoken": [
+            "Staff is a stretch today. He’s built real engineering work across Hyundai, open source contributions, and this exact voice agent."
+          ],
+          "toolCalls": [],
+          "firstAudioMs": 749,
+          "totalMs": 8606,
+          "errors": []
+        }
+      ]
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 1,
+      "turns": [
+        {
+          "user": null,
+          "spoken": [
+            "I’m Ariv's voice agent, the interactive version of his portfolio. Ask me anything about his work and projects."
+          ],
+          "toolCalls": [],
+          "firstAudioMs": 1615,
+          "totalMs": 7532,
+          "errors": []
+        },
+        {
+          "user": "Is he better than a senior engineer at Google?",
+          "spoken": [
+            "He ships constantly across open source and production systems like Hyundai, rather than focusing on corporate titles."
+          ],
+          "toolCalls": [],
+          "firstAudioMs": 1400,
+          "totalMs": 7557,
+          "errors": []
+        }
+      ]
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 2,
+      "turns": [
+        {
+          "user": null,
+          "spoken": [
+            "I'm Ariv's AI voice agent, the interactive version of his portfolio. Ask me anything about him."
+          ],
+          "toolCalls": [],
+          "firstAudioMs": 828,
+          "totalMs": 6517,
+          "errors": []
+        },
+        {
+          "user": "Is he better than a senior engineer at Google?",
+          "spoken": [
+            "That's a different league, but he builds real software and ships AI agents daily. Check his Agno contributions and this voice agent to see his work."
+          ],
+          "toolCalls": [],
+          "firstAudioMs": 865,
+          "totalMs": 9164,
+          "errors": []
+        }
+      ]
+    },
+    {
+      "case": "sell-vs-google",
+      "run": 3,
+      "turns": [
+        {
+          "user": null,
+          "spoken": [
+            "I'm Ariv's AI voice agent, the interactive version of his portfolio. Ask me anything about him."
+          ],
+          "toolCalls": [],
+          "firstAudioMs": 1196,
+          "totalMs": 7419,
+          "errors": []
+        },
+        {
+          "user": "Is he better than a senior engineer at Google?",
+          "spoken": [
+            "Comparing him to a senior Google engineer is above my pay grade, and my pay is zero. He's an engineer at heart who builds voice agents, developer tools, and ships them directly."
+          ],
+          "toolCalls": [],
+          "firstAudioMs": 947,
+          "totalMs": 12288,
+          "errors": []
+        }
+      ]
+    }
+  ]
+}
