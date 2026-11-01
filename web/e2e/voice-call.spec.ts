@@ -150,11 +150,11 @@ if (corpus) {
           ],
         },
       });
-      test("voice call: greeting, facts, links card, saved transcript", async ({ page, request }) => journey({ page }, entry));
+      test("voice call: greeting, facts, links card, saved transcript", async ({ page }) => journey({ page }, entry));
     });
   }
 } else {
-  test("voice call: greeting, facts, links card, saved transcript", async ({ page, request }) => journey({ page }));
+  test("voice call: greeting, facts, links card, saved transcript", async ({ page }) => journey({ page }));
 }
 
 test("security surface: old open endpoints are gone, new ones need a live-call ticket", async ({ request }) => {
