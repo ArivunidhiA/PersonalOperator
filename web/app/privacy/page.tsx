@@ -31,6 +31,7 @@ export default function Privacy() {
         title="The voice (Google Gemini)"
         items={[
           "Calls run on Google's Gemini API free tier.",
+          "In Chrome on a computer, your browser's speech service, run by Google, also turns your voice into live captions while you talk.",
           "Google may use the audio and transcript to improve its models. That's Google's rule, not mine, so please don't say anything sensitive.",
         ]}
       />

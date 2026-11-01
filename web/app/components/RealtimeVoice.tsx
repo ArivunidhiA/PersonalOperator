@@ -7,7 +7,10 @@ import { CallButton, MuteButton, type Phase } from "./CallControls";
 import { PostCallPanel, type PostState } from "./PostCallPanel";
 import { FaviconAnimator } from "./FaviconAnimator";
 import { StatusLine } from "./StatusLine";
-import { TranscriptLog } from "./TranscriptLog";
+import { CardTray } from "./CardTray";
+import { TranscriptDialog } from "./TranscriptDialog";
+import { TranscriptLines } from "./TranscriptLog";
+import { TranscriptStrip } from "./TranscriptStrip";
 import { reportError } from "@/lib/report-error";
 import { trackClick } from "@/lib/track-client";
 import { detectAgentTransition } from "@/lib/agents";
@@ -36,6 +39,7 @@ export default function RealtimeVoice() {
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [post, setPost] = useState<PostState | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [logOpen, setLogOpen] = useState(false);
 
   const sessionRef = useRef<VoiceSession | null>(null);
   const infoRef = useRef<SessionInfo | null>(null);
@@ -45,6 +49,7 @@ export default function RealtimeVoice() {
   const modeRef = useRef("greeter");
   const cancelRef = useRef(false);
   const abortRef = useRef<AbortController | null>(null);
+  const postRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     itemsRef.current = transcript.items;
   }, [transcript.items]);
@@ -106,6 +111,8 @@ export default function RealtimeVoice() {
           onLive: () => setPhase("live"),
           onUserDelta: (text) => dispatch({ type: "userDelta", text }),
           onUserFinal: (text) => dispatch({ type: "userFinal", text }),
+          onCaption: ({ utterance, text, settled }) => dispatch({ type: "userPartial", utterance, text, settled }),
+          onCaptionCancel: () => dispatch({ type: "userPartialCancel" }),
           onAgentDelta: (text) => dispatch({ type: "agentDelta", text }),
           onAgentFinal: (text) => dispatch({ type: "agentFinal", text }),
           onAgentSpeaking: setAgentSpeaking,
@@ -220,10 +227,18 @@ export default function RealtimeVoice() {
         : muted
           ? "Muted"
           : "Listening";
-  const hasConversation = transcript.items.length > 0;
+  const onLink = (label: string, href: string) => trackClick(label, href, sessionId);
+  const showPost = phase === "ended" && !!post;
+
+  // The panel sits below the fold of the fixed stage: bring it into view once.
+  useEffect(() => {
+    if (!showPost) return;
+    const smooth = !window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    postRef.current?.scrollIntoView?.({ block: "nearest", behavior: smooth ? "smooth" : "auto" });
+  }, [showPost, post?.saving]);
 
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
+    <div className="relative bg-background text-foreground">
       <FaviconAnimator enabled={live} />
       <header className="px-5 py-4 sm:px-8 print:hidden">
         <h1 className="font-serif text-lg italic tracking-wide text-primary/80">Ariv&apos;s AI</h1>
@@ -232,8 +247,8 @@ export default function RealtimeVoice() {
       {notice && (
         <div
           role={notice.tone === "error" ? "alert" : "status"}
-          className={`mx-auto mt-3 w-[calc(100%-2rem)] max-w-xl rounded-xl border px-4 py-3 text-sm print:hidden ${
-            notice.tone === "error" ? "border-red-500/30 bg-red-500/10 text-red-100" : "border-white/15 bg-white/5 text-white/80"
+          className={`absolute inset-x-0 top-14 z-10 mx-auto w-[calc(100%-2rem)] max-w-xl rounded-xl border px-4 py-3 text-sm print:hidden ${
+            notice.tone === "error" ? "border-red-500/30 bg-red-950 text-red-100" : "border-white/15 bg-neutral-900 text-white/80"
           }`}
         >
           {notice.text}
@@ -241,38 +256,49 @@ export default function RealtimeVoice() {
         </div>
       )}
 
-      <main
-        className={`flex flex-1 flex-col items-center gap-8 px-4 pb-10 pt-2 ${
-          hasConversation ? "lg:flex-row lg:items-start lg:justify-center lg:gap-14 lg:px-6" : "justify-center"
-        }`}
-      >
-        <section className="flex flex-col items-center print:hidden" aria-label="Call">
-          <div className="h-64 w-64 overflow-hidden rounded-full sm:h-80 sm:w-80 lg:h-[26rem] lg:w-[26rem]">
-            <VoicePoweredOrb hue={0} getLevel={getLevel} />
-          </div>
-          <div className="mt-8">
-            <CallButton phase={phase} onStart={() => void start()} onHangUp={hangUp} />
-          </div>
-          <StatusLine status={status} secondsLeft={secondsLeft} live={live} />
-          {live && <MuteButton muted={muted} onToggle={toggleMute} />}
-        </section>
-
-        {(hasConversation || (phase === "ended" && post)) && (
-          <section className="flex w-full max-w-md flex-col lg:mt-8" aria-label="Conversation">
-            {hasConversation && <TranscriptLog items={transcript.items} onLink={(label, href) => trackClick(label, href, sessionId)} />}
-
-            {phase === "ended" && post && (
-              <PostCallPanel
-                post={post}
-                shareUrl={shareUrl}
-                sessionId={sessionId}
-                onRetry={() => void finish()}
-                onShare={() => void createShareLink()}
-                onPrint={() => window.print()}
-              />
-            )}
+      {/* Every row has a fixed size in every phase, so the orb and pill never move. */}
+      <main>
+        <div className="grid h-[calc(100svh-6.25rem)] min-h-[28rem] grid-cols-[minmax(0,1fr)] grid-rows-[1fr_auto_1fr] justify-items-center pb-2 pt-2 print:hidden">
+          <section className="row-start-2 flex flex-col items-center" aria-label="Call">
+            <div className="call-orb overflow-hidden rounded-full">
+              <VoicePoweredOrb hue={0} getLevel={getLevel} />
+            </div>
+            <div className="relative mt-8">
+              <CallButton phase={phase} onStart={() => void start()} onHangUp={hangUp} />
+              {live && (
+                <div className="absolute left-full top-1/2 ml-3 -translate-y-1/2">
+                  <MuteButton muted={muted} onToggle={toggleMute} />
+                </div>
+              )}
+            </div>
           </section>
+
+          <section className="row-start-3 flex w-full max-w-xl flex-col items-center" aria-label="Conversation">
+            <StatusLine status={status} secondsLeft={secondsLeft} live={live} />
+            <TranscriptStrip items={transcript.items} onExpand={() => setLogOpen(true)} />
+            <CardTray items={transcript.items} onLink={onLink} onRecap={() => setLogOpen(true)} />
+          </section>
+        </div>
+
+        {showPost && post && (
+          <div ref={postRef} className="mx-auto w-full max-w-md scroll-mb-12 px-4 pb-6 print:hidden">
+            <PostCallPanel
+              post={post}
+              shareUrl={shareUrl}
+              sessionId={sessionId}
+              onRetry={() => void finish()}
+              onShare={() => void createShareLink()}
+              onPrint={() => window.print()}
+            />
+          </div>
         )}
+
+        {/* What "Print or save as PDF" prints. */}
+        <div data-print="transcript" className="hidden space-y-3 p-4 print:block">
+          <TranscriptLines items={transcript.items} onLink={onLink} />
+        </div>
+
+        {logOpen && <TranscriptDialog items={transcript.items} onLink={onLink} onClose={() => setLogOpen(false)} />}
       </main>
 
       <footer className="px-5 pb-6 text-center text-xs print:hidden">

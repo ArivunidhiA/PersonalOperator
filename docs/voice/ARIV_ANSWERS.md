@@ -2,7 +2,7 @@
 
 Ariv's answer sheet (final version, 2026-09-29). The agent uses it two ways:
 
-- **Tone:** the best lines are in `web/lib/system-prompt.ts` under "ARIV'S OWN LINES", and the voice rules (answer, evidence, personality, stop; a confident Harvey Specter style close; show, don't sell) are in the same file.
+- **Tone:** the best lines are in `LINE_POOLS` in `web/lib/system-prompt.ts`, and each call gets a random few of them, so no line turns into a catchphrase. The voice rules are in the same file. Ariv's corrections of 2026-10-31 beat this sheet: no "Fair" openers, and gaps are never volunteered.
 - **Facts:** anything new and true went into `web/lib/knowledge.ts` (relocation, his real weakness, how he works, current projects, free time, forecost's burn-rate "fuel gauge").
 
 ## Not used, and why
