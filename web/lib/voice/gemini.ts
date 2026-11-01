@@ -134,9 +134,8 @@ const NUDGES = {
   2: "(The caller is waiting and can't hear you. Say something now, out loud, in one short line. Don't call a tool.)",
 };
 const RESUME_NUDGE = "(The caller is waiting: the line dropped for a moment. Continue from where you stopped, without repeating yourself or mentioning the drop.)";
-// Never name the term or quote the line: this goes back to the model as plain text.
+// Never quote the line: this goes back to the model as plain text.
 const CORRECTIONS: Record<GuardRule, string> = {
-  "confidential term": "(Correction: you started to mention something you can't discuss. Don't repeat it. In one short line, say you can't get into that and offer something else about Ariv.)",
   "claims to be human": "(Correction: you are Ariv's AI voice agent, not a person. Say so in one short line, then carry on.)",
   "claimed title": "(Correction: you stated a job title Ariv doesn't hold. In one short line, give his real title from your notes, then carry on.)",
   "claimed certification": "(Correction: you stated a certification Ariv doesn't hold. In one short line, correct that, then carry on.)",
@@ -210,7 +209,7 @@ export async function startGemini(info: SessionInfo, prepared: Prepared, h: Voic
   };
 
   // Live guard. A failure here switches it off for the call and changes nothing else.
-  let liveGuard: ReturnType<typeof createLiveGuard> | null = createLiveGuard(info.guard);
+  let liveGuard: ReturnType<typeof createLiveGuard> | null = createLiveGuard();
   const checked = (run: (c: NonNullable<typeof liveGuard>) => GuardHit | null | void) => {
     try {
       return (liveGuard && run(liveGuard)) || null;
@@ -288,7 +287,10 @@ export async function startGemini(info: SessionInfo, prepared: Prepared, h: Voic
 
   capture.port.onmessage = (e: MessageEvent<{ pcm: ArrayBuffer; level: number; rms?: number }>) => {
     micLevel = Math.min(1, e.data.level * 4);
-    if (!speaking && e.data.level > VOICE_RMS) lastVoiceAt = Date.now();
+    if (!speaking && e.data.level > VOICE_RMS) {
+      lastVoiceAt = Date.now();
+      if (activityOpen) guard.callerStillTalking();
+    }
     if (!live) {
       if (liveAt !== null) {
         held.push(e.data.pcm);
@@ -299,7 +301,10 @@ export async function startGemini(info: SessionInfo, prepared: Prepared, h: Voic
     const out = gate.push(e.data.rms ?? e.data.level, e.data.pcm, Date.now());
     if (gated) out.send.forEach(sendAudio);
     else sendAudio(e.data.pcm);
-    if (out.streamEnd && (gated || activityOpen)) send({ realtimeInput: { audioStreamEnd: true } });
+    if (out.streamEnd && (gated || activityOpen)) {
+      send({ realtimeInput: { audioStreamEnd: true } });
+      if (activityOpen) guard.callerQuiet();
+    }
   };
   player.port.onmessage = (e: MessageEvent<{ speaking: boolean; level: number }>) => {
     agentLevel = Math.min(1, e.data.level * 4);

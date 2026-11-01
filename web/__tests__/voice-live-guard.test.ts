@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { startGemini } from "@/lib/voice/gemini";
-import { guardConfig, type GuardConfig } from "@/lib/live-guard";
 import { FakeWS, installGeminiFakes, fakePrepared, fakeHandlers, gInfo } from "./support/gemini-harness";
 
 type Port = { onmessage: ((e: unknown) => void) | null; postMessage: ReturnType<typeof vi.fn> };
@@ -16,9 +15,9 @@ const played = () => player().mock.calls.filter(([m]) => typeof m === "object").
 const corrections = (ws: FakeWS) => ws.sent.filter((m) => JSON.stringify(m).includes(CORRECTION));
 const out = (ws: FakeWS, text: string) => ws.emit({ serverContent: { outputTranscription: { text } } });
 
-async function start(guard?: GuardConfig) {
+async function start() {
   const h = fakeHandlers();
-  const s = await startGemini({ ...gInfo, guard }, { ...fakePrepared() }, h);
+  const s = await startGemini(gInfo, { ...fakePrepared() }, h);
   const ws = FakeWS.last;
   ws.onopen?.();
   await ws.emit({ setupComplete: {} });
@@ -111,28 +110,6 @@ describe("live guard in the call", () => {
     expect(corrections(ws)).toHaveLength(1);
   });
 
-  it("never sends a confidential term or its hash back in the correction", async () => {
-    const cfg = guardConfig(["acmeautomation"], "salt");
-    const { h, ws } = await start(cfg);
-    await out(ws, "He helped acmeautomation ");
-    await out(ws, "ship it. ");
-    expect(flushes()).toBe(1);
-    const sent = JSON.stringify(corrections(ws));
-    expect(sent).toContain(CORRECTION);
-    expect(sent).not.toContain("acmeautomation");
-    expect(sent).not.toContain(cfg.hashes[0]);
-    expect(h.onAgentDelta).not.toHaveBeenCalledWith("ship it. ");
-  });
-
-  it("keeps a confidential term off the screen when it ends the reply", async () => {
-    const { h, ws } = await start(guardConfig(["acmeautomation"], "salt"));
-    await out(ws, "He helped ");
-    await out(ws, "acmeautomation.");
-    await ws.emit({ serverContent: { generationComplete: true } });
-    expect(flushes()).toBe(1);
-    expect(JSON.stringify(vi.mocked(h.onAgentDelta).mock.calls)).not.toContain("acmeautomation");
-  });
-
   it("shows every word of a clean reply once the turn ends", async () => {
     const { h, ws } = await start();
     await out(ws, "He builds");
@@ -161,25 +138,6 @@ describe("live guard in the call", () => {
     const before = ws.sent.length;
     await vi.advanceTimersByTimeAsync(5000);
     expect(ws.sent.length).toBeGreaterThan(before);
-  });
-
-  it("carries on with the call if the guard itself breaks", async () => {
-    const broken = { salt: "s", maxWords: 1, hashes: null } as unknown as GuardConfig;
-    const { h, ws } = await start(broken);
-    await out(ws, "He builds ");
-    await out(ws, BAD);
-    await ws.emit({ serverContent: { generationComplete: true } });
-    await ws.emit({ serverContent: { turnComplete: true } });
-    expect(flushes()).toBe(0);
-    expect(corrections(ws)).toHaveLength(0);
-    expect(h.onAgentDelta).toHaveBeenCalledWith(BAD);
-    expect(h.onEnded).not.toHaveBeenCalled();
-  });
-
-  it("works with no config from an older server", async () => {
-    const { ws } = await start();
-    await out(ws, BAD);
-    expect(flushes()).toBe(1);
   });
 
   it("does not carry a half-checked reply across a reconnect", async () => {

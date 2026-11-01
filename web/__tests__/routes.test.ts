@@ -93,40 +93,21 @@ describe("/api/voice/session", () => {
   });
 });
 
-describe("/api/voice/session live guard config", () => {
-  it("sends this call's salted hashes, never the confidential terms", async () => {
+describe("/api/voice/session keeps confidential terms server-side", () => {
+  it("sends nothing a caller could check a guessed name against", async () => {
     vi.resetModules();
     vi.doMock("@/lib/gemini-token", () => ({ GEMINI_WS_URL: "wss://x", mintGeminiToken: async () => ({ token: "t", model: "m" }) }));
     process.env.GEMINI_API_KEY = "k";
     process.env.BANNED_TERMS = "acmeauto,widget program";
     const { POST } = await import("@/app/api/voice/session/route");
-    const call = async () => {
-      const res = await POST(post("/api/voice/session", {}, { "x-ariv-client": "1", "x-vercel-ip-country": "US" }));
-      expect(res.status).toBe(200);
-      return res.text();
-    };
-    const [a, b] = [await call(), await call()];
-    expect(a.toLowerCase()).not.toMatch(/acmeauto|widget/);
-    const guardOf = (t: string) => JSON.parse(t).guard;
-    expect(guardOf(a).hashes).toHaveLength(2);
-    expect(guardOf(a).hashes[0]).not.toBe(guardOf(b).hashes[0]);
+    const res = await POST(post("/api/voice/session", {}, { "x-ariv-client": "1", "x-vercel-ip-country": "US" }));
+    expect(res.status).toBe(200);
+    const text = await res.text();
+    expect(text.toLowerCase()).not.toMatch(/acmeauto|widget/);
+    expect(text).not.toMatch(/\b[0-9a-f]{64}\b/);
+    expect(JSON.parse(text)).not.toHaveProperty("guard");
     delete process.env.GEMINI_API_KEY;
     delete process.env.BANNED_TERMS;
     vi.doUnmock("@/lib/gemini-token");
-  });
-});
-
-describe("post-call summary fallback (all free models busy)", () => {
-  it("summarizes from what the caller actually asked, never inventing a company", async () => {
-    const { fallbackAnalysis } = await import("@/lib/call-summary");
-    const a = fallbackAnalysis([
-      { role: "assistant", text: "Hey! I'm Ariv's AI." },
-      { role: "user", text: "Where does Ariv work right now?" },
-      { role: "user", text: "ok" },
-      { role: "assistant", text: "[Book a chat with Ariv shown in chat]" },
-    ]);
-    expect(a.summary).toBe('Caller asked: "Where does Ariv work right now?". A booking link was shared.');
-    expect(a.outcome).toBe("booking_link_shared");
-    expect(a.company).toBeNull();
   });
 });

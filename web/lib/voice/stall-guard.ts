@@ -63,6 +63,22 @@ export function createStallGuard(d: StallDeps) {
       talking = false;
       if (owed && tools === 0) arm(replyDelay());
     },
+    /**
+     * The mic went quiet but the server hasn't closed the turn. It may never do so,
+     * and may never send the words, so don't wait for either.
+     */
+    callerQuiet() {
+      if (!talking) return;
+      talking = false;
+      owed = true;
+      if (tools === 0) arm(replyDelay());
+    },
+    /** Voice again in a turn the server still has open. */
+    callerStillTalking() {
+      if (talking) return;
+      talking = true;
+      clear();
+    },
     heard(text: string) {
       const t = text.trim();
       if (!/\p{L}/u.test(t) || FILLER.test(t.replace(/[^\p{L}]/gu, ""))) return;

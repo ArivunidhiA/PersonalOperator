@@ -50,6 +50,34 @@ afterEach(() => {
 });
 
 describe("a caller is never left in silence", () => {
+  it("recovers when the server never closes the caller's turn or sends their words", async () => {
+    const { s, ws, agentSays, mic } = await setup();
+    await agentSays();
+    await vi.advanceTimersByTimeAsync(3000);
+    await ws.emit(activity("ACTIVITY_START"));
+    mic(0.2, 5);
+    await vi.advanceTimersByTimeAsync(1600);
+    mic(0, 2); // the client's silence hangover passes and it sends audioStreamEnd
+    await vi.advanceTimersByTimeAsync(3600);
+    expect(nudges(ws)).toHaveLength(1);
+    s.stop();
+  });
+
+  it("holds the nudge if the caller picks back up in a turn the server still has open", async () => {
+    const { s, ws, agentSays, mic } = await setup();
+    await agentSays();
+    await vi.advanceTimersByTimeAsync(3000);
+    await ws.emit(activity("ACTIVITY_START"));
+    mic(0.2, 5);
+    await vi.advanceTimersByTimeAsync(1600);
+    mic(0, 2);
+    await vi.advanceTimersByTimeAsync(1000);
+    mic(0.2, 5);
+    await vi.advanceTimersByTimeAsync(3000);
+    expect(nudges(ws)).toHaveLength(0);
+    s.stop();
+  });
+
   it("nudges for a long turn well before the old 8 s", async () => {
     const { s, ws, agentSays, callerSays } = await setup();
     await agentSays();

@@ -1,14 +1,11 @@
 import type { UiCard } from "../ui-cards";
 import type { Caption } from "./live-caption";
-import type { GuardConfig } from "../live-guard";
 
 export type SessionInfo = {
   provider: "gemini" | "openai";
   sessionId: string;
   ticket: string;
   maxCallSeconds: number;
-  /** Live guard config for this call: salted hashes only. */
-  guard?: GuardConfig;
   gemini?: { token: string; model: string; wsUrl: string; greeting: string };
 };
 
