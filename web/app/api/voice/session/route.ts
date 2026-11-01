@@ -12,6 +12,8 @@ import { isOwnerUser, recordEvent } from "@/lib/analytics-store";
 import { later } from "@/lib/later";
 import { requestContext } from "@/lib/visitor";
 import { strictPrivacyRegion } from "@/lib/voice-config";
+import { guardConfig } from "@/lib/live-guard";
+import { randomBytes } from "crypto";
 
 /** Optional hints from the page: its visitor id and the Turnstile token. Ownership is never taken from the body. */
 async function readHints(req: Request): Promise<{ vid: string | null; ts: string | null }> {
@@ -109,6 +111,9 @@ export async function POST(req: Request) {
       }),
     );
 
+  // For the live guard: this call's salted hashes, never the terms themselves.
+  const guard = guardConfig((process.env.BANNED_TERMS || "").split(","), randomBytes(16).toString("hex"));
+
   const busy = () =>
     NextResponse.json(
       { error: "The agent has hit its limit for today. Try again tomorrow, or book a call with Ariv below.", code: "busy" },
@@ -119,7 +124,7 @@ export async function POST(req: Request) {
     if (!(await checkLimit("sessionGlobal", "all")).ok) return busy();
     log.info("session started", { sessionId, provider, signedIn: !!uid, country });
     logStart();
-    return NextResponse.json({ provider, sessionId, ticket, maxCallSeconds: MAX_CALL_SECONDS });
+    return NextResponse.json({ provider, sessionId, ticket, guard, maxCallSeconds: MAX_CALL_SECONDS });
   }
 
   try {
@@ -132,6 +137,7 @@ export async function POST(req: Request) {
       provider,
       sessionId,
       ticket,
+      guard,
       maxCallSeconds: MAX_CALL_SECONDS,
       gemini: { token, model, wsUrl: GEMINI_WS_URL, greeting: GREETING_NUDGE },
     });

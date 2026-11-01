@@ -107,7 +107,7 @@ Product-specific facts for the universal rules in `/AGENTS.md`. Promises come fr
 ## 10. Execution matrix
 
 - Browsers: Chrome desktop (automated), Safari iOS / Chrome Android (manual, ORACLE GAP: no device automation here)
-- Locales: English-first; other languages only if the caller speaks full sentences
+- Locales: English only; a caller in another language gets one line in English
 - Timezones: slots shown in US Eastern
 - Screen sizes: 375px mobile to desktop
 - Accessibility: UNKNOWN standard; basics required (labels, live regions, contrast)
@@ -120,7 +120,7 @@ Product-specific facts for the universal rules in `/AGENTS.md`. Promises come fr
 - Retrieval: in-memory keyword search over the fact registry (no embeddings at runtime)
 - Tool permissions: `web/lib/tools.ts` (no email, no caller lookup)
 - Grounding rule: only facts in `lib/knowledge.ts`; numbers only from `ALLOWED_NUMBERS`
-- Refusal rules: INZI confidentiality; visa/salary/personal → "ask Ariv"
+- Refusal rules: INZI confidentiality; salary, start dates and very personal questions → "ask Ariv"; work authorization → only that he is authorized to work, varied wording, nothing further
 - Injection surfaces: caller speech; tool inputs (company/role strings)
 - Historical failures: see `docs/qa/reports/2026-09-28-honest-free-agent.md` (real transcripts)
 - Evaluator: deterministic checks in `web/evals/cases.ts` + `lib/verifier.ts`; no LLM judge

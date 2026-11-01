@@ -93,6 +93,29 @@ describe("/api/voice/session", () => {
   });
 });
 
+describe("/api/voice/session live guard config", () => {
+  it("sends this call's salted hashes, never the confidential terms", async () => {
+    vi.resetModules();
+    vi.doMock("@/lib/gemini-token", () => ({ GEMINI_WS_URL: "wss://x", mintGeminiToken: async () => ({ token: "t", model: "m" }) }));
+    process.env.GEMINI_API_KEY = "k";
+    process.env.BANNED_TERMS = "acmeauto,widget program";
+    const { POST } = await import("@/app/api/voice/session/route");
+    const call = async () => {
+      const res = await POST(post("/api/voice/session", {}, { "x-ariv-client": "1", "x-vercel-ip-country": "US" }));
+      expect(res.status).toBe(200);
+      return res.text();
+    };
+    const [a, b] = [await call(), await call()];
+    expect(a.toLowerCase()).not.toMatch(/acmeauto|widget/);
+    const guardOf = (t: string) => JSON.parse(t).guard;
+    expect(guardOf(a).hashes).toHaveLength(2);
+    expect(guardOf(a).hashes[0]).not.toBe(guardOf(b).hashes[0]);
+    delete process.env.GEMINI_API_KEY;
+    delete process.env.BANNED_TERMS;
+    vi.doUnmock("@/lib/gemini-token");
+  });
+});
+
 describe("post-call summary fallback (all free models busy)", () => {
   it("summarizes from what the caller actually asked, never inventing a company", async () => {
     const { fallbackAnalysis } = await import("@/lib/call-summary");

@@ -26,7 +26,7 @@ export const AGENT_TOOLS: AgentTool[] = [
   {
     name: "retrieve_knowledge",
     description:
-      "Look up a detail about Ariv that isn't already in your instructions (a project detail, a skill, dates). Pass the caller's question or topic as the query.",
+      "Look up anything about Ariv or how you're built that isn't in FACTS: project details, numbers, dates, skills, how the audio or retrieval works. Pass the caller's question or topic as the query.",
     parameters: {
       type: "object",
       properties: {
@@ -39,7 +39,7 @@ export const AGENT_TOOLS: AgentTool[] = [
   {
     name: "research_role",
     description:
-      "Get a short, honest read on how Ariv fits a specific role at a specific company. Call it once the caller has named both the company and the role.",
+      "Get notes on how Ariv fits a specific role at a specific company. Call it once the caller has named both the company and the role.",
     parameters: {
       type: "object",
       properties: {
