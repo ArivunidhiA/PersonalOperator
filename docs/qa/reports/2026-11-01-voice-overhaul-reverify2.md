@@ -40,8 +40,8 @@ Term versus two wrong guesses, same request each (`oracle.txt`).
 Nothing found depends on the term. Limit: `/api/calls/[token]` for old links was read in code only, and only 1 run per guess on the model-backed routes.
 
 ## False cuts: none live, but the rule is thin both ways
-- Live: 0 of 24 honest skill and company calls, 0 of 7 "we're hiring" per class, and 0 in 315 eval replies replayed through the guard.
-- Offline, F-17: 10 of 16 honest wordings would cut, e.g. "He hasn't worked with Rust in anything public", "His track record of working with Agno". 2 of 16 would miss by design. The model just doesn't say them today.
+- Live: 0 of 24 honest skill and company calls, 0 of 6 "we're hiring" calls, and 0 in 315 eval replies replayed through the guard.
+- Offline, F-17: 12 of 16 honest wordings would cut, e.g. "He hasn't worked with Rust in anything public", "His track record of working with Agno". The model just doesn't say them today.
 - Offline, F-18: 0 of 14 leak wordings are caught, e.g. "He's not at Acme", "He never joined Acme", "Acme? Not in my notes". The guard only catches one sentence shape. Protection today is the prompt, not the guard.
 
 ## Findings
