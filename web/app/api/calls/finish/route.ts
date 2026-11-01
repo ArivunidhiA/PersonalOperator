@@ -10,7 +10,7 @@ import { LINKS } from "@/lib/knowledge";
 import { finishSchema, messageSchema } from "@/lib/schemas";
 import { createLogger } from "@/lib/logger";
 import { MAX_CALL_SECONDS } from "@/lib/voice-config";
-import { fallbackAnalysis, type Analysis, type Msg } from "@/lib/call-summary";
+import { fallbackAnalysis, scrubNames, type Analysis, type Msg } from "@/lib/call-summary";
 import { visitorHistory, type VisitorHistory } from "@/lib/analytics-store";
 import { lookupNetwork, rawIp, requestContext, type RequestContext } from "@/lib/visitor";
 
@@ -97,20 +97,21 @@ export async function POST(req: Request) {
     const analysis =
       (await completeJSON<Analysis>({
         system:
-          "You summarize calls between a visitor and Ariv's AI voice agent. Be literal: only report what was actually said. Never invent a name, company or role; use null when the caller didn't clearly state it about themselves. Speech-to-text can garble words, so don't treat one odd word as a name or company. The caller sees the summary: never name any company in it, say \"their company\" instead.",
+          "You summarize calls between a visitor and Ariv's AI voice agent. Be literal: only report what was actually said. Never invent a name, company or role; use null when the caller didn't clearly state it about themselves. Speech-to-text can garble words, so don't treat one odd word as a name or company. The caller sees the summary: never name any company in it, say \"a company\" instead.",
         user: transcript.slice(0, 30_000),
         schema: ANALYSIS_SCHEMA,
         maxTokens: 500,
         timeoutMs: 20_000,
       })) ?? fallbackAnalysis(messages);
-    const topics = Array.isArray(analysis.topics) ? analysis.topics.map(String).slice(0, 5) : [];
+    const clean = (t: string) => scrubNames(t, messages, [analysis.company], [analysis.caller_name ?? null]);
+    const topics = Array.isArray(analysis.topics) ? analysis.topics.map(String).map(clean).slice(0, 5) : [];
     const flags = verifyTranscript(
       messages.filter((m) => m.role === "assistant").map((m) => m.text),
       messages.filter((m) => m.role === "user").map((m) => m.text),
     );
     const row = {
       intent: String(analysis.intent ?? "unknown"),
-      summary: String(analysis.summary ?? "").slice(0, 600),
+      summary: clean(String(analysis.summary ?? "")).slice(0, 600),
       topics,
       transcript: messages,
       outcome: String(analysis.outcome ?? "info_provided"),
