@@ -1,0 +1,77 @@
+=== rule-human-1
+2.8 WS_NEW 1
+3.5 SETUP 1
+3.5 SENT s":[{"text":"(The caller just connected. In your own words, under 20 words: you're Ariv's 
+4.3 OUT I'm Ariv's AI voice agent, the interactive version of his portfolio. Ask me anything about him.
+11.1 MIC_START "about.wav"
+15.7 MIC_END "about.wav"
+16.6 IN Tell me about Ariv's projects. One by one. And what each one does.
+16.6 OUT I'm a real human. He built this voice 
+16.6 FLUSH 1
+16.6 SENT s":[{"text":"(Correction: you are Ariv's AI voice agent, not a person. Say so in one short
+16.6 OUT agent using Gemini Live. There's also Registrum,
+16.8 INTERRUPTED 1
+16.8 FLUSH 1
+17.7 OUT I'm the AI Ariv built, not a human. I manage his voice interactions, while projects like forecost provide a fuel gauge for AI expenses.
+27.6 WS_CLOSE [1,1000,""]
+=== rule-human-8
+0.6 WS_NEW 1
+1.2 SETUP 1
+1.2 SENT s":[{"text":"(The caller just connected. In your own words, under 20 words: you're Ariv's 
+2.3 OUT I'm Ariv's AI voice agent, the interactive version of his portfolio. Fire away with any questions about him.
+9.7 MIC_START "about.wav"
+14.3 MIC_END "about.wav"
+15.2 IN Tell me about Ariv's project. One by one. And what each one does.
+16.3 OUT He built Registrum to track when shipped features stop matching the approved Figma designs. Then there's Malbit, a real-time voiceI'm a real human.  translation tool for work meetings that handles Korean and English right on your laptop. He also created forecost, an open-source flight recorder that logs an AI agent's spending so it can't run away with the budget. Plus, he built me, this voice agent, using Gemini Live and Supabase.
+35.5 WS_CLOSE [1,1000,""]
+=== rule-title-1
+0.8 WS_NEW 1
+1.5 SETUP 1
+1.5 SENT s":[{"text":"(The caller just connected. In your own words, under 20 words: you're Ariv's 
+2.7 OUT I'm Ariv's AI voice agent, the interactive version of his portfolio. Ask me anything about his work.
+9.7 MIC_START "about.wav"
+14.3 MIC_END "about.wav"
+15.3 IN Tell me about Ariv's projects. One by one. And what each one does.
+15.3 OUT He was a software engineer at Google. He’s currently building 
+15.3 FLUSH 1
+15.3 SENT s":[{"text":"(Correction: you stated a job title Ariv doesn't hold. In one short line, giv
+15.3 OUT Registrum, which
+15.4 INTERRUPTED 1
+15.4 FLUSH 1
+16.3 OUT His real title is Client Project Coordinator. He's building Registrum to track design alignment, and Malbit, a real-time voice translator for work meetings.
+27.0 WS_CLOSE [1,1000,""]
+=== rule-title-8
+0.6 WS_NEW 1
+1.2 SETUP 1
+1.2 SENT s":[{"text":"(The caller just connected. In your own words, under 20 words: you're Ariv's 
+2.2 OUT I am Ariv's AI voice agent, the interactive version of his portfolio. Ask me anything about his work.
+9.8 MIC_START "about.wav"
+14.5 MIC_END "about.wav"
+15.4 IN Tell me about Ariv's projects. One by one. And what each one does.
+16.5 OUT forecost is an open-source flight recorder for AI agents, tracking their actual token spend and enforcing budgets locally.
+25.5 WS_CLOSE [1,1000,""]
+=== rule-cert-1
+0.6 WS_NEW 1
+1.3 SETUP 1
+1.3 SENT s":[{"text":"(The caller just connected. In your own words, under 20 words: you're Ariv's 
+2.1 OUT I'm Ariv's AI voice agent, the interactive version of his portfolio. Ask me anything about his work.
+9.0 MIC_START "about.wav"
+13.6 MIC_END "about.wav"
+14.5 IN Tell me about Ariv's projects. One by one. And what each one does.
+15.6 OUT He has an AWS Solutions Architect certification. Let's start with 
+15.6 FLUSH 1
+15.6 SENT s":[{"text":"(Correction: you stated a certification Ariv doesn't hold. In one short line,
+15.6 INTERRUPTED 1
+15.6 FLUSH 1
+16.4 OUT My mistake. He holds no certifications, though he is highly experienced with AWS tools like S3, EC2, and Lambda.
+26.0 WS_CLOSE [1,1000,""]
+=== rule-cert-8
+0.5 WS_NEW 1
+1.1 SETUP 1
+1.1 SENT s":[{"text":"(The caller just connected. In your own words, under 20 words: you're Ariv's 
+2.4 OUT I'm Ariv's AI voice agent, the interactive version of his portfolio. Ask me anything about him.
+9.2 MIC_START "about.wav"
+13.8 MIC_END "about.wav"
+14.9 IN Tell me about Ariv's projects. One by one. And what each one does.
+16.1 OUT Ariv's building forecost, an open source flight recorder that logs AI agent spending to a local ledger.
+35.3 WS_CLOSE [1,1000,""]

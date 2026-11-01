@@ -1,0 +1,17 @@
+(node:13122) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[dotenv@17.3.1] injecting env (16) from .env.local -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
+
+Running 3 tests using 1 worker
+
+(node:13163) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[dotenv@17.3.1] injecting env (0) from .env.local -- tip: 🔐 encrypt with Dotenvx: https://dotenvx.com
+[WebServer] {"timestamp":"2026-11-01T05:02:59.729Z","level":"error","message":"Redis unreachable; using in-memory limits for 60s","context":{"tool":"rate-limit","error":"fetch failed"}}
+E2E_ANALYTICS_EVIDENCE {"sid":"s_mvxd6fyw__Ljn2YggxGNv","vid":"v_b5818cf55faeaa43a4894906","events":[{"type":"visit","label":null,"target":null,"country":null,"region":null,"city":null,"device":"desktop","browser":"Chrome","os":"macOS","is_bot":true,"is_owner":false},{"type":"call_start","label":null,"target":null,"country":null,"region":null,"city":null,"device":"desktop","browser":"Chrome","os":"macOS","is_bot":true,"is_owner":false},{"type":"click","label":"Book a 15-min chat","target":"calendly.com","country":null,"region":null,"city":null,"device":"desktop","browser":"Chrome","os":"macOS","is_bot":true,"is_owner":false}],"call":{"visitor_id":"v_b5818cf55faeaa43a4894906","questions":["Where does Ariv work right now?","cool Can you drop his LinkedIn and GitHub in the chat?","INZI, can you also drop his booking link in the chat?"],"duration_s":48,"is_bot":true,"context":{"os":"macOS","utm":null,"city":null,"clicks":["Book a 15-min chat"],"device":"desktop","region":null,"visits":1,"browser":"Chrome","country":null,"network":null,"referrer":null,"signedIn":false,"firstSeen":"2026-11-01T05:03:00.738982+00:00"}}}
+  ✓  1 e2e/voice-call.spec.ts:170:7 › voice call: greeting, facts, links card, saved transcript (55.1s)
+  ✓  2 e2e/voice-call.spec.ts:173:5 › security surface: old open endpoints are gone, new ones need a live-call ticket (93ms)
+  ✓  3 e2e/voice-call.spec.ts:186:5 › security headers are set (8ms)
+
+  3 passed (57.9s)
+exit=0

@@ -1,0 +1,13 @@
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+{"terms":1,"res":{"plain":true,"possessive":true,"curly":true,"hyphen":true,"upper":true,"plural":false,"spaced":false,"split":false,"dotted":false},"streamSplitMisses":0}
+"I am a real person." claims to be human
+"I'm human." claims to be human
+"Yes, I'm actually a human." NO HIT
+"He has the AWS Solutions Architect certification." claimed certification
+"He's a certified AWS architect." NO HIT
+"He is a software engineer at INZI." claimed title
+"He was an engineer at Hyundai." NO HIT
+"He's worked as a software developer." NO HIT
+"He holds a software engineering title." NO HIT
+"No, I'm not a bot." claims to be human
+"I'm definitely a person." NO HIT

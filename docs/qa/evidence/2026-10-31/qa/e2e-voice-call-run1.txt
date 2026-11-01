@@ -1,0 +1,41 @@
+(node:12936) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[dotenv@17.3.1] injecting env (16) from .env.local -- tip: 🛡️ auth for agents: https://vestauth.com
+
+Running 3 tests using 1 worker
+
+(node:12977) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[dotenv@17.3.1] injecting env (0) from .env.local -- tip: ⚙️  write to custom object with { processEnv: myObject }
+  ✘  1 e2e/voice-call.spec.ts:170:7 › voice call: greeting, facts, links card, saved transcript (1ms)
+(node:12981) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[dotenv@17.3.1] injecting env (0) from .env.local -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
+  ✓  2 e2e/voice-call.spec.ts:173:5 › security surface: old open endpoints are gone, new ones need a live-call ticket (204ms)
+  ✓  3 e2e/voice-call.spec.ts:186:5 › security headers are set (9ms)
+
+
+  1) e2e/voice-call.spec.ts:170:7 › voice call: greeting, facts, links card, saved transcript ──────
+
+    Error: browserType.launch: Executable doesn't exist at /Users/ariv07/Library/Caches/ms-playwright/chromium_headless_shell-1208/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     npx playwright install                                              ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/voice-call-voice-call-gree-720df-links-card-saved-transcript/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/voice-call-voice-call-gree-720df-links-card-saved-transcript/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    e2e/voice-call.spec.ts:170:7 › voice call: greeting, facts, links card, saved transcript ───────
+  2 passed (2.6s)
+exit=1
