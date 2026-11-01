@@ -1,4 +1,4 @@
-import { SYSTEM_PROMPT } from "./system-prompt";
+import { buildSystemPrompt } from "./system-prompt";
 import { AGENT_TOOLS } from "./tools";
 
 /**
@@ -67,7 +67,7 @@ export { GREETING_NUDGE };
 export function buildGeminiLiveConfig(now = new Date()) {
   return {
     responseModalities: ["AUDIO"],
-    systemInstruction: SYSTEM_PROMPT + todayLine(now),
+    systemInstruction: buildSystemPrompt() + todayLine(now),
     tools: [
       {
         functionDeclarations: AGENT_TOOLS.map((t) => ({
@@ -101,7 +101,7 @@ export function buildOpenAISession(now = new Date()) {
     type: "realtime",
     model: OPENAI_REALTIME_MODEL,
     output_modalities: ["audio"],
-    instructions: SYSTEM_PROMPT + todayLine(now),
+    instructions: buildSystemPrompt() + todayLine(now),
     tools: AGENT_TOOLS.map((t) => ({ type: "function", name: t.name, description: t.description, parameters: t.parameters })),
     tool_choice: "auto",
     reasoning: { effort: "low" },
