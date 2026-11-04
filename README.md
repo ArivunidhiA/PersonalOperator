@@ -46,6 +46,8 @@ Here's the setup, kept short.
 **Guardrails worth knowing**
 
 - The agent runs in four modes (greeter, role researcher, scheduler, closer) that live in one prompt, so no rule disappears mid-call.
+- Talk over it and it stops in about a third of a second. The player compares the mic with what it just played, so its own echo never stops it, and a quieter voice in the background can pause it but can't make it drop its reply.
+- A company you name is never said back to you, live or in the summary.
 - No tool can email anyone or read another caller's data. Your name or email never passes through the model.
 - Share links are opt-in and link the copy the server saved. They show "You" and "Ariv's AI" with every name replaced by "a company", are labelled as unverified, and expire after 30 days.
 - Visitors in the EEA, UK and Switzerland see links instead of voice (the free tier can't serve them) and stay anonymous in analytics. Do Not Track and Global Privacy Control turn tracking off entirely.

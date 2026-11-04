@@ -5,7 +5,8 @@
 // - louder than the echo estimate (output level x learned speaker-to-mic coupling),
 // - above the room's noise floor,
 // - near the caller's own speaking level, so a TV or voices across the room don't count.
-// It pauses within ~30 ms of speech, commits (drops the reply) after ~250 ms of it,
+// It pauses within ~30 ms of speech, commits (drops the reply) after ~250 ms of it
+// at close to the caller's own level (a quieter voice can pause, never commit),
 // and resumes if the sound stopped first (a cough, a door, a word from someone else).
 // Exposed on globalThis so the player module and the unit tests can both load it.
 globalThis.BargeDetector = class BargeDetector {
@@ -23,6 +24,8 @@ globalThis.BargeDetector = class BargeDetector {
     this.quiet = 0; // ms of quiet since the pause
     this.paused = false;
     this.peak = 0; // loudest mic-to-output ratio during a pause, to learn from a false one
+    this.ignore = 0; // level of a sound that just paused the agent for nothing; fades over ~3 s
+    this.loudest = 0; // loudest mic level during the current pause
     this.sinceVoice = Infinity; // ms since the last block that sounded like the caller
   }
   farMax() {
@@ -30,14 +33,15 @@ globalThis.BargeDetector = class BargeDetector {
     for (let i = 0; i < this.window; i++) if (this.far[i] > m) m = this.far[i];
     return m;
   }
-  threshold(far) {
-    return Math.max(0.006, this.floor * 4, this.coupling * far * 3, this.caller * 0.2);
+  threshold(far, share = 0.2) {
+    return Math.max(0.006, this.floor * 4, this.coupling * far * 3, this.caller * share, this.ignore);
   }
   /** One block. Returns "pause", "resume", "commit" or null. */
   step(micRms, outRms, agentActive) {
     this.far[this.at] = outRms;
     this.at = (this.at + 1) % this.window;
     this.mic += (micRms - this.mic) * 0.25;
+    this.ignore *= 0.999;
     const far = this.farMax();
     const voice = this.mic > this.threshold(far);
     this.sinceVoice = voice ? 0 : this.sinceVoice + this.blockMs;
@@ -58,12 +62,13 @@ globalThis.BargeDetector = class BargeDetector {
       this.run = voice && agentActive ? this.run + this.blockMs : 0;
       if (this.run < 30) return null;
       this.paused = true;
-      this.speech = this.run;
-      this.quiet = 0;
+      this.speech = this.quiet = 0;
+      this.loudest = this.mic;
       this.peak = far > 0 ? this.mic / far : 0;
       return "pause";
     }
-    if (voice) {
+    this.loudest = Math.max(this.loudest, this.mic);
+    if (this.mic > this.threshold(far, 0.4)) {
       this.speech += this.blockMs;
       this.quiet = 0;
       if (far > 0) this.peak = Math.max(this.peak, this.mic / far);
@@ -71,6 +76,8 @@ globalThis.BargeDetector = class BargeDetector {
     } else if ((this.quiet += this.blockMs) >= 350) {
       // It stopped before it could be the caller talking. If it was echo after all, learn the louder coupling.
       if (this.peak > this.coupling * 3 && this.peak < 1.5) this.coupling = Math.min(1.5, this.peak * 0.5);
+      // A voice in the background: don't stutter on it again, but the caller, louder, still gets through.
+      this.ignore = this.loudest * 1.2;
       return this.reset("resume");
     }
     return null;

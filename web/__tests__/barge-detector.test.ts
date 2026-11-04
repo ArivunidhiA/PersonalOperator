@@ -86,6 +86,22 @@ describe("barge-in detector", () => {
     expect(run(d, 5000, { extra: caller(1000, 3000, 0.012) })).toEqual([]);
   });
 
+  it("lets a quieter voice pause the agent but never drop its reply", () => {
+    const d = make();
+    learnCaller(d);
+    const ev = run(d, 5000, { extra: caller(1000, 3000, 0.018) });
+    expect(ev.some((x) => x.e === "commit")).toBe(false);
+    expect(ev.filter((x) => x.e === "pause").length).toBeLessThanOrEqual(2); // no stutter
+    expect(d.paused).toBe(false);
+  });
+
+  it("still hears the caller right after ignoring a background voice", () => {
+    const d = make();
+    learnCaller(d);
+    const ev = run(d, 5000, { extra: (i) => caller(500, 1500, 0.018)(i) + caller(2200, 1500)(i) });
+    expect(ev.find((x) => x.e === "commit")!.t).toBeLessThan(2600);
+  });
+
   it("learns a loud speaker: at most one false pause, never a dropped reply", () => {
     const d = make();
     const ev = run(d, 15_000, { coupling: 0.6 });
