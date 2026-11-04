@@ -7,7 +7,7 @@ export { normalize };
 /**
  * Deterministic "fast check" on what the agent said (the System-1 idea from
  * TypeSafe's Jev, done with plain code): no model grades itself. Used by the
- * post-call route (flags go into Ariv's notification and gate share links)
+ * post-call route (flags go only into Ariv's notification, never into a share answer)
  * and by the live evals.
  *
  * Confidential names (INZI's customers/programs) are NOT in this public repo:

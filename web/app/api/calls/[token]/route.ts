@@ -2,11 +2,21 @@ import { NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase";
 import { createLogger } from "@/lib/logger";
 import { checkLimit, clientIp } from "@/lib/rate-limit";
+import { scrubNames, type Msg } from "@/lib/call-summary";
 
 const NOINDEX = { "X-Robots-Tag": "noindex, nofollow" };
 
 const log = createLogger({ tool: "share-call" });
 
+/** Speaker labels on the public page. Never the caller's name. */
+const SPEAKERS = { user: "You", assistant: "Ariv's AI" } as const;
+
+/**
+ * Public view of a shared call. Every line, both speakers, plus summary and
+ * topics goes through the same name-blind scrub as the post-call summary, so a
+ * company the caller said doesn't show here. No caller name, no company field,
+ * and no list of confidential names on this path: every name is treated alike.
+ */
 export async function GET(
   req: Request,
   { params }: { params: Promise<{ token: string }> },
@@ -44,7 +54,7 @@ export async function GET(
     // Fetch the call summary
     const { data: call } = await supabase
       .from("call_summaries")
-      .select("session_id, caller_name, intent, summary, topics, transcript, outcome, company, created_at")
+      .select("session_id, intent,summary, topics, transcript, outcome, company, created_at")
       .eq("session_id", tokenRecord.session_id)
       .single();
 
@@ -54,21 +64,20 @@ export async function GET(
 
     log.info("Shared call viewed", { sessionId: tokenRecord.session_id });
 
+    const messages: Msg[] = (Array.isArray(call.transcript) ? call.transcript : []).flatMap((m: { role?: unknown; text?: unknown }) =>
+      (m.role === "user" || m.role === "assistant") && typeof m.text === "string" ? [{ role: m.role, text: m.text } as Msg] : [],
+    );
+    // The company field only widens the scrub; it's never shown.
+    const clean = (t: string) => scrubNames(t, messages, [typeof call.company === "string" ? call.company : null]);
+
     return NextResponse.json({
       verified: false,
-      caller: call.caller_name || "Anonymous",
-      company: call.company || null,
       intent: call.intent,
-      summary: call.summary,
-      topics: call.topics || [],
+      summary: clean(String(call.summary ?? "")),
+      topics: (Array.isArray(call.topics) ? call.topics : []).map(String).map(clean),
       outcome: call.outcome,
       date: call.created_at,
-      transcript: (call.transcript || []).map(
-        (m: { role: string; text: string }) => ({
-          role: m.role === "user" ? "Caller" : "Ariv's AI",
-          text: m.text,
-        }),
-      ),
+      transcript: messages.map((m) => ({ role: SPEAKERS[m.role], text: clean(m.text) })),
     }, { headers: NOINDEX });
   } catch (err) {
     log.error("Share call fetch error", {

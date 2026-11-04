@@ -41,7 +41,7 @@ export default function Privacy() {
         items={[
           "Saved after the call, with a short summary, and emailed to me.",
           "Only things you said about yourself (name, company, role) are kept. Nothing is looked up about you.",
-          "New share links are off. Links made earlier expire after 30 days.",
+          "Share links exist only if you make one, show no names (yours or any company), and expire after 30 days.",
         ]}
       />
 

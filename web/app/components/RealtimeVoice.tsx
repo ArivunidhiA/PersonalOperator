@@ -206,6 +206,16 @@ export default function RealtimeVoice() {
     return l ? Math.max(l.mic, l.agent) : 0;
   }, []);
 
+  // The server links its own saved copy; nothing about the transcript is sent here.
+  const createShareLink = async () => {
+    const info = infoRef.current;
+    if (!info) return;
+    const res = await fetch("/api/calls/share", { method: "POST", headers: { "x-session-ticket": info.ticket } }).catch(() => null);
+    const data = (await res?.json().catch(() => ({}))) as { share_token?: string; error?: string } | undefined;
+    setPost((p) => (p ? { ...p, shareToken: res?.ok ? data?.share_token : undefined, shareError: res?.ok ? undefined : data?.error || "Couldn't make a link." } : p));
+  };
+
+  const shareUrl = post?.shareToken && typeof window !== "undefined" ? `${window.location.origin}/call/${post.shareToken}` : null;
   const live = phase === "live";
   const status = !live
     ? phase === "connecting"
@@ -275,8 +285,10 @@ export default function RealtimeVoice() {
           <div ref={postRef} className="mx-auto w-full max-w-md scroll-mb-12 px-4 pb-6 print:hidden">
             <PostCallPanel
               post={post}
+              shareUrl={shareUrl}
               sessionId={sessionId}
               onRetry={() => void finish()}
+              onShare={() => void createShareLink()}
               onPrint={() => window.print()}
             />
           </div>

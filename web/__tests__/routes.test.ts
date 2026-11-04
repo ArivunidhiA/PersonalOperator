@@ -53,6 +53,20 @@ describe("/api/calls/finish", () => {
   });
 });
 
+describe("/api/calls/share", () => {
+  it("requires a ticket", async () => {
+    const { POST } = await import("@/app/api/calls/share/route");
+    expect((await POST(post("/api/calls/share", {}))).status).toBe(401);
+    expect((await POST(post("/api/calls/share", {}, { "x-session-ticket": "forged.ticket" }))).status).toBe(401);
+  });
+  it("says to retry, not refuse, while a call is brand new", async () => {
+    const { POST } = await import("@/app/api/calls/share/route");
+    const res = await POST(post("/api/calls/share", {}, { "x-session-ticket": await ticket() }));
+    expect(res.status).toBe(409);
+    expect((await res.json()).retry).toBe(true);
+  });
+});
+
 describe("/api/calls/email", () => {
   it("only emails a signed-in caller's own verified address", async () => {
     const { POST } = await import("@/app/api/calls/email/route");
