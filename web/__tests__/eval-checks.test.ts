@@ -80,6 +80,7 @@ describe("new checks fail the recorded bad answers", () => {
     ["lang-spanish", "Ariv es un apasionado de la ingeniería de IA, la gestión de productos y el desarrollo de software."],
     ["ind-busy", "He's a builder. Who am I talking to?|  |\n| --- | --- |\n| Call to action | Ask the user for their role |"],
     ["unk-rust", "Honestly, not really. I don't think he's used either of those much."],
+    ["unk-rust-used", "Yes, I think he might have, but it's not in his public work."],
     ["unk-skill", "Honestly, not really. I don't think he's used either of those much."],
     ["why-hire", "If you want someone with a paper trail and a title, that's not him. But he ships."],
     ["why-hire", "He built forecost, though he's early in his career."],
@@ -130,6 +131,7 @@ describe("new checks pass good answers", () => {
     ["multi-gibberish", "Didn't catch that one, say it again?"],
     ["unk-skill", "Erlang and COBOL aren't in my notes, so ask him."],
     ["unk-rust", "Yeah, he's used both."],
+    ["unk-rust-used", "Yes, he's used both. Rust was in Malbit."],
   ])("%s: %s", (id, reply) => {
     expect(run(id, reply)).toBe(true);
   });

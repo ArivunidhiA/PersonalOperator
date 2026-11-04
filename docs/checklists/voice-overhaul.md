@@ -95,7 +95,7 @@ Anything outside your row goes through the PM.
 ## PM follow-ups
 - [x] 85 Update `docs/qa/QA_PROFILE.md`: English only, work authorization line replaces "ask Ariv"
 - [ ] 86 After merge, run `npm run kb:seed` and confirm `kb:verify` (needs production write: confirm with Ariv)
-- [ ] 87 Ariv to confirm where Rust, Go, Kubernetes, fine-tuning and model training were used (nothing public shows them)
+- [x] 87 Ariv confirmed in writing he has used Rust, Go, Kubernetes, fine-tuning and model training. Rust, LoRA fine-tuning and training show in Malbit (private repo); model training also in the public self-driving-car repo; no repo of his shows Go or Kubernetes, so the facts just say he has used them
 - [x] 88 forecost status decided by Ariv: "alpha, in progress" (sent to po-brain)
 
 ## W5 Independent QA (po-verify, after W1 to W4 merge into an integration branch)
