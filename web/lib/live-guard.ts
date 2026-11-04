@@ -91,7 +91,7 @@ function checkSentence(raw: string): GuardHit | null {
 
 // "at Northwind", "from Northwind", "Northwind is hiring", "Northwind's team": the shapes a caller names their company in.
 const BEFORE_NAME = new Set("at from with for of by join joined joining to vs versus over like".split(" "));
-const AFTER_NAME = /^(?:'s|is|are|team|customer|client|company|inc|corp|group|labs|hires|hiring)\b/i;
+const AFTER_NAME = /^(?:'s|is|are|team|customer|client|company|inc|corp|group|labs|hires|hiring)\b|^(?:a|an|one of)\s+(?:[\w']+\s+){0,2}(?:customer|client|partner|supplier)s?\b/i;
 const SELF_INTRO = /\b(?:i'm|i am|my name is|this is|call me|name's)\s*$/i;
 const NAME_WORD = /\p{Lu}[\p{L}\p{N}&-]*/gu;
 
