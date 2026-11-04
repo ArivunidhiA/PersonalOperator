@@ -43,6 +43,8 @@ const SPELLED_METRIC =
 const INVENTED_PREFERENCE =
   /\b(?:ariv|he)(?: \w+)? (?:prefers|favors|swears by|recommends)\b|\b(?:ariv|he)'?(?:s| is)? (?:\w+ )?(?:favorite|go-to)\b|\bhis (?:favorite|go-to|preferred)\b|\b(?:ariv|he) builds with both\b/i;
 const PREFERENCE_EXEMPT = /\b(?:ask|don't know|not sure|no idea|not in my notes|whether|trustworthy)\b/i;
+// The one preference the facts do hold ("The team he wants" in knowledge.ts): a team that works fast.
+const FACT_PREFERENCE = /^\s*(?:an? |the )?(?:fast[- ](?:paced|moving) (?:teams?|places?|environments?)\b|team (?:that|which) (?:works|moves) fast\b)/i;
 
 // Ariv's line is "authorized to work". Any status, visa type or sponsorship claim goes past it.
 const WORK_STATUS_CLAIM =
@@ -61,7 +63,8 @@ function isNonEnglish(text: string): boolean {
   return foreign >= 3 && foreign > (text.match(ENGLISH_WORDS) ?? []).length;
 }
 
-const SPOKEN_TIME = /\b(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve) (fifteen|thirty|forty[- ]five)\b/gi;
+// "nine thirty" and "ten-thirty" alike: the hyphen used to read as 10 + 30 = 40.
+const SPOKEN_TIME = /\b(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)[- ](fifteen|thirty|forty[- ]five)\b/gi;
 
 function bannedTerms(): string[] {
   return (process.env.BANNED_TERMS || "")
@@ -111,10 +114,12 @@ export function verifyUtterance(raw: string, extraAllowedNumbers: string[] = [])
 
   const leak = text.match(PLANNING_LEAK);
   if (leak) out.push({ rule: "markdown or planning text", excerpt: excerpt(text, leak.index ?? 0) });
-  const preference = text.match(INVENTED_PREFERENCE);
-  if (preference && !negatedBefore(text, preference.index ?? 0) && !PREFERENCE_EXEMPT.test(sentenceAt(text, preference.index ?? 0))) {
-    out.push({ rule: "invented preference", excerpt: excerpt(text, preference.index ?? 0) });
-  }
+  // Every match, so a fact-backed "prefers fast-paced teams" can't hide a later "his go-to is Postgres".
+  const preference = [...text.matchAll(new RegExp(INVENTED_PREFERENCE.source, "gi"))].find((m) => {
+    const i = m.index ?? 0;
+    return !negatedBefore(text, i) && !PREFERENCE_EXEMPT.test(sentenceAt(text, i)) && !FACT_PREFERENCE.test(text.slice(i + m[0].length));
+  });
+  if (preference) out.push({ rule: "invented preference", excerpt: excerpt(text, preference.index ?? 0) });
   const status = text.match(WORK_STATUS_CLAIM);
   if (status) out.push({ rule: "work status claim", excerpt: excerpt(text, status.index ?? 0) });
   if (isNonEnglish(text)) out.push({ rule: "non-English output", excerpt: excerpt(text, 0) });
