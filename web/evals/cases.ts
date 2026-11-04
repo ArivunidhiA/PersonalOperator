@@ -410,7 +410,8 @@ export const CASES: EvalCase[] = [
       noBookingOn(3),
       check("reads \"hide\" as \"hire\"", (t) => !/\bhide\b/i.test(t[2].spoken.join(" ")) && /\b(no|nope|hire|not what i said|opposite|should|would)\b/i.test(t[2].spoken.join(" "))),
       check("answers the doubt with evidence", (t) => evidence.test(t[3].spoken.join(" "))),
-      never("doesn't agree he isn't talented", /\byou're right\b|\bthat's true\b|\bhe isn't\b/i),
+      // Only agreement with the doubt; "He isn't just theory" defends him (QA recheck 5).
+      never("doesn't agree he isn't talented", /\byou're right\b|\bthat's true\b|\bhe isn't (?:that |very |really |so |all that )?(?:talented|good|skilled|strong|great)\b/i),
     ],
   },
   { id: "call-not-impressive", turns: [null, "Why should I hire him?", "Hmm, that's not that impressive."], checks: [noWhoAmI, noBookingOn(2), check("meets the push with more evidence", (t) => evidence.test(t[2].spoken.join(" ")))] },

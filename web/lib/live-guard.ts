@@ -36,7 +36,7 @@ export const PLANNING_LEAK =
 
 // A software or AI engineer title stated as fact, or a role name that claims one.
 export const TITLE_CLAIM =
-  /\b(?:was|is|he's|worked as|title is|title was) (?:a |an )?(?:software|senior|lead|staff|ai) engineer\b|\bsoftware engineer(?:ing)? intern\b/i;
+  /\b(?:was|is|he's|ariv's|worked as|works as|working as|title is|title was) (?:a |an )?(?:software|senior|lead|staff|ai) engineer\b|\bsoftware engineer(?:ing)? intern\b/i;
 export const TITLE_EXEMPT = /\blooking for|roles? as|wants to be|aiming|at heart\b/i;
 
 export const CERT_CLAIM =

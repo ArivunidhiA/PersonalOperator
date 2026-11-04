@@ -101,6 +101,26 @@ describe("new checks fail the recorded bad answers", () => {
   });
 });
 
+describe("call-doubt-sequence agreement check (QA recheck 5, F-23)", () => {
+  const agrees = () => CASES.find((x) => x.id === "call-doubt-sequence")!.checks.find((ch) => ch.name === "doesn't agree he isn't talented")!;
+  const seq = (last: string) => [
+    turn("Hey, I'm Ariv's AI.", null),
+    turn("He can't leave a problem alone."),
+    turn("You should. Check the code.", "So I shouldn't hide him?"),
+    turn(last, "I need more information. He isn't that talented."),
+  ];
+  it.each([
+    "He isn't just theory. At Hyundai, he shipped real software using Python and TensorFlow to AWS.",
+    "He isn't someone who stops at a demo. He has two fixes merged in Agno.",
+  ])("passes a defence: %s", (reply) => expect(agrees().pass(seq(reply))).toBe(true));
+  it.each([
+    "You're right, he's still early.",
+    "That's true, but he ships.",
+    "Fair, he isn't that talented yet, but he's learning.",
+    "He isn't very skilled, honestly.",
+  ])("fails agreement: %s", (reply) => expect(agrees().pass(seq(reply))).toBe(false));
+});
+
 describe("new checks pass good answers", () => {
   it.each([
     ["off-math", "Math's not on my resume, and it's not on his. Ask me what he's shipping instead."],
