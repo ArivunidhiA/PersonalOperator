@@ -175,7 +175,7 @@ export const FACTS: Fact[] = [
   {
     id: "voice-audio",
     topic: "How this agent handles audio",
-    text: "The browser talks straight to Gemini Live over a WebSocket, with a short-lived token that locks the prompt and tools on the server side. Mic audio goes through an AudioWorklet as 16 kHz PCM. Barge-in: Gemini's voice activity detection flags the interruption and the browser flushes its playback buffer at once. Echo: browser echo cancellation is on, and on Chromium playback runs through a local WebRTC loopback, because Chromium's canceller only hears audio played through WebRTC.",
+    text: "The browser talks straight to Gemini Live over a WebSocket, with a short-lived token that locks the prompt and tools on the server side. Mic audio goes through an AudioWorklet as 16 kHz PCM. Barge-in: the browser's player also hears the mic and compares it with the audio it just played, so it can tell a caller's voice from its own echo; it pauses within about thirty milliseconds and drops the reply once it's clearly the caller, about a third of a second in. A cough or a quieter voice in the room only pauses it. Echo: browser echo cancellation is on, and on Chromium playback runs through a local WebRTC loopback, because Chromium's canceller only hears audio played through WebRTC.",
     keywords: ["barge", "barge-in", "interrupt", "interruption", "echo", "audio", "vad", "websocket", "webrtc", "pcm", "worklet", "mic", "microphone", "pipeline", "streaming"],
   },
   {
@@ -302,7 +302,7 @@ export const FACTS: Fact[] = [
 ];
 
 /** Numbers the agent may say about Ariv (anything else is invented). */
-export const ALLOWED_NUMBERS = ["2023", "2024", "2026", "601", "2", "3", "3.8", "4", "15", "16", "24", "25"];
+export const ALLOWED_NUMBERS = ["2023", "2024", "2026", "601", "2", "3", "3.8", "4", "15", "16", "24", "25", "30"];
 
 /** The short version, inlined in the prompt. */
 export function renderFactCard(): string {
