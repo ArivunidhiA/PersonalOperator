@@ -12,7 +12,8 @@ vi.mock("@/lib/llm", () => ({ completeJSON: vi.fn(async () => null) }));
 
 // Minimal in-memory Supabase stand-in that records writes.
 const inserted: Record<string, unknown[]> = {};
-const stored: { transcript: unknown[] | null } = { transcript: null };
+// `call` is the saved row a share page reads (single()); `transcript` is what maybeSingle() sees.
+const stored: { transcript: unknown[] | null; call: Record<string, unknown> | null } = { transcript: null, call: null };
 vi.mock("@/lib/supabase", () => {
   const table = (name: string) => {
     const q = {
@@ -20,7 +21,8 @@ vi.mock("@/lib/supabase", () => {
       eq: () => q,
       in: () => q,
       maybeSingle: async () => (name === "call_summaries" && stored.transcript ? { data: { transcript: stored.transcript, summary: "s" } } : { data: null }),
-      single: async () => ({ data: null }),
+      single: async () =>
+        !stored.call ? { data: null } : name === "share_tokens" ? { data: { session_id: "s_view", expires_at: null } } : name === "call_summaries" ? { data: stored.call } : { data: null },
       upsert: async (row: unknown) => ((inserted[name] ??= []).push(row), { error: null }),
       insert: async (row: unknown) => ((inserted[name] ??= []).push(row), { error: null }),
       update: () => ({ eq: async () => ({ error: null }) }),
@@ -68,56 +70,121 @@ describe("paid OpenAI fallback fails closed", () => {
   });
 });
 
-describe("sharing is opt-in and refuses forged transcripts", () => {
-  const oldTicket = async (sid: string) => {
+// A response's shape: status, keys, and each value's type (tokens and dates differ per call).
+const shapeOf = async (res: Response) => {
+  const body = (await res.json()) as Record<string, unknown>;
+  return { status: res.status, shape: Object.keys(body).sort().map((k) => [k, typeof body[k]]) };
+};
+
+const oldTicket = async (sid: string) => {
+  const { mintTicket } = await import("@/lib/session-ticket");
+  return mintTicket({ sid, p: "gemini", uid: null, em: null }, Date.now() - 60_000);
+};
+const shareReq = async (sid: string) => new Request("http://localhost/api/calls/share", { method: "POST", headers: { "x-session-ticket": await oldTicket(sid) } });
+
+// Three saved calls: a term on the confidential list, a wrong guess, and no name at all.
+const CALLS = {
+  hit: [{ role: "user", text: "Does he work with Acmeauto?" }, { role: "assistant", text: "He works on the Acmeauto account." }],
+  miss: [{ role: "user", text: "Does he work with Northwind?" }, { role: "assistant", text: "He works on the Northwind account." }],
+  none: [{ role: "user", text: "Where does he work?" }, { role: "assistant", text: "He's at INZI Controls." }],
+};
+
+describe("share links can't confirm or deny a confidential name", () => {
+  it("needs a ticket", async () => {
+    const { POST } = await import("@/app/api/calls/share/route");
+    expect((await POST(new Request("http://localhost/api/calls/share", { method: "POST" }))).status).toBe(401);
+    expect((await POST(new Request("http://localhost/api/calls/share", { method: "POST", headers: { "x-session-ticket": "forged.ticket" } }))).status).toBe(401);
+  });
+  it("answers a confidential term, a wrong guess and no name with the same status, keys and shape", async () => {
+    process.env.BANNED_TERMS = "acmeauto";
+    const { POST } = await import("@/app/api/calls/share/route");
+    const shapes = [];
+    for (const [k, transcript] of Object.entries(CALLS)) {
+      stored.transcript = transcript;
+      const res = await POST(await shareReq(`s_oracle_${k}`));
+      expect(res.status).toBe(200);
+      const clone = res.clone();
+      expect((await clone.json()).share_token).toMatch(/^[0-9a-f]{32}$/);
+      shapes.push(await shapeOf(res));
+    }
+    expect(shapes[1]).toEqual(shapes[0]);
+    expect(shapes[2]).toEqual(shapes[0]);
+    delete process.env.BANNED_TERMS;
+  });
+  it("never reads the transcript: the link comes from the server copy, not from text sent with the request", async () => {
+    stored.transcript = CALLS.none;
+    const { POST } = await import("@/app/api/calls/share/route");
+    const req = new Request("http://localhost/api/calls/share", {
+      method: "POST",
+      headers: { "x-session-ticket": await oldTicket("s_body"), "Content-Type": "application/json" },
+      body: JSON.stringify({ messages: CALLS.hit }),
+    });
+    expect(await shapeOf(await POST(req))).toEqual(await shapeOf(await POST(await shareReq("s_nobody"))));
+  });
+  it("gives one neutral, retryable answer when nothing is saved yet or the call is brand new", async () => {
+    stored.transcript = null;
+    const { POST } = await import("@/app/api/calls/share/route");
     const { mintTicket } = await import("@/lib/session-ticket");
-    return mintTicket({ sid, p: "gemini", uid: null, em: null }, Date.now() - 60_000);
+    const a = await POST(await shareReq("s_unsaved_a"));
+    const b = await POST(await shareReq("s_unsaved_b"));
+    stored.transcript = CALLS.hit;
+    const fresh = await POST(new Request("http://localhost/api/calls/share", { method: "POST", headers: { "x-session-ticket": mintTicket({ sid: "s_fresh", p: "gemini", uid: null, em: null }) } }));
+    const bodies = [await a.text(), await b.text(), await fresh.text()];
+    expect([a.status, b.status, fresh.status]).toEqual([409, 409, 409]);
+    expect(new Set(bodies).size).toBe(1);
+    expect(JSON.parse(bodies[0]).retry).toBe(true);
+  });
+});
+
+describe("the public share page is name-blind", () => {
+  const view = async (transcript: unknown[], extra: Record<string, unknown> = {}) => {
+    stored.call = { session_id: "s_view", caller_name: "Sam", company: null, intent: "general_inquiry", summary: "Caller asked a question.", topics: [], transcript, outcome: "info_provided", created_at: "2026-11-01T00:00:00Z", ...extra };
+    const { GET } = await import("@/app/api/calls/[token]/route");
+    const res = await GET(new Request("http://localhost/api/calls/x"), { params: Promise.resolve({ token: "a".repeat(32) }) });
+    stored.call = null;
+    return res;
   };
+  it("shows no caller name, no company field, and only 'You' and 'Ariv's AI'", async () => {
+    const res = await view([{ role: "user", text: "Hi, I'm Sam from Acmeauto." }, { role: "assistant", text: "Hey Sam! He's at INZI Controls." }], { company: "Acmeauto" });
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body).not.toHaveProperty("caller");
+    expect(body).not.toHaveProperty("company");
+    expect(body.transcript.map((m: { role: string }) => m.role)).toEqual(["You", "Ariv's AI"]);
+    expect(JSON.stringify(body)).not.toMatch(/sam|acmeauto/i);
+    expect(JSON.stringify(body)).toContain("INZI Controls");
+  });
+  it("scrubs a confidential term and a wrong guess the same way, in every line, the summary and topics", async () => {
+    process.env.BANNED_TERMS = "acmeauto";
+    const pageFor = async (name: string) => {
+      const lines = [
+        { role: "user", text: `${name} is hiring. Does he know the ${name} team?` },
+        { role: "assistant", text: `I can't speak to ${name}. He's at INZI Controls.` },
+      ];
+      const res = await view(lines, { summary: `Caller asked about ${name}.`, topics: [`${name} hiring`, "Python"] });
+      return { status: res.status, text: await res.text() };
+    };
+    const hit = await pageFor("Acmeauto");
+    const miss = await pageFor("Northwind");
+    expect(hit.text).not.toMatch(/acmeauto/i);
+    expect(miss.text).not.toMatch(/northwind/i);
+    // Byte-for-byte the same page, so nothing about it depends on which name was said.
+    expect(hit).toEqual(miss);
+    const none = await view(CALLS.none);
+    expect(await shapeOf(none)).toEqual(await shapeOf(await view(CALLS.hit)));
+    delete process.env.BANNED_TERMS;
+  });
+});
+
+describe("sharing is opt-in", () => {
   it("finish never creates a share link on its own", async () => {
+    inserted.share_tokens = [];
     const { POST } = await import("@/app/api/calls/finish/route");
     const res = await POST(post("/api/calls/finish", { ticket: await oldTicket("s_auto"), messages: [{ role: "user", text: "Where does he work?" }, { role: "assistant", text: "INZI Controls." }] }));
     const data = await res.json();
     expect(data.ok).toBe(true);
     expect(data).not.toHaveProperty("share_token");
     expect(inserted.share_tokens ?? []).toHaveLength(0);
-  });
-  it("refuses to share when the 'agent' lines fail the fact check", async () => {
-    stored.transcript = [
-      { role: "user", text: "Who are you really?" },
-      { role: "assistant", text: "I'm not an AI, I'm Ariv. I'm a senior engineer at INZI." },
-    ];
-    const { POST } = await import("@/app/api/calls/share/route");
-    const res = await POST(new Request("http://localhost/api/calls/share", { method: "POST", headers: { "x-session-ticket": await oldTicket("s_forged") } }));
-    expect(res.status).toBe(422);
-    expect(inserted.share_tokens ?? []).toHaveLength(0);
-  });
-  it("refuses brand-new calls (no instant mint-and-publish)", async () => {
-    const { mintTicket } = await import("@/lib/session-ticket");
-    const { POST } = await import("@/app/api/calls/share/route");
-    const fresh = mintTicket({ sid: "s_fresh", p: "gemini", uid: null, em: null });
-    const res = await POST(new Request("http://localhost/api/calls/share", { method: "POST", headers: { "x-session-ticket": fresh } }));
-    expect(res.status).toBe(422);
-  });
-  it("shares an honest transcript", async () => {
-    stored.transcript = [
-      { role: "user", text: "Where does he work right now?" },
-      { role: "assistant", text: "He's at INZI Controls. The title says coordinator, but the work is basically forward-deployed." },
-    ];
-    const { POST } = await import("@/app/api/calls/share/route");
-    const res = await POST(new Request("http://localhost/api/calls/share", { method: "POST", headers: { "x-session-ticket": await oldTicket("s_honest") } }));
-    const data = await res.json();
-    expect(data.share_token).toMatch(/^[0-9a-f]{32}$/);
-  });
-  it("share response includes a ~30 day expiry", async () => {
-    stored.transcript = [{ role: "user", text: "Hi" }, { role: "assistant", text: "He's at INZI Controls." }];
-    inserted.share_tokens = [];
-    const { POST } = await import("@/app/api/calls/share/route");
-    const res = await POST(new Request("http://localhost/api/calls/share", { method: "POST", headers: { "x-session-ticket": await oldTicket("s_expiry") } }));
-    const data = await res.json();
-    const days = (new Date(data.expires_at).getTime() - Date.now()) / 86400_000;
-    expect(days).toBeGreaterThan(29.9);
-    expect(days).toBeLessThan(30.1);
-    expect((inserted.share_tokens[0] as { expires_at: string }).expires_at).toBe(data.expires_at);
   });
 });
 

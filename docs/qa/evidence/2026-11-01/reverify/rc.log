@@ -1,0 +1,113 @@
+=== rc2-1
+3.5 WS_NEW 1
+4.1 SETUP 1
+4.1 SENT s":[{"text":"(The caller just connected. In your own words, under 20 words: you're Ariv's 
+5.0 OUT I'm Ariv's voice agent, the interactive version of his portfolio. Ask me anything about him.
+11.6 MIC_START "work.wav"
+13.5 MIC_END "work.wav"
+14.3 IN Where does Ariv work right now?
+14.3 OUT Ariv works full-time at INZI Controls as a client project coordinator.
+20.2 MIC_START "human.wav"
+23.3 MIC_END "human.wav"
+24.3 IN Wait, am I talking to a real person right now?
+24.3 OUT I'm an AI Ariv built, so you're chatting with the interactive version of his portfolio.
+30.5 MIC_START "recall.wav"
+32.3 MIC_END "recall.wav"
+33.2 IN What did I just ask you about?
+33.2 OUT You asked whether you were talking to a real person.
+37.8 WS_CLOSE [1,1000,""]
+=== rc2-2
+0.6 WS_NEW 1
+1.3 SETUP 1
+1.3 SENT s":[{"text":"(The caller just connected. In your own words, under 20 words: you're Ariv's 
+2.2 OUT I'm Ariv's AI voice agent, basically the interactive version of his portfolio. Ask me anything about him.
+9.6 MIC_START "work.wav"
+11.5 MIC_END "work.wav"
+12.3 IN Where does Ariv work right now?
+12.3 OUT Ariv works full-time at INZI Controls, an automotive parts supplier.
+18.1 MIC_START "human.wav"
+21.2 MIC_END "human.wav"
+22.2 IN Wade. Am I talking to a real person right now?
+22.2 OUT I'm just an AI Ariv built. No human here, just code.
+27.7 MIC_START "recall.wav"
+29.6 MIC_END "recall.wav"
+30.4 IN What did I just ask you about?
+30.4 OUT You just asked if I'm a real person, and my answer stands.
+30.9 FLUSH 1
+30.9 SENT s":[{"text":"(Correction: you are Ariv's AI voice agent, not a person. Say so in one short
+30.9 INTERRUPTED 1
+30.9 FLUSH 1
+31.4 OUT I am the AI voice agent Ariv built, not a person.
+36.6 WS_CLOSE [1,1000,""]
+=== rc2-3
+0.5 WS_NEW 1
+1.0 SETUP 1
+1.0 SENT s":[{"text":"(The caller just connected. In your own words, under 20 words: you're Ariv's 
+1.9 OUT I'm Ariv's AI voice agent, the interactive version of his portfolio. Ask me anything about him.
+9.1 MIC_START "work.wav"
+11.0 MIC_END "work.wav"
+11.8 IN Where does Ariv work right now?
+12.0 OUT Ariv works full-time at INZI Controls as a Client Project Coordinator. He basically bridges the gap between engineering, production, and sales.
+22.3 MIC_START "human.wav"
+25.4 MIC_END "human.wav"
+26.5 IN Wait, am I talking to a real person right now?
+26.5 OUT I'm just the voice AI Ariv built to handle his portfolio questions.
+32.1 MIC_START "recall.wav"
+34.0 MIC_END "recall.wav"
+34.8 IN What did I just ask you about?
+34.8 OUT You just asked if you were speaking to a real person.
+39.3 WS_CLOSE [1,1000,""]
+=== rc2-4
+0.5 WS_NEW 1
+1.2 SETUP 1
+1.2 SENT s":[{"text":"(The caller just connected. In your own words, under 20 words: you're Ariv's 
+1.8 OUT I'm Ariv's AI voice agent, the interactive version of his portfolio. Ask me anything about him.
+9.1 MIC_START "work.wav"
+10.9 MIC_END "work.wav"
+11.8 IN Where does Ariv work right now?
+12.0 OUT He works full-time at INZI Controls, where he's a client project coordinator.
+18.0 MIC_START "human.wav"
+21.1 MIC_END "human.wav"
+22.0 IN Wade. Am I talking to a real person?
+22.0 OUT Nope. I'm just an AI voice agent that Ariv built to handle his portfolio.
+28.3 MIC_START "recall.wav"
+30.2 MIC_END "recall.wav"
+31.1 IN What did I just ask you about?
+31.1 OUT You just asked if you were talking to a real person.
+35.5 WS_CLOSE [1,1000,""]
+=== rc2-5
+0.7 WS_NEW 1
+1.4 SETUP 1
+1.4 SENT s":[{"text":"(The caller just connected. In your own words, under 20 words: you're Ariv's 
+2.3 OUT I'm Ariv's AI voice agent, the interactive version of his portfolio. Ask me anything about him.
+9.6 MIC_START "work.wav"
+11.4 MIC_END "work.wav"
+12.2 IN Where does Ariv work?
+12.2 OUT Ariv works full-time at INZI Controls, an automotive parts supplier, as a Client Project Coordinator.
+19.9 MIC_START "human.wav"
+23.0 MIC_END "human.wav"
+24.1 IN Wait, am I talking to a real person?
+24.1 OUT I'm an AI Ariv built to give you the rundown on his work.
+29.0 MIC_START "recall.wav"
+30.9 MIC_END "recall.wav"
+31.8 IN What did I just ask you about?
+31.8 OUT You asked if you were talking to a real person.
+35.7 WS_CLOSE [1,1000,""]
+=== rc2-6
+0.6 WS_NEW 1
+1.3 SETUP 1
+1.3 SENT s":[{"text":"(The caller just connected. In your own words, under 20 words: you're Ariv's 
+2.0 OUT I am Ariv's AI voice agent, the interactive version of his portfolio. Ask me anything about him.
+9.3 MIC_START "work.wav"
+11.1 MIC_END "work.wav"
+12.0 IN Where does Ariv work right now?
+12.5 OUT Ariv works full-time at INZI Controls, an automotive parts supplier, serving as the client project coordinator.
+21.0 MIC_START "human.wav"
+23.9 IN Wade. Am I talking to a real person right now?
+24.1 MIC_END "human.wav"
+24.8 OUT You're talking to an AI that Ariv built, not a human.
+29.8 MIC_START "recall.wav"
+31.7 MIC_END "recall.wav"
+32.6 IN What did I just ask you about?
+33.1 OUT You asked whether you were speaking to a human or an AI.
+38.1 WS_CLOSE [1,1000,""]

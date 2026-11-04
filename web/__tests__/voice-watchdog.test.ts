@@ -23,7 +23,7 @@ async function setup() {
   const capture = nodes[0];
   const voice = (level = 0.1) => capture.port.onmessage?.({ data: { pcm: new ArrayBuffer(2), level } });
   const modelAnswers = async () => {
-    await ws.emit({ serverContent: { modelTurn: { parts: [{}] }, outputTranscription: { text: "Sure." } } });
+    await ws.emit({ serverContent: { modelTurn: { parts: [{ inlineData: { data: "AAAA" } }] }, outputTranscription: { text: "Sure." } } });
     await ws.emit({ serverContent: { turnComplete: true } });
   };
   const transcript = (text: string) => ws.emit({ serverContent: { inputTranscription: { text } } });
@@ -50,14 +50,14 @@ describe("stall watchdog", () => {
     s.stop();
   });
 
-  it("still nudges once when the caller really spoke after the answer and the model stays silent", async () => {
+  it("nudges when the caller really spoke after the answer and the model stays silent", async () => {
     const { s, ws, voice, modelAnswers, transcript } = await setup();
     await modelAnswers();
     await vi.advanceTimersByTimeAsync(1000);
     voice();
     await vi.advanceTimersByTimeAsync(3000);
     await transcript("what projects are you building");
-    await vi.advanceTimersByTimeAsync(9000);
+    await vi.advanceTimersByTimeAsync(4000);
     expect(nudges(ws)).toHaveLength(1);
     s.stop();
   });

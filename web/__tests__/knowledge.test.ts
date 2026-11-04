@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { ALLOWED_NUMBERS, FACTS, LINKS, renderFactCard, searchFacts } from "@/lib/knowledge";
-import { SYSTEM_PROMPT } from "@/lib/system-prompt";
+import { LINE_POOLS, SYSTEM_PROMPT, buildSystemPrompt, sampleLines } from "@/lib/system-prompt";
+import { verifyUtterance } from "@/lib/verifier";
 import { AGENT_TOOLS } from "@/lib/tools";
 
 const allFactText = FACTS.map((f) => f.text).join("\n");
@@ -49,8 +50,8 @@ describe("fact registry", () => {
     for (const re of stale) expect(allFactText).not.toMatch(re);
   });
 
-  it("says plainly that there is no AWS certification", () => {
-    expect(allFactText).toMatch(/no AWS certification/i);
+  it("says plainly that there is no AWS certification, for a direct question", () => {
+    expect(FACTS.find((f) => f.id === "credentials")!.text).toMatch(/no AWS certification/i);
   });
 
   it("only uses numbers from the allow-list", () => {
@@ -85,6 +86,20 @@ describe("searchFacts (retrieve_knowledge)", () => {
     ["does he need visa sponsorship", "limits"],
     ["what's he good at technically", "skills"],
     ["how were you built, which model", "voice-agent"],
+    ["how do you handle barge in and echo", "voice-audio"],
+    ["is there RAG behind you, how does retrieval work", "voice-retrieval"],
+    ["what is your latency", "voice-latency"],
+    ["how many turns did he test the forecost prediction on", "forecost-honest"],
+    ["tell me about the for cost thing", "forecost"],
+    ["what does mal bit do", "current-projects"],
+    ["does he have any certifications", "credentials"],
+    ["has he held a software engineer title", "credentials"],
+    ["how many years of experience does he have", "experience"],
+    ["what languages does he speak", "languages"],
+    ["what's the hardest bug in forecost", "forecost-depth"],
+    ["walk me through the agno bug", "agno-depth"],
+    ["what kind of team does he want", "team"],
+    ["does he know rust", "skills"],
   ])("%s -> %s", (q, id) => {
     expect(top(q)).toBe(id);
   });
@@ -113,7 +128,50 @@ describe("system prompt", () => {
     expect(SYSTEM_PROMPT).toMatch(/never say he's the best candidate/);
   });
   it("stays compact enough for free-tier token limits", () => {
-    // ~4 chars per token; keep the whole prompt under ~5k tokens.
-    expect(SYSTEM_PROMPT.length).toBeLessThan(20_000);
+    // ~4 chars per token; keep the whole prompt under ~5k tokens, sample lines included.
+    expect(buildSystemPrompt().length).toBeLessThan(20_000);
+  });
+  it("keeps gaps and instructions out of the card (2026-10-31 owner decisions)", () => {
+    const card = renderFactCard();
+    expect(card).not.toMatch(/certif/i);
+    expect(card).not.toMatch(/early in his career/i);
+    expect(card).not.toMatch(/software engineer title/i);
+    expect(allFactText).not.toMatch(/don't invent|say you don't think|honest answer is/i);
+    expect(allFactText.replace(FACTS.find((f) => f.id === "experience")!.text, "")).not.toMatch(/early in his career/i);
+  });
+  it("says Hyundai was real software engineering work, without claiming the title", () => {
+    const h = FACTS.find((f) => f.id === "hyundai")!;
+    expect(h.card).toMatch(/real software engineering work/);
+    expect(verifyUtterance(h.card!)).toEqual([]);
+  });
+  it("names the facts that keep every fact in reach of the lookup", () => {
+    expect(FACTS.filter((f) => !f.card).map((f) => f.id)).toEqual(expect.arrayContaining(["credentials", "experience", "voice-audio"]));
+  });
+});
+
+describe("per-call sample lines", () => {
+  const seeded = (seed: number) => () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  it("draws a different set per call", () => {
+    const seen = new Set(Array.from({ length: 20 }, (_, i) => sampleLines(seeded(i + 1))));
+    expect(seen.size).toBe(20);
+  });
+  it("shows each call only part of each pool", () => {
+    for (const { take, lines } of Object.values(LINE_POOLS)) {
+      expect(lines.length).toBeGreaterThan(take);
+      const shown = sampleLines();
+      expect(lines.filter((l) => shown.includes(l)).length).toBe(take);
+    }
+  });
+  it("keeps every line out of the fixed prompt", () => {
+    for (const { lines } of Object.values(LINE_POOLS)) for (const l of lines) expect(SYSTEM_PROMPT).not.toContain(l);
+  });
+  it("every line passes the fact check and dodges the old tics", () => {
+    for (const { lines } of Object.values(LINE_POOLS)) {
+      for (const l of lines) {
+        expect(verifyUtterance(l), l).toEqual([]);
+        expect(l).not.toMatch(/first ai in history|existential freedom|nice try|^fair\b/i);
+        expect(l).not.toContain("—");
+      }
+    }
   });
 });

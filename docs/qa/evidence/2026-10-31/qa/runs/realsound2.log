@@ -1,0 +1,93 @@
+=== real-4 s=1497
+3.5 WS_NEW 1
+4.2 SETUP 1
+4.2 SENT s":[{"text":"(The caller just connected. In your own words, under 20 words: you're Ariv's 
+5.2 OUT I'm Ariv's AI voice agent, the interactive version of his portfolio. Ask me anything about him.
+19.8 SENT_END 1
+19.8 IN Tell me about Ariv's projects, one by one, and what each one does.
+19.8 OUT He built Forecost, an open-source flight recorder for AI agents that logs actual spend. Then there's Registrum, which monitors shipped UI against Figma designs, and Malbit for real-time meeting translations.
+25.5 INTERRUPTED 1
+25.5 FLUSH 1
+26.9 IN Hold on.
+27.0 OUT Standing by.
+27.3 INTERRUPTED 1
+27.3 FLUSH 1
+33.0 IN Stop for a second. I want to ask you something else. What is his GitHub?
+33.0 OUT I've dropped his GitHub link in the chat for you.
+33.1 TOOL ["share_links"]
+33.8 OUT ___
+42.9 IN Where does he work right now?
+42.9 OUT He works full-time at INZI Controls as a Client Project Coordinator, bridging engineering, production, and sales.
+51.3 WS_CLOSE [1,1000,""]
+=== real-5 s=1568
+0.7 WS_NEW 1
+1.4 SETUP 1
+1.4 SENT s":[{"text":"(The caller just connected. In your own words, under 20 words: you're Ariv's 
+2.1 OUT I am Ariv's AI voice agent, the interactive version of his portfolio. Ask me anything about him.
+16.2 IN Tell me about Ariv's projects. One by one. And what each one does.
+16.8 OUT First is forecost, an open source flight recorder for AI agents that tracks spending and enforces budgets. Then there is Registrum, a tool that catches discrepancies between shipped work and Figma designs. Last is Malbit, which handles real time voice translation for meetings on his laptop.
+39.6 IN Where does he work right now?
+39.6 OUT He works full-time at INZI Controls as a Client Project Coordinator, bridging engineering, quality, production, and sales to drive issues to close.
+50.4 WS_CLOSE [1,1000,""]
+=== real-6 s=943
+1.3 WS_NEW 1
+2.0 SETUP 1
+2.0 SENT s":[{"text":"(The caller just connected. In your own words, under 20 words: you're Ariv's 
+3.0 OUT I'm Ariv's AI voice agent, the interactive version of his portfolio. Ask me anything about him.
+4.1 INTERRUPTED 1
+4.1 FLUSH 1
+5.4 IN de
+5.4 OUT You broke up a little. Come again?
+15.7 IN Tell me about Ariv's projects. One by one. And what each one does.
+15.7 OUT He built Registrum to track UI changes from Figma, Malbit for real time voice translation, and forecost to monitor AI agent budgets.
+22.2 INTERRUPTED 1
+22.2 FLUSH 1
+28.5 IN Hold on. Stop there for a second. I want to ask you something else. What is his GitHub?
+28.7 TOOL ["share_links"]
+29.4 OUT I've just dropped his GitHub link in the chat for you.
+37.9 IN Where does he work right now?
+38.0 OUT Ariv works at INZI Controls, an automotive parts supplier, as a Client Project Coordinator.
+46.3 WS_CLOSE [1,1000,""]
+=== real-7 s=1987
+0.9 WS_NEW 1
+1.5 SETUP 1
+1.5 SENT s":[{"text":"(The caller just connected. In your own words, under 20 words: you're Ariv's 
+2.3 OUT I'm Ariv's AI voice agent, essentially his interactive portfolio. What would you like to know about him?
+16.1 IN Tell me about Ariv's projects. One by one. And what each one does.
+16.9 OUT He's building Registrum, which tracks if what shipped matches the Figma design, and Malbit, a real-time translator for work meetings running locally. He also built forecost, an open-source flight recorder that enforces budgets for AI agents.
+22.6 INTERRUPTED 1
+22.6 FLUSH 1
+29.8 IN Hold on. Hold on. Stop there for a second. I want to ask you something else. What is his GitHub?
+30.3 TOOL ["share_links"]
+31.6 OUT I've dropped his GitHub link in the chat. You can check out the code for his voice agent there.
+42.4 SENT_END 1
+48.6 OUT He's been working full-time at INZI Controls, an automotive parts supplier, since June twenty twenty-six.
+56.4 WS_CLOSE [1,1000,""]
+=== real-8 s=1996
+0.9 WS_NEW 1
+1.5 SETUP 1
+1.5 SENT s":[{"text":"(The caller just connected. In your own words, under 20 words: you're Ariv's 
+2.1 OUT I am Ariv's AI voice agent, the interactive version of his portfolio. What would you like to know about him?
+16.4 IN Tell me about Ariv's projects. One by one and what each one does.
+17.3 OUT He's building Registrum, which checks when shipped products still match the designer's Figma specs. He is also finishing Malbit, a real-time translation tool for work meetings.
+26.7 INTERRUPTED 1
+26.7 FLUSH 1
+30.4 IN to ask you something else. What is his GitHub?
+30.4 TOOL ["share_links"]
+31.0 OUT I just dropped the link to his GitHub in the chat for you.
+39.6 IN Where does he work right now?
+39.6 OUT He works at INZI Controls as a client project coordinator, bridging engineering, quality, production, and sales.
+48.1 WS_CLOSE [1,1000,""]
+=== real-9 s=1310
+0.9 WS_NEW 1
+1.6 SETUP 1
+1.6 SENT s":[{"text":"(The caller just connected. In your own words, under 20 words: you're Ariv's 
+2.4 OUT I'm Ariv's AI, the interactive version of his portfolio. Ask me anything about him or what he builds.
+17.6 IN Tell me about Ariv's projects. One by one. And what each one does.
+17.6 OUT First up is forecost, an open-source flight recorder for AI agent work that logs spending to a local ledger and enforces budgets.
+30.3 IN I want to ask you something else. What is his GitHub?
+30.3 TOOL ["share_links"]
+31.1 OUT I've just dropped his GitHub link in the chat.
+39.4 IN Where does he work right now?
+39.4 OUT He's working full-time at INZI Controls as a Client Project Coordinator.
+45.4 WS_CLOSE [1,1000,""]

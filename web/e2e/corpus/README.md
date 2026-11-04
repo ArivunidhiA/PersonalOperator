@@ -14,3 +14,7 @@ python3 e2e/corpus/wer.py     # optional: WER of what the agent heard vs the nor
 - Without sox, speed uses a naive resample (pitch shifts) and noise is mixed in Python. Install sox for tempo-preserving speed.
 - Reference normalization uses NeMo Speech Data Processor: `CreateInitialManifestByExt` (sdp-initial.yaml), then `SubRegex` + `DropNonAlphabet` (sdp-normalize.yaml). SDP needs Python 3.10 and NeMo; to use it, create a 3.10 venv, install SDP's requirements, and set `SDP_DIR` to your checkout of NVIDIA/NeMo-speech-data-processor. Without it `build_manifest.py` uses a pure-Python copy of the same regexes (same output). The SDP path was not exercised on the authoring machine (no Python 3.10).
 - ASR-WER is optional. `wer.py` compares the reference with the caller transcript Gemini Live produced in the page. For a NeMo ASR baseline, run a NeMo model (e.g. `nvidia/parakeet-tdt-0.6b-v2`) over `audio/*.wav`, put the output in a results file as `{id, ref, heard}` rows, and pass it to `wer.py`.
+
+## Caption bench
+
+`captions/` measures live caption engines against a harder corpus with the hard names. See `captions/RESULTS.md`.

@@ -6,7 +6,8 @@
     "e2e/*.spec.ts"
   ],
   "ignore": [
-    "public/audio/*.js"
+    "public/audio/*.js",
+    "e2e/corpus/captions/**"
   ],
   "ignoreDependencies": [
     "@testing-library/jest-dom"

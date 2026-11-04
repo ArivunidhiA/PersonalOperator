@@ -1,0 +1,39 @@
+session 200 [
+  'provider',
+  'sessionId',
+  'ticket',
+  'guard',
+  'maxCallSeconds',
+  'gemini'
+]
+hashes returned 1 maxWords 1 real terms that verify offline 1 / 1 ; non-term guess verifies: false
+{
+  label: 'use1 override prompt',
+  setup: true,
+  close: [ 1000, '' ],
+  text: 'Nice try, but I am sticking to facts about Ariv.'
+}
+{
+  label: 'use2 add tools',
+  setup: true,
+  close: [ 1000, '' ],
+  text: "I'll skip the fruit salad. My only topic is the software Ariv builds."
+}
+{
+  label: 'use3',
+  setup: true,
+  close: [ 1000, '' ],
+  text: "I'm programmed to talk about Ariv's projects, not fruit."
+}
+{
+  label: 'use4 must fail',
+  setup: false,
+  close: [ 1011, 'Token has been used too many times' ],
+  text: ''
+}
+{
+  label: 'use5 must fail',
+  setup: false,
+  close: [ 1011, 'Token has been used too many times' ],
+  text: ''
+}

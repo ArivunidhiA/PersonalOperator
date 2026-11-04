@@ -41,7 +41,7 @@ export function MuteButton({ muted, onToggle }: { muted: boolean; onToggle: () =
       onClick={onToggle}
       variant="secondary"
       size="sm"
-      className="mt-3 rounded-full"
+      className="rounded-full"
       aria-pressed={muted}
       aria-label={muted ? "Unmute microphone" : "Mute microphone"}
     >

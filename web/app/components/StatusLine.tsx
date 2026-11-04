@@ -4,7 +4,7 @@ const fmt = (s: number) => `${Math.floor(s / 60)}:${String(Math.max(0, s) % 60).
 export function StatusLine({ status, secondsLeft, live }: { status: string; secondsLeft: number; live: boolean }) {
   const warn = live && secondsLeft <= 60;
   return (
-    <div className="mt-4 flex h-6 items-center gap-3 text-xs text-white/70">
+    <div className="mt-2 flex h-6 shrink-0 items-center gap-3 text-xs text-white/70">
       <span aria-live="polite">{status}</span>
       {warn && (
         <span aria-hidden className="text-amber-300">

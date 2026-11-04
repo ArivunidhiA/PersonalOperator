@@ -1,0 +1,6 @@
+runs 53 orbMoved 1 [
+  'real-6.json:432,82,416,416 432,81,416,416 432,11,416,416 432,-10.5,416,416 432,-20.5,416,416 432,-24,416,416'
+]
+caption first change after mic start: n 123 p50 0.73 p90 0.94
+gemini first text: n 124 p50 3.98 p90 5.48
+turns 92 no gemini input text 2 adv-ident-1.json:human.wav rc-offline.json:work.wav

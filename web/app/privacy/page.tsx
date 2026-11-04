@@ -31,6 +31,7 @@ export default function Privacy() {
         title="The voice (Google Gemini)"
         items={[
           "Calls run on Google's Gemini API free tier.",
+          "In Chrome on a computer, your browser's speech service, run by Google, also turns your voice into live captions while you talk.",
           "Google may use the audio and transcript to improve its models. That's Google's rule, not mine, so please don't say anything sensitive.",
         ]}
       />
@@ -40,7 +41,7 @@ export default function Privacy() {
         items={[
           "Saved after the call, with a short summary, and emailed to me.",
           "Only things you said about yourself (name, company, role) are kept. Nothing is looked up about you.",
-          "Share links exist only if you make one, and expire after 30 days.",
+          "Share links exist only if you make one, show no names (yours or any company), and expire after 30 days.",
         ]}
       />
 

@@ -53,7 +53,7 @@ describe("research_role is instant and honest by default (no LLM dead air)", () 
     expect(fde.result).toContain("forward-deployed");
     expect(fde.result).toContain("Anthropic");
     expect(swe.result).toContain("software and AI engineer");
-    for (const r of [fde, swe]) expect(r.result).toMatch(/early in his career/);
+    for (const r of [fde, swe]) expect(r.result).not.toMatch(/early in his career/); // item 34
     fetchSpy.mockRestore();
   });
 });

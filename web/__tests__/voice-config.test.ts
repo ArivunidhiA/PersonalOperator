@@ -50,6 +50,12 @@ describe("voice provider choice", () => {
 });
 
 describe("session configs", () => {
+  it("Gemini: names callers say are in the transcription vocabulary", async () => {
+    const { buildGeminiLiveConfig } = await import("@/lib/voice-config");
+    const vocab = buildGeminiLiveConfig().inputAudioTranscription.customVocabulary;
+    for (const w of ["Ariv", "INZI", "forecost", "Registrum", "Malbit", "Agno", "NeMo Curator", "pgvector"]) expect(vocab).toContain(w);
+  });
+
   it("Gemini: prompt + all tools locked in, fact tools blocking, recap non-blocking", async () => {
     const { buildGeminiLiveConfig } = await import("@/lib/voice-config");
     const { SYSTEM_PROMPT } = await import("@/lib/system-prompt");
@@ -60,7 +66,7 @@ describe("session configs", () => {
     expect(decls.map((d) => d.name)).toEqual(TOOL_NAMES);
     expect(decls.find((d) => d.name === "retrieve_knowledge")!.behavior).toBe("BLOCKING");
     expect(decls.find((d) => d.name === "generate_summary")!.behavior).toBe("NON_BLOCKING");
-    expect(cfg.inputAudioTranscription).toEqual({});
+    expect(cfg.inputAudioTranscription.customVocabulary).toContain("Ariv");
     expect(cfg.outputAudioTranscription).toEqual({});
     expect(cfg).not.toHaveProperty("enableAffectiveDialog"); // removed in 3.8 Live
   });

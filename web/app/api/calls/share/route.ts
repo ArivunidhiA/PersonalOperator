@@ -3,12 +3,8 @@ import { randomBytes } from "crypto";
 import { getSupabase } from "@/lib/supabase";
 import { checkLimit } from "@/lib/rate-limit";
 import { ticketFrom } from "@/lib/session-ticket";
-import { verifyTranscript } from "@/lib/verifier";
-import { createLogger } from "@/lib/logger";
 
 export const runtime = "nodejs";
-
-const log = createLogger({ tool: "call-share" });
 
 /** Minimum age of a call before it can be shared (a script can't mint-and-publish instantly). */
 const MIN_CALL_AGE_S = 20;
@@ -16,34 +12,28 @@ const MIN_CALL_AGE_S = 20;
 /** Share links stop working after this long (the maintenance cron also deletes expired rows). */
 const SHARE_TTL_DAYS = 30;
 
+/** One answer for "not ready", whether the call is too new or not saved yet. */
+const notReady = () => NextResponse.json({ error: "Your transcript is still saving. Try again in a moment.", retry: true }, { status: 409 });
+
 /**
- * Opt-in share link for the caller's own saved call. Transcripts are assembled
- * in the browser, so they're unverified: we refuse to publish one whose "agent"
- * lines fail the fact check, and the share page says it's caller-submitted.
+ * Opt-in share link for the caller's own saved call. It links the copy the
+ * server saved for this session and takes no text from the browser. The route
+ * never reads the transcript, so its answer can't depend on a name in it (the
+ * old fact check here confirmed guessed confidential names). The share page
+ * runs everything through the name-blind scrub before showing it.
  */
 export async function POST(req: Request) {
   const ticket = ticketFrom(req);
   if (!ticket) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  if (Math.floor(Date.now() / 1000) - ticket.iat < MIN_CALL_AGE_S) {
-    return NextResponse.json({ error: "That call was too short to share." }, { status: 422 });
-  }
+  if (Math.floor(Date.now() / 1000) - ticket.iat < MIN_CALL_AGE_S) return notReady();
   if (!(await checkLimit("finish", `share:${ticket.sid}`)).ok) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
 
   const supabase = getSupabase();
   if (!supabase) return NextResponse.json({ error: "Storage not configured" }, { status: 503 });
 
-  const { data: call } = await supabase.from("call_summaries").select("transcript").eq("session_id", ticket.sid).maybeSingle();
-  if (!call) return NextResponse.json({ error: "Call not saved yet" }, { status: 404 });
-
-  const msgs = (Array.isArray(call.transcript) ? call.transcript : []) as { role: string; text: string }[];
-  const flags = verifyTranscript(
-    msgs.filter((m) => m.role === "assistant").map((m) => m.text),
-    msgs.filter((m) => m.role === "user").map((m) => m.text),
-  ).filter((f) => f.rule !== "em dash" && f.rule !== "number not in facts");
-  if (flags.length) {
-    log.warn("share refused by fact check", { sessionId: ticket.sid, rules: flags.map((f) => f.rule) });
-    return NextResponse.json({ error: "This transcript can't be shared." }, { status: 422 });
-  }
+  // Only whether a saved call exists, never its content.
+  const { data: call } = await supabase.from("call_summaries").select("session_id").eq("session_id", ticket.sid).maybeSingle();
+  if (!call) return notReady();
 
   const existing = await supabase.from("share_tokens").select("token, expires_at").eq("session_id", ticket.sid).maybeSingle();
   const prior = existing.data as { token?: string; expires_at?: string | null } | null;

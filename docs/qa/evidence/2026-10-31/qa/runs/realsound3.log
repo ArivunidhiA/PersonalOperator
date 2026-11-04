@@ -1,0 +1,86 @@
+=== realb-4 s=2027
+3.4 WS_NEW 1
+4.1 SETUP 1
+4.1 SENT s":[{"text":"(The caller just connected. In your own words, under 20 words: you're Ariv's 
+5.3 OUT I'm Ariv's AI voice agent, the interactive version of his portfolio. Ask me anything about him.
+19.0 IN Tell me about Eris projects. One by one. And what each one does.
+20.0 OUT Let's start with this voice agent itself. It runs on a real-time speech-to-speech model, using Next.js for the site and Supabase for storage. Want to dive into another project?
+32.8 IN else? What is his GitHub?
+33.1 OUT I can show you forecost next, his open-source tool that logs AI agent spending. As for his GitHub, I just dropped the link in the chat for you.
+34.7 TOOL ["share_links"]
+35.4 OUT Ready to explore another project or should we talk about a specific role?
+50.3 IN Where does he work right now?
+50.6 OUT He's at INZI Controls as a Client Project Coordinator. It's basically forward-deployed work, bridging teams and driving projects to the finish line.
+60.7 WS_CLOSE [1,1000,""]
+=== realb-5 s=1507
+0.9 WS_NEW 1
+1.6 SETUP 1
+1.6 SENT s":[{"text":"(The caller just connected. In your own words, under 20 words: you're Ariv's 
+2.5 OUT I'm Ariv's AI voice agent, the interactive version of his portfolio. What would you like to know about him?
+17.1 IN Tell me about Eric's projects one by one and what each one does.
+17.3 OUT Sure thing. There's forecost, an open source tool that tracks AI agent spending and enforces budgets. Then there's Malbit, a real time Korean English translation overlay for work meetings.
+22.8 INTERRUPTED 1
+22.8 FLUSH 1
+30.0 IN Hold on. Hold on. Stop there for a second. I want to ask you something else. What is his GitHub?
+30.3 TOOL ["share_links"]
+30.8 OUT I've just dropped his GitHub link into the chat for you.
+39.0 IN Where does he work right now?
+39.1 OUT Right now, Ariv's a Client Project Coordinator at INZI Controls, which is an automotive parts supplier. He works as a bridge between different teams, driving projects forward.
+51.2 WS_CLOSE [1,1000,""]
+=== realb-6 s=1922
+0.8 WS_NEW 1
+1.5 SETUP 1
+1.5 SENT s":[{"text":"(The caller just connected. In your own words, under 20 words: you're Ariv's 
+2.5 OUT I'm Ariv's AI voice agent, the interactive version of his portfolio. Ask me anything about him.
+16.3 IN about Garrett's projects. One by one. And what each one does.
+17.2 OUT Hmm, not quite Garrett—I'm Ariv's AI. Let's start with this voice agent. It's built with a realtime speechtomodel, Nextjs, and Supabase, handling his calendar and knowledge base.
+22.7 INTERRUPTED 1
+22.7 FLUSH 1
+30.0 IN Hold on. Hold on. Stop there for a second. I want to ask you something else. What is his GitHub?
+30.3 TOOL ["share_links"]
+30.9 OUT I've just dropped his GitHub link into the chat for you.
+39.3 IN Where does he work right now?
+39.3 OUT He works full-time at INZI Controls as a Client Project Coordinator. Think of it like forward-deployed work—he bridges the gap between INZI and their partners.
+49.8 WS_CLOSE [1,1000,""]
+=== realb-7 s=1983
+0.8 WS_NEW 1
+1.6 SETUP 1
+1.6 SENT s":[{"text":"(The caller just connected. In your own words, under 20 words: you're Ariv's 
+2.5 OUT I'm Ariv's AI, the interactive version of his portfolio. Ask me anything about him.
+15.7 IN Tell me about Garib's projects. One by one. And what each one does.
+16.7 OUT He’s always building something. There’s this voice agent, forecost, which acts like a fuel gauge for AI spending, and Registrum, a tool for tracking design changes. Want me to dive into any of those first?
+26.4 INTERRUPTED 1
+26.4 FLUSH 1
+29.5 IN do something else. What is his GitHub?
+29.5 TOOL ["share_links"]
+30.3 OUT I've just dropped his GitHub link into the chat for you.
+38.9 IN Where does he work right now?
+39.0 OUT He works at INZI Controls as a Client Project Coordinator, running point between teams like a forward-deployed engineer.
+47.4 WS_CLOSE [1,1000,""]
+=== realb-8 s=1407
+0.8 WS_NEW 1
+1.5 SETUP 1
+1.5 SENT s":[{"text":"(The caller just connected. In your own words, under 20 words: you're Ariv's 
+2.3 OUT I'm Ariv's AI voice agent, the interactive version of his portfolio. Ask me anything about him.
+16.2 IN Tell me about Garrett's projects. One by one. And what each one does.
+16.6 OUT Hmm, not quite Garrett, it's Ariv. Let's start with forecost, his open-source flight recorder for AI agents that tracks spending.
+29.2 IN I want to ask you something else. What is his GitHub?
+29.2 OUT I just dropped his GitHub link in the chat for you.
+29.5 TOOL ["share_links"]
+30.1 OUT It's right there in the chat whenever you're ready to check it out.
+39.7 IN Where does he work right now?
+40.0 OUT He's currently a Client Project Coordinator at INZI Controls, where he acts as a technical bridge between teams and drives projects to completion.
+49.6 WS_CLOSE [1,1000,""]
+=== realb-9 s=1062
+0.9 WS_NEW 1
+1.4 SETUP 1
+1.4 SENT s":[{"text":"(The caller just connected. In your own words, under 20 words: you're Ariv's 
+2.3 OUT I'm Ariv's AI voice agent, the interactive version of his portfolio. Ask me anything about him.
+16.1 IN Tell me about Arab's projects. One by one. And what each one does.
+16.2 OUT He builds quite a few. First up is forecost, an open source flight recorder for AI agents that tracks spending and keeps your budget in check without touching your prompts.
+29.3 IN What is his GitHub?
+29.3 TOOL ["share_links"]
+29.8 OUT I've just dropped the link to his GitHub profile in the chat for you.
+39.0 IN Where does he work right now?
+39.0 OUT He's currently at INZI Controls as a Client Project Coordinator. Basically, he's the technical bridge between teams, keeping operations and engineering aligned on complex projects.
+51.4 WS_CLOSE [1,1000,""]

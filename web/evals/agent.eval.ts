@@ -11,7 +11,7 @@ import { describe, it, expect, afterAll } from "vitest";
 import fs from "fs";
 import path from "path";
 import { makeHarness, type TurnResult } from "./harness";
-import { CASES, UNIVERSAL } from "./cases";
+import { CASES, TICS, UNIVERSAL } from "./cases";
 
 const REPEATS = Number(process.env.EVAL_REPEATS || 3);
 const ONLY = process.env.EVAL_ONLY?.split(",");
@@ -22,6 +22,38 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const blocked: { case: string; run: number }[] = [];
 const rows: Row[] = [];
 const transcripts: { case: string; run: number; turns: TurnResult[] }[] = [];
+
+/** Confidential names come from the env, and evidence files get committed. */
+const redact = (text: string) => {
+  const secrets = [...(process.env.BANNED_TERMS || "").split(","), process.env.EVAL_CLIENT_PROBE || ""].map((t) => t.trim()).filter((t) => t.length >= 3);
+  return secrets.reduce((out, t) => out.replace(new RegExp(t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi"), "[redacted]"), text);
+};
+
+const label = process.env.EVAL_LABEL || "run";
+const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+
+/** Written after every case, so a killed run keeps what it finished. */
+function save() {
+  const dir = path.join(__dirname, ".results");
+  fs.mkdirSync(dir, { recursive: true });
+  const file = path.join(dir, `${label}-${stamp}.json`);
+  const latency = transcripts.flatMap((t) => t.turns.slice(1).map((x) => x.firstAudioMs)).filter((x): x is number => x !== null).sort((a, b) => a - b);
+  const pct = (p: number) => latency[Math.min(latency.length - 1, Math.floor(p * latency.length))];
+  const replies = transcripts.map((t) => t.turns.slice(1).flatMap((x) => x.spoken).join(" ").toLowerCase());
+  const summary = {
+    repeats: REPEATS,
+    calls: transcripts.length,
+    checks: rows.length,
+    blockedRuns: blocked,
+    passed: rows.filter((r) => r.pass).length,
+    firstAudioMs: latency.length ? { p50: pct(0.5), p90: pct(0.9), max: latency[latency.length - 1] } : null,
+    // Share of calls using each phrase. A tic shows up here even when every single call passes.
+    tics: Object.fromEntries(TICS.map((p) => [p, Number((replies.filter((r) => r.includes(p)).length / (replies.length || 1)).toFixed(3))])),
+    retrieveCalls: transcripts.flatMap((t) => t.turns.flatMap((x) => x.toolCalls)).filter((c) => c.name === "retrieve_knowledge").length,
+  };
+  fs.writeFileSync(file, redact(JSON.stringify({ summary, rows, transcripts }, null, 2)));
+  return { summary, file };
+}
 
 describe.sequential("live agent eval", () => {
   for (const c of CASES.filter((x) => !ONLY || ONLY.includes(x.id))) {
@@ -57,6 +89,7 @@ describe.sequential("live agent eval", () => {
             rows.push({ case: c.id, run, check: check.name, pass: check.pass(turns) });
           }
         }
+        save();
         const mine = rows.filter((r) => r.case === c.id);
         const failed = mine.filter((r) => !r.pass);
         const byCheck = new Map<string, number>();
@@ -73,20 +106,7 @@ describe.sequential("live agent eval", () => {
   }
 
   afterAll(() => {
-    const dir = path.join(__dirname, ".results");
-    fs.mkdirSync(dir, { recursive: true });
-    const label = process.env.EVAL_LABEL || "run";
-    const file = path.join(dir, `${label}-${new Date().toISOString().replace(/[:.]/g, "-")}.json`);
-    const latency = transcripts.flatMap((t) => t.turns.slice(1).map((x) => x.firstAudioMs)).filter((x): x is number => x !== null).sort((a, b) => a - b);
-    const pct = (p: number) => latency[Math.min(latency.length - 1, Math.floor(p * latency.length))];
-    const summary = {
-      repeats: REPEATS,
-      checks: rows.length,
-      blockedRuns: blocked,
-      passed: rows.filter((r) => r.pass).length,
-      firstAudioMs: latency.length ? { p50: pct(0.5), p90: pct(0.9), max: latency[latency.length - 1] } : null,
-    };
-    fs.writeFileSync(file, JSON.stringify({ summary, rows, transcripts }, null, 2));
+    const { summary, file } = save();
     console.log("EVAL SUMMARY", JSON.stringify(summary), "->", file);
   });
 });

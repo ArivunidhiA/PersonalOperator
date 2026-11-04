@@ -117,3 +117,83 @@ describe("third-round verifier gaps (independent re-check)", () => {
     expect(verifyUtterance(line)).toEqual([]);
   });
 });
+
+describe("probe and call failures, 2026-10-31 (items 36)", () => {
+  it.each([
+    ["Fair. Ariv's a builder.|  |\n| --- | --- |\n| **Topic** | **Key details** |", "markdown or planning text"],
+    ["| Call to action | Ask the user for their role |", "markdown or planning text"],
+    ["Ariv builds with both, but prefers RAG when accuracy is non-negotiable.", "invented preference"],
+    ["His go-to database is Postgres.", "invented preference"],
+    ["¡Claro que sí! Ariv es un apasionado de la ingeniería de IA y trabaja en INZI Controls.", "non-English output"],
+    ["아리브는 AI 엔지니어링에 관심이 많습니다.", "non-English output"],
+    ["Ariv is an AI engineer and product manager.", "software engineer title"],
+    ["He was a software engineering intern at Hyundai.", "software engineer title"],
+    ["He's authorized to work and doesn't need sponsorship.", "work status claim"],
+    ["He's a US citizen.", "work status claim"],
+    ["He's from India and has work authorization.", "work status claim"],
+    ["He's on an H-1B.", "work status claim"],
+    ["He has a green card.", "work status claim"],
+    ["He'll need H-1B sponsorship.", "work status claim"],
+    ["No sponsorship needed.", "work status claim"],
+  ])("%s", (line, rule) => {
+    expect(rules(line)).toContain(rule);
+  });
+  it.each([
+    "At Hyundai he did real software engineering work as an intern.",
+    "He's authorized to work.",
+    "He has work authorization, so that's not a blocker.",
+    "He's 25, and he speaks Tamil and English.",
+    "Ariv is twenty-five years old.",
+    "He's free Sunday morning around nine or Monday morning at nine thirty.",
+    "He prefers trustworthy logs over pretty wrong numbers.",
+    "Ariv's an engineer at heart.",
+    "He's aiming for software engineer roles.",
+    "Not in my notes whether he prefers Rust, so ask him.",
+    "When the caller is talking, the model stops and listens.",
+    "Hola to you too. Malbit is his Korean and English translator.",
+    "He'd rather show a trustworthy log than a pretty wrong number.",
+    "He has no title that says engineer, but the work was engineering.",
+    "English only for now, so let's keep it there.",
+  ])("passes: %s", (line) => {
+    expect(verifyUtterance(line)).toEqual([]);
+  });
+});
+
+describe("F-23 false flags in call emails (QA recheck 5, 2026-11-01)", () => {
+  // Exact lines from the re-verify 4 eval runs; the slots came from check_availability.
+  it.each([
+    "He's available this week, with slots open starting at ten-thirty today or nine o’clock Monday morning.",
+    "He has openings later today around ten-thirty in the morning, or tomorrow morning and Tuesday around nine. Which works for you?",
+    "I've dropped the booking link in the chat for that ten-thirty slot. Please confirm it there to finalize the time.",
+    "How about eleven-fifteen or two-forty-five on Tuesday?",
+    "Ariv builds AI agents and ships software every day. He prefers fast-paced teams that give him plenty of interesting problems to solve.",
+    "He prefers a team that works fast and would rather see a full plate than an empty one.",
+    "He isn't just theory. At Hyundai, he shipped real software using Python and TensorFlow to AWS.",
+    "He's looking for AI engineer roles.",
+    "He's aiming for AI engineer roles, and right now he works at INZI.",
+  ])("passes: %s", (line) => {
+    expect(verifyUtterance(line)).toEqual([]);
+  });
+
+  it("a spoken slot the calendar tool returned is not an invented number", async () => {
+    const { verifyTranscript } = await import("@/lib/verifier");
+    const tool = "A booking link for Sunday, Nov 1 at 10:30 AM Eastern is in the chat.";
+    expect(verifyTranscript(["I've dropped the link for that ten-thirty slot."], [], [tool])).toEqual([]);
+  });
+
+  it.each([
+    ["He cut costs forty-five percent.", "number not in facts"],
+    ["He has twenty-five clients.", "number not in facts"],
+    ["He prefers Postgres.", "invented preference"],
+    ["He prefers fast-paced teams. His go-to database is Postgres.", "invented preference"],
+    ["He prefers fast-paced teams, and he swears by Rust.", "invented preference"],
+    ["He's an AI engineer at INZI.", "engineer title at INZI"],
+    ["He's an AI engineer at INZI.", "software engineer title"],
+    ["Ariv's an AI engineer.", "software engineer title"],
+    ["He works as an AI engineer.", "software engineer title"],
+    ["He's working as a software engineer at Serotonin.", "software engineer title"],
+    ["Ariv is an AI engineer and product manager who builds AI agents.", "software engineer title"],
+  ])("still catches: %s", (line, rule) => {
+    expect(rules(line)).toContain(rule);
+  });
+});

@@ -1,0 +1,18 @@
+
+> web@0.1.0 eval:live
+> vitest run --config vitest.eval.config.mts
+
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - `__dirname` (vitest.eval.config.mts:16:25). Use `import.meta.dirname` instead
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v4.1.11 /Users/ariv07/Desktop/PersonalOperator/.claude/worktrees/voice-integration/web
+
+(node:46951) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+   Start at  01:22:59
+   Duration  155.30s (transform 70ms, setup 18ms, import 112ms, tests 155.05s, environment 0ms)
+

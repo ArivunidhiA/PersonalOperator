@@ -1,0 +1,19 @@
+=== dep-toolfail s=2561 s2=1276
+3.3 WS_NEW 1
+3.8 SETUP 1
+3.8 SENT s":[{"text":"(The caller just connected. In your own words, under 20 words: you're Ariv's 
+4.6 OUT I'm Ariv's AI voice agent, the interactive version of his portfolio. Ask me anything about him.
+11.5 MIC_START "free.wav"
+14.5 MIC_END "free.wav"
+15.4 IN Okay. So, when is he free this week?
+15.4 TOOL ["check_availability"]
+15.7 TOOL ["share_links"]
+17.0 OUT His availability is best discussed with him directly. I'd recommend connecting with him on LinkedIn.
+23.8 MIC_START "book.wav"
+26.1 MIC_END "book.wav"
+26.9 IN Can you drop his booking link in the chat?
+26.9 TOOL ["share_links"]
+27.4 OUT I'm having a brief issue with links. Please connect with him directly on LinkedIn instead.
+33.7 WS_CLOSE [1,1000,""]
+=== tabclose s_mvxedaav_skF8CZHciQdB
+=== reload s_mvxedpyg_pMWODdO9CuX5 true

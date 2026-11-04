@@ -1,0 +1,70 @@
+=== rc-offline alive=true s=1158 200
+4.1 WS_NEW 1
+4.7 SETUP 1
+4.7 SENT s":[{"text":"(The caller just connected. In your own words, under 20 words: you're Ariv's 
+5.5 OUT I'm Ariv's AI voice agent, the interactive version of his portfolio. Ask me anything about his work.
+12.9 MIC_START "work.wav"
+14.8 MIC_END "work.wav"
+16.1 SENT_END 1
+26.4 OUT Ariv works full-time at INZI Controls as a Client Project Coordinator.
+40.2 MIC_START "recall.wav"
+42.1 MIC_END "recall.wav"
+43.0 IN What did I just ask you about?
+43.2 OUT You asked where Ariv works. He's currently at INZI Controls.
+48.6 WS_CLOSE [1,1000,""]
+=== rc-midspeech s=1 200
+0.5 WS_NEW 1
+1.2 SETUP 1
+1.2 SENT s":[{"text":"(The caller just connected. In your own words, under 20 words: you're Ariv's 
+2.2 OUT I'm Ariv's AI voice agent, the interactive version of his portfolio. Ask me anything you want about him.
+9.6 MIC_START "long_q.wav"
+13.5 MIC_END "long_q.wav"
+14.6 IN Walk me through everything he has built. In as much detail as you can.
+15.7 OUT He builds AI agents, dev tools, and voice applications. His latest are Malbit for real-time translation and Registrum for UI design syncing.
+18.3 WS_CLOSE [1,1000,""]
+18.6 WS_NEW 2
+19.2 SETUP 2
+19.2 SENT ts":[{"text":"I'm Ariv's AI voice agent, the interactive version of his portfolio. Ask me 
+19.2 SENT s":[{"text":"(The caller is waiting: the line dropped for a moment. Continue from where yo
+20.1 OUT He also built forecost, an open source flight recorder that tracks what AI agents actually spend on compute.
+31.7 MIC_START "recall.wav"
+33.6 MIC_END "recall.wav"
+34.5 IN What did I just ask you about?
+34.7 OUT You asked for a detailed walkthrough of everything Ariv has built.
+39.7 WS_CLOSE [2,1000,""]
+=== rc-tool s=2582 200
+0.6 WS_NEW 1
+1.2 SETUP 1
+1.2 SENT s":[{"text":"(The caller just connected. In your own words, under 20 words: you're Ariv's 
+2.6 OUT I'm Ariv's AI voice agent, the interactive version of his portfolio. Ask me anything about him.
+9.3 MIC_START "free.wav"
+12.3 MIC_END "free.wav"
+13.5 SENT_END 1
+13.6 IN Okay. So, when is he free this week?
+13.6 TOOL ["check_availability"]
+13.7 WS_CLOSE [1,1000,""]
+14.0 WS_NEW 2
+14.7 SETUP 2
+14.7 SENT ts":[{"text":"I'm Ariv's AI voice agent, the interactive version of his portfolio. Ask me 
+14.7 SENT s":[{"text":"(The caller is waiting: the line dropped for a moment. Continue from where yo
+15.1 TOOL ["check_availability"]
+16.2 OUT He has openings throughout this week, mostly in the mornings starting at nine Eastern. Sunday, Monday, and Tuesday have several slots open for a quick chat.
+25.7 WS_CLOSE [2,1000,""]
+=== rc-exhaust ended=true dropped-notice=true savedPanel=true
+0.6 WS_NEW 1
+1.3 SETUP 1
+1.3 SENT s":[{"text":"(The caller just connected. In your own words, under 20 words: you're Ariv's 
+2.2 OUT I'm Ariv's AI voice agent, the interactive version of his portfolio. Ask me anything about him.
+8.9 MIC_START "work.wav"
+10.7 MIC_END "work.wav"
+12.0 SENT_END 1
+12.6 IN Where does Ariv work right now?
+13.4 OUT He's working full-time at INZI Controls, an automotive parts supplier, where he manages complex project coordination.
+21.6 WS_CLOSE [1,1000,""]
+21.9 WS_NEW 2
+22.6 SETUP 2
+22.6 SENT ts":[{"text":"I'm Ariv's AI voice agent, the interactive version of his portfolio. Ask me 
+26.6 WS_CLOSE [2,1000,""]
+27.8 WS_NEW 3
+28.4 SETUP 3
+31.6 WS_CLOSE [3,1000,""]

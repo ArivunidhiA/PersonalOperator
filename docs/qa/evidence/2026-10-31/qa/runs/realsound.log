@@ -1,0 +1,36 @@
+=== real-1 s=1366
+2.9 WS_NEW 1
+3.6 SETUP 1
+3.7 SENT s":[{"text":"(The caller just connected. In your own words, under 20 words: you're Ariv's 
+5.1 OUT I'm Ariv's AI voice agent, the interactive version of his portfolio. Ask me anything about his work and experience.
+20.6 IN Tell me about Ariv's projects. One by one and what each one does.
+20.6 OUT He built Registrum to flag discrepancies between shipped code and Figma designs. Then there's Malbit, a real-time voice translator for work meetings running on his laptop. And forecost, which
+42.3 IN Where does he work right now?
+42.3 OUT He works full-time at INZI Controls as a client project coordinator, bridging engineering, production, and sales to drive issues to close.
+52.1 WS_CLOSE [1,1000,""]
+=== real-2 s=2042
+0.9 WS_NEW 1
+1.7 SETUP 1
+1.7 SENT s":[{"text":"(The caller just connected. In your own words, under 20 words: you're Ariv's 
+2.3 OUT I'm Ariv's AI voice agent, the interactive version of his portfolio. Ask me anything about him.
+15.9 IN Tell me about Ariv's projects. One by one. And what each one does.
+16.9 OUT He built Registrum to flag discrepancies between shipped products and Figma designs, and Malbit for real-time voice translation during meetings.
+54.9 IN Where does he work right now?
+55.0 OUT He works full-time at INZI Controls as a client project coordinator, bridging engineering, production, and sales.
+63.4 WS_CLOSE [1,1000,""]
+=== real-3 s=1673
+1.1 WS_NEW 1
+1.8 SETUP 1
+1.8 SENT s":[{"text":"(The caller just connected. In your own words, under 20 words: you're Ariv's 
+2.5 OUT I'm Ariv's AI voice agent, the interactive version of his portfolio. Ask me anything about him and his work.
+17.5 SENT_END 1
+17.5 IN Tell me about Ariv's projects, one by one, and what each one does.
+17.8 OUT He's building Registrum to catch discrepancies between shipped products and Figma designs. There's also Malbit, a local tool for real-time Korean-English meeting translation, and forecost, wh
+23.4 INTERRUPTED 1
+23.4 FLUSH 1
+26.7 IN Hold on. Stop. What is his GitHub?
+26.7 TOOL ["share_links"]
+27.3 OUT I dropped that link right into the chat for you.
+35.7 IN Where does he work right now?
+35.7 OUT He works full-time at INZI Controls as a Client Project Coordinator, bridging engineering, production, and sales.
+44.6 WS_CLOSE [1,1000,""]

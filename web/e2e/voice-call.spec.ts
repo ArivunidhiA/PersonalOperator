@@ -9,7 +9,7 @@ import path from "path";
  * open the site -> start a call -> the agent greets -> the caller (fake mic)
  * asks where Ariv works -> correct answer -> asks for links -> clickable links
  * card -> asks for the booking link -> tagged Calendly link, clicked -> end
- * call -> transcript saved and shareable (public share API) -> analytics rows
+ * call -> transcript saved and shareable (public share API, names scrubbed) -> analytics rows
  * (visit, call start, click, call context) checked in the database, then the
  * test's own rows are deleted.
  */
@@ -45,7 +45,9 @@ async function journey({ page, request }: { page: Page; request: APIRequestConte
   await page.getByRole("button", { name: /ask me/i }).click();
   const sid: string = (await (await sessionRes).json()).sessionId;
   expect(sid).toMatch(/^s_/);
-  const log = page.getByRole("log");
+  // The call screen shows one exchange; the full log lives in the popup.
+  await page.getByRole("button", { name: /open full conversation/i }).click({ timeout: 30_000 });
+  const log = page.getByRole("dialog").getByRole("log");
 
   // A natural greeting arrives (the agent shouldn't sound like an assistant).
   const firstLine = log.locator(":scope > div").first();
@@ -84,6 +86,11 @@ async function journey({ page, request }: { page: Page; request: APIRequestConte
     appendFileSync(path.join(corpusDir, "out", "results.jsonl"), JSON.stringify({ id: entry.id, ref: entry.text, heard: heard.join(" ") }) + "\n");
   }
 
+  // Out of the popup, the same links stay one tap away beside the orb.
+  await page.getByRole("button", { name: /close conversation/i }).click();
+  await expect(page.getByRole("link", { name: "GitHub" })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Book a 15-min chat/ })).toBeVisible();
+
   // End the call; the transcript is saved. Sharing is opt-in.
   const finished = page.waitForResponse((r) => r.url().includes("/api/calls/finish") && r.request().method() === "POST", { timeout: 60_000 });
   await page.getByRole("button", { name: /^end$/i }).click();
@@ -100,12 +107,16 @@ async function journey({ page, request }: { page: Page; request: APIRequestConte
   expect(saved.share_token).toMatch(/^[0-9a-f]{32}$/);
   await expect(page.getByRole("button", { name: /copy share link/i })).toBeVisible();
 
+  // The public view: only "You" and "Ariv's AI", no caller or company field.
   const view = await request.get(`/api/calls/${saved.share_token}`);
   expect(view.status()).toBe(200);
   expect(view.headers()["x-robots-tag"]).toContain("noindex");
   const call = await view.json();
-  expect(JSON.stringify(call.transcript)).toMatch(/INZI/i);
   expect(call.verified).toBe(false);
+  expect(call).not.toHaveProperty("caller");
+  expect(call).not.toHaveProperty("company");
+  expect(new Set((call.transcript as { role: string }[]).map((m) => m.role))).toEqual(new Set(["You", "Ariv's AI"]));
+  expect(JSON.stringify(call.transcript)).toMatch(/INZI/i);
 
   test.info().annotations.push({ type: "greeting_ms", description: String(greetMs) }, { type: "share_token", description: saved.share_token }, { type: "session_id", description: sid });
 

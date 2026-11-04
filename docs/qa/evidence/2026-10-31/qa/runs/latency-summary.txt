@@ -1,0 +1,9 @@
+n 107 p50 1207 p90 2593 max 11601 over3s 8 over6s 1
+adv-conf-1.json actually.wav 3155 nudge=false
+adv-ident-1.json human.wav 3857 nudge=false
+adv-inter-1.json bye.wav 5071 nudge=true
+adv-inter-2.json bye.wav 5028 nudge=true
+rc-offline.json work.wav 11601 nudge=false
+rc-tool.json free.wav 3877 nudge=true
+stall-1.json free.wav 4740 nudge=false
+stall2-3.json free.wav 5261 nudge=false

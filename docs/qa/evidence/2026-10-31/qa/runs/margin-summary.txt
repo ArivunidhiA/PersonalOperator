@@ -1,0 +1,6 @@
+turns 99 deltas 538 margin s: min 0.58 p1 0.75 p10 1.06 p50 3.03
+share of deltas already audible (margin<0): 0.000
+adv-honest-1.json @15.113 m=0.58 frac=0.05
+stalltight-3.json @1.955 m=0.63 frac=0.12
+adv-ident-2.json @13.397 m=0.69 frac=0.13
+adv-auth-3.json @23.51 m=0.74 frac=0.16

@@ -1,0 +1,15 @@
+real-1    agentPlaying true interrupt+ NONE agentStop+ 11.59 selfInterrupts 0 | Where does he work right now?
+real-2    agentPlaying true interrupt+ NONE agentStop+ 3.66 selfInterrupts 0 | Where does he work right now?
+real-3    agentPlaying true interrupt+ 1.59 agentStop+ 1.61 selfInterrupts 0 | Hold on. Stop. What is his GitHub?Where does he work right now?
+real-4    agentPlaying true interrupt+ 1.59 agentStop+ 1.59 selfInterrupts 0 | Hold on.Stop for a second. I want to ask you something else. What is his GitHub?
+real-5    agentPlaying true interrupt+ NONE agentStop+ 12.92 selfInterrupts 0 | Where does he work right now?
+real-6    agentPlaying true interrupt+ 2.47 agentStop+ 2.47 selfInterrupts 1 | Hold on. Stop there for a second. I want to ask you something else. What is his 
+real-7    agentPlaying true interrupt+ 1.55 agentStop+ 1.56 selfInterrupts 0 | Hold on. Hold on. Stop there for a second. I want to ask you something else. Wha
+real-8    agentPlaying true interrupt+ 5.39 agentStop+ 5.41 selfInterrupts 0 | to ask you something else. What is his GitHub?Where does he work right now?
+real-9    agentPlaying true interrupt+ NONE agentStop+ 4.13 selfInterrupts 0 | I want to ask you something else. What is his GitHub?Where does he work right no
+realb-4   agentPlaying true interrupt+ NONE agentStop+ 5.91 selfInterrupts 0 | else? What is his GitHub?Where does he work right now?
+realb-5   agentPlaying true interrupt+ 1.48 agentStop+ 1.49 selfInterrupts 0 | Hold on. Hold on. Stop there for a second. I want to ask you something else. Wha
+realb-6   agentPlaying true interrupt+ 1.44 agentStop+ 1.45 selfInterrupts 0 | Hold on. Hold on. Stop there for a second. I want to ask you something else. Wha
+realb-7   agentPlaying true interrupt+ 5.71 agentStop+ 5.73 selfInterrupts 0 | do something else. What is his GitHub?Where does he work right now?
+realb-8   agentPlaying true interrupt+ NONE agentStop+ 3.99 selfInterrupts 0 | I want to ask you something else. What is his GitHub?Where does he work right no
+realb-9   agentPlaying true interrupt+ NONE agentStop+ 5.61 selfInterrupts 0 | What is his GitHub?Where does he work right now?
