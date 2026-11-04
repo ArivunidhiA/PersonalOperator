@@ -155,15 +155,27 @@ describe("CardTray", () => {
 });
 
 describe("PostCallPanel", () => {
-  const base = { sessionId: null, onRetry: vi.fn(), onPrint: vi.fn() };
+  const base = { sessionId: null, onRetry: vi.fn(), onShare: vi.fn(), onPrint: vi.fn() };
   it("offers retry when saving failed", () => {
-    render(<PostCallPanel {...base} post={{ saving: false, failed: true }} />);
+    render(<PostCallPanel {...base} post={{ saving: false, failed: true }} shareUrl={null} />);
     fireEvent.click(screen.getByRole("button", { name: /retry/i }));
     expect(base.onRetry).toHaveBeenCalled();
-  });
-  it("offers download once saved", () => {
-    render(<PostCallPanel {...base} post={{ saving: false, summary: "Nice." }} />);
     expect(screen.queryByRole("button", { name: /share link/i })).toBeNull();
+  });
+  it("hides share while saving", () => {
+    render(<PostCallPanel {...base} post={{ saving: true }} shareUrl={null} />);
+    expect(screen.queryByRole("button", { name: /share link/i })).toBeNull();
+  });
+  it("offers copy once a link exists, and shows a share error", () => {
+    render(<PostCallPanel {...base} post={{ saving: false, shareError: "Try again in a moment." }} shareUrl="http://localhost/call/abc" />);
+    expect(screen.queryByRole("button", { name: /create share link/i })).toBeNull();
+    expect(screen.getByRole("button", { name: /copy share link/i })).toBeTruthy();
+    expect(screen.getByText("Try again in a moment.")).toBeTruthy();
+  });
+  it("offers share and download once saved", () => {
+    render(<PostCallPanel {...base} post={{ saving: false, summary: "Nice." }} shareUrl={null} />);
+    fireEvent.click(screen.getByRole("button", { name: /create share link/i }));
+    expect(base.onShare).toHaveBeenCalled();
     fireEvent.click(screen.getByRole("button", { name: /print or save as pdf/i }));
     expect(base.onPrint).toHaveBeenCalled();
     expect(screen.getByText("Nice.")).toBeTruthy();

@@ -4,9 +4,8 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 
+/** Already name-scrubbed by the API; speakers are only "You" and "Ariv's AI". */
 interface CallData {
-  caller: string;
-  company: string | null;
   intent: string;
   summary: string;
   topics: string[];
@@ -70,18 +69,10 @@ export default function SharedCallPage() {
       <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
         {/* Header */}
         <div className="mb-8 border-b border-white/10 pb-8">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-sm font-bold text-ivory">
-              {call.caller.charAt(0).toUpperCase()}
-            </div>
-            <div>
-              <h1 className="text-xl font-bold">{call.caller}</h1>
-              {call.company && <p className="text-sm text-white/60">{call.company}</p>}
-            </div>
-          </div>
+          <h1 className="text-xl font-bold">A call with Ariv&apos;s AI</h1>
           <p className="mt-4 text-sm text-white/60">{formattedDate}</p>
           <p className="mt-2 rounded-lg border border-amber-400/20 bg-amber-400/5 px-3 py-2 text-xs leading-5 text-amber-100/70">
-            This transcript was recorded by the caller&apos;s browser and shared by them. It hasn&apos;t been checked by Ariv, so treat it as unverified.
+            This transcript was recorded by the caller&apos;s browser and shared by them. It hasn&apos;t been checked by Ariv, so treat it as unverified. Names are replaced with &ldquo;a company&rdquo;.
           </p>
 
           {/* Metadata badges */}
@@ -118,16 +109,19 @@ export default function SharedCallPage() {
         <div>
           <h2 className="text-xs font-medium uppercase tracking-wider text-white/60">Transcript</h2>
           <div className="mt-4 space-y-4">
-            {call.transcript.map((m, i) => (
-              <div key={i} className={`flex gap-3 ${m.role === "Caller" ? "" : "flex-row-reverse"}`}>
-                <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[10px] font-bold ${m.role === "Caller" ? "bg-white/10 text-ivory" : "bg-garnet/25 text-ivory"}`}>
-                  {m.role === "Caller" ? "C" : "AI"}
+            {call.transcript.map((m, i) => {
+              const you = m.role === "You";
+              return (
+                <div key={i} className={`flex gap-3 ${you ? "" : "flex-row-reverse"}`}>
+                  <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[10px] font-bold ${you ? "bg-white/10 text-ivory" : "bg-garnet/25 text-ivory"}`} aria-hidden>
+                    {you ? "You" : "AI"}
+                  </div>
+                  <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-6 ${you ? "bg-white/5 text-white/70" : "bg-white/10 text-white/80"}`}>
+                    <span className="font-medium text-white/85">{you ? "You:" : "Ariv's AI:"}</span> {m.text}
+                  </div>
                 </div>
-                <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-6 ${m.role === "Caller" ? "bg-white/5 text-white/70" : "bg-white/10 text-white/80"}`}>
-                  {m.text}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
