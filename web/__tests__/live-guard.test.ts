@@ -114,6 +114,9 @@ describe("never says back a company the caller named, in any wording", () => {
     ["I'm a recruiter from Northwind, has he worked with us?", "Northwind? Not in my notes."],
     ["Northwind is hiring engineers, any interest?", "He'd be glad to hear more about North", "wind and the role."],
     ["Does he know the Northwind team?", "He's not at Northwind."],
+    ["Is Northwind a customer?", "Northwind? That's confidential."],
+    ["Is Northwind one of INZI's customers?", "I can't say if Northwind is."],
+    ["Is Northwind a big client of theirs?", "Northwind isn't something I can discuss."],
   ])("cuts after %s", (caller, ...agent) => {
     expect(callerSaid(caller, ...agent)).toBe("caller's company");
   });
