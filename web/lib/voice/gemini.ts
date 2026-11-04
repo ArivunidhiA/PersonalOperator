@@ -8,6 +8,10 @@ import { runTool, type EndReason, type SessionInfo, type VoiceHandlers, type Voi
  * Browser client for Gemini Live over WebSocket.
  * - The prompt/tools are locked inside the ephemeral token; we only send setup + audio.
  * - Mic: AudioWorklet -> 16 kHz PCM16. Playback: AudioWorklet ring buffer, flushed on barge-in.
+ * - Barge-in: the player also hears the mic and pauses itself the moment a voice that
+ *   isn't its own echo starts (public/audio/barge-detector.js), then drops the reply once
+ *   it's clearly the caller. The server's interrupt only arrives while it's still generating,
+ *   which is often seconds before playback ends, so it can't be what stops the agent.
  * - Echo: Chromium's echo canceller only "hears" audio played through WebRTC, so on
  *   Chromium we route playback through a local RTCPeerConnection loopback into an
  *   <audio> element (falling back to plain playback if the loopback can't connect).
@@ -150,12 +154,14 @@ export async function startGemini(info: SessionInfo, prepared: Prepared, h: Voic
   const { ctx, mic } = prepared;
   if (!ctx.audioWorklet) throw new Error("This browser can't process audio here. Try Safari or Chrome directly.");
   await ctx.audioWorklet.addModule("/audio/pcm-capture.js");
+  await ctx.audioWorklet.addModule("/audio/barge-detector.js");
   await ctx.audioWorklet.addModule("/audio/pcm-player.js");
 
   const capture = new AudioWorkletNode(ctx, "pcm-capture");
   const player = new AudioWorkletNode(ctx, "pcm-player", { outputChannelCount: [1] });
   const src = ctx.createMediaStreamSource(mic);
   src.connect(capture);
+  src.connect(player); // only read, for barge-in: the player's output is never the mic
   let loop = await loopbackPlayback(ctx, player, () => {
     loop = null;
     try {
@@ -184,6 +190,8 @@ export async function startGemini(info: SessionInfo, prepared: Prepared, h: Voic
   let activitySinceOutput = false;
   let activityOpen = false;
   let turnAudio = false; // the current model turn produced audio
+  let generating = false; // the model is still sending this turn's audio
+  let bargedTurn = false; // the caller cut in locally: drop the rest of this turn
   const VOICE_RMS = 0.01;
 
   let ws!: WebSocket;
@@ -307,7 +315,16 @@ export async function startGemini(info: SessionInfo, prepared: Prepared, h: Voic
       if (activityOpen) guard.callerQuiet();
     }
   };
-  player.port.onmessage = (e: MessageEvent<{ speaking: boolean; level: number }>) => {
+  player.port.onmessage = (e: MessageEvent<{ speaking: boolean; level: number } | { barge: "pause" | "resume" | "commit"; had?: boolean } | { dbg: number[] }>) => {
+    if ("dbg" in e.data) return;
+    if ("barge" in e.data) {
+      // A commit in a gap between sentences still ends the reply, if more of it is coming.
+      if (e.data.barge === "commit" && (e.data.had || generating)) {
+        stopAgent();
+        if (generating) bargedTurn = true;
+      }
+      return;
+    }
     agentLevel = Math.min(1, e.data.level * 4);
     if (e.data.speaking !== speaking) {
       speaking = e.data.speaking;
@@ -315,6 +332,16 @@ export async function startGemini(info: SessionInfo, prepared: Prepared, h: Voic
       onCaptions((c) => c.setAgentSpeaking(speaking));
     }
   };
+
+  /** The caller cut in: what was said stays, the unspoken rest goes. */
+  function stopAgent() {
+    onCaptions((c) => c.bargeIn());
+    showAgent(heldText);
+    heldText = "";
+    h.onAgentFinal();
+    endCut();
+    checked((c) => c.reset());
+  }
 
   const teardown = () => {
     onCaptions((c) => c.stop());
@@ -454,6 +481,7 @@ export async function startGemini(info: SessionInfo, prepared: Prepared, h: Voic
     const activity = msg.voiceActivity as { type?: string; voiceActivityType?: string } | undefined;
     const activityType = activity?.type ?? activity?.voiceActivityType;
     if (activityType === "ACTIVITY_START") {
+      player.port.postMessage({ confirm: true }); // stops the agent only if the player heard a voice too
       activityOpen = true;
       activitySinceOutput = true;
       corrected = false;
@@ -475,12 +503,9 @@ export async function startGemini(info: SessionInfo, prepared: Prepared, h: Voic
     if (sc) {
       if (sc.interrupted) {
         player.port.postMessage("flush");
-        onCaptions((c) => c.bargeIn());
-        showAgent(heldText);
-        heldText = "";
-        h.onAgentFinal();
-        endCut();
-        checked((c) => c.reset());
+        stopAgent();
+        bargedTurn = false;
+        generating = false;
       }
       if (sc.inputTranscription?.text) {
         userText += sc.inputTranscription.text;
@@ -490,7 +515,8 @@ export async function startGemini(info: SessionInfo, prepared: Prepared, h: Voic
       if (sc.inputTranscription?.finished) h.onUserFinal();
       // Only audio counts as an answer: the model can send junk text and no sound.
       const audio = (sc.modelTurn?.parts ?? []).flatMap((p) => (p.inlineData?.data ? [p.inlineData.data] : []));
-      if (cutTurn) audio.length = 0;
+      if (cutTurn || bargedTurn) audio.length = 0;
+      else if (audio.length) generating = true;
       if (audio.length) {
         lastModelOutput = Date.now();
         activitySinceOutput = false;
@@ -515,6 +541,7 @@ export async function startGemini(info: SessionInfo, prepared: Prepared, h: Voic
         }
       }
       // Generation ends seconds before playback does, so a last sentence can still be cut.
+      if (sc.generationComplete) generating = false;
       if (sc.generationComplete && !cutTurn) {
         const hit = checked((c) => c.flush());
         if (hit) cut(hit);
@@ -524,6 +551,7 @@ export async function startGemini(info: SessionInfo, prepared: Prepared, h: Voic
         }
       }
       if (sc.turnComplete) {
+        generating = bargedTurn = false;
         const hit = cutTurn ? null : checked((c) => c.flush());
         endCut();
         checked((c) => c.reset());
@@ -602,6 +630,7 @@ export async function startGemini(info: SessionInfo, prepared: Prepared, h: Voic
     stop: (reason = "hangup") => end(reason),
     setMuted: (muted) => {
       capture.port.postMessage({ muted });
+      player.port.postMessage({ muted });
       onCaptions((c) => c.setMuted(muted));
     },
     liveAt: () => liveAt,
