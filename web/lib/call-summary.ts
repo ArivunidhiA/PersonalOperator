@@ -1,5 +1,6 @@
 /** Types, the no-LLM fallback and the name scrub for post-call summaries (see app/api/calls/finish). */
 import { FACTS, LINK_LABELS } from "@/lib/knowledge";
+import { COMMON_NAMES, COMMON_WORDS } from "@/lib/name-words";
 
 export type Msg = { role: "user" | "assistant"; text: string };
 export type Analysis = {
@@ -40,11 +41,7 @@ const ESCAPE = /[.*+?^${}()|[\]\\]/g;
 
 // Words his own notes use, so his history and skills survive. Confidential names are never in there.
 const KNOWN = new Set(words(JSON.stringify([FACTS, LINK_LABELS])));
-const PLAIN = new Set(
-  "i a an the this that these those they he she it we you their his her caller callers asked asking wanted wants did do does is was were who what when where why how which and but or so if then also after before short call visitor recruiter hi hello hey thanks am pm eastern central mountain pacific est cst mst pst monday tuesday wednesday thursday friday saturday sunday january february march april may june july august september october november december".split(" "),
-);
-// Common tools and cities his notes skip. Missing one only turns it into "a company" in a summary.
-for (const w of "langgraph langchain llamaindex pytorch tensorflow react java javascript golang c++ sql postgres mongodb redis kafka terraform azure gcp django vue flutter gemini live api chicago seattle boston austin london".split(" ")) PLAIN.add(w);
+const PLAIN = new Set([...COMMON_WORDS, ...COMMON_NAMES]);
 const NAME_RUN = /\p{Lu}[\p{L}\p{N}&-]*(?: \p{Lu}[\p{L}\p{N}&-]*)*/gu;
 const OPENS_SENTENCE = /(?:^|[.!?:]\s+|["“])$/;
 

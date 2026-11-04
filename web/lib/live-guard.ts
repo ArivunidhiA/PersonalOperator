@@ -1,3 +1,6 @@
+import { COMMON_NAMES, COMMON_WORDS } from "./name-words";
+import { KNOWN_NAMES } from "./known-names";
+
 /**
  * Live guard: a pure, high-precision check on what the agent is saying while it
  * says it. A false hit cuts a good reply, so it only fires on lines that are
@@ -10,12 +13,17 @@
  * confirm a guessed name, so nothing about them may ship here. The named-company
  * rule is how a caller's guess stays unsaid instead: it treats every name alike.
  *
+ * A name the caller gave for their company is never said back, in any wording:
+ * guard.heard(callerTurn) remembers it for the call, and the agent saying it cuts.
+ *
  *   const guard = createLiveGuard();
+ *   guard.heard(callerText);                 // the caller's turn so far
  *   const hit = guard.push(transcriptDelta); // null, or the hit (once per turn)
  *   const last = guard.flush();              // at turn end
  *   guard.reset();                           // before the next turn
  */
-export type GuardRule = "named company" | "claims to be human" | "claimed title" | "claimed certification" | "markdown or planning text";
+export type GuardRule = "named company" | "caller's company" | "claims to be human" | "claimed title" | "claimed certification" | "markdown or planning text";
+
 export type GuardHit = { rule: GuardRule; excerpt: string };
 
 /** Gemini transcripts use curly apostrophes; normalize before matching. */
@@ -81,6 +89,31 @@ function checkSentence(raw: string): GuardHit | null {
   return null;
 }
 
+// "at Northwind", "from Northwind", "Northwind is hiring", "Northwind's team": the shapes a caller names their company in.
+const BEFORE_NAME = new Set("at from with for of by join joined joining to vs versus over like".split(" "));
+const AFTER_NAME = /^(?:'s|is|are|team|customer|client|company|inc|corp|group|labs|hires|hiring)\b/i;
+const SELF_INTRO = /\b(?:i'm|i am|my name is|this is|call me|name's)\s*$/i;
+const NAME_WORD = /\p{Lu}[\p{L}\p{N}&-]*/gu;
+
+/** Words in the caller's turn that look like the name of their company. Person names and his own history are left out. */
+export function callerCompanies(raw: string): string[] {
+  const s = normalize(raw);
+  const out: string[] = [];
+  for (const m of s.matchAll(NAME_WORD)) {
+    const word = m[0];
+    const w = word.toLowerCase();
+    const at = m.index ?? 0;
+    const end = at + word.length;
+    if (w.length < 3 || COMMON_WORDS.has(w) || COMMON_NAMES.has(w) || KNOWN_NAMES.has(w)) continue;
+    if (end === s.length) continue; // may be half a word still arriving
+    const before = s.slice(0, at);
+    if (SELF_INTRO.test(before)) continue;
+    const prev = before.match(/(\p{L}+)\W*$/u)?.[1]?.toLowerCase() ?? "";
+    if (BEFORE_NAME.has(prev) || AFTER_NAME.test(s.slice(end).trimStart())) out.push(w);
+  }
+  return out;
+}
+
 const SENTENCE_END = /[.!?]+\s+|\n+/g;
 
 /** One-shot check of finished text. */
@@ -95,6 +128,8 @@ export function checkLive(text: string): GuardHit | null {
  * most one hit per turn.
  */
 export function createLiveGuard() {
+  const named = new Set<string>(); // for the whole call, not one turn
+  let echo: RegExp | null = null;
   let text = "";
   let sentenceFrom = 0;
   let done = false;
@@ -105,9 +140,16 @@ export function createLiveGuard() {
   };
 
   return {
+    /** The caller's current turn, as transcribed so far. */
+    heard(callerText: string) {
+      const before = named.size;
+      callerCompanies(callerText).forEach((w) => named.add(w));
+      if (named.size !== before) echo = new RegExp(`\\b(?:${[...named].map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})\\b`, "iu");
+    },
     push(delta: string): GuardHit | null {
       if (done) return null;
       text += delta;
+      if (echo?.test(normalize(text))) return fire({ rule: "caller's company", excerpt: "[redacted]" });
       const company = namedCompany(text.slice(sentenceFrom));
       if (company) return fire(company);
       SENTENCE_END.lastIndex = sentenceFrom;

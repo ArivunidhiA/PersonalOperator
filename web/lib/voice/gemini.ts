@@ -140,6 +140,7 @@ const NUDGES = {
 const RESUME_NUDGE = "(The caller is waiting: the line dropped for a moment. Continue from where you stopped, without repeating yourself or mentioning the drop.)";
 // Never quote the line: this goes back to the model as plain text.
 const CORRECTIONS: Record<GuardRule, string> = {
+  "caller's company": "(Correction: don't say the name of the caller's company. Say \"your company\" or \"your team\" instead, and answer again in one short line.)",
   "named company": "(Correction: don't name that company or say whether he worked there. In one short line, say your notes only cover the work he's shared, then carry on.)",
   "claims to be human": "(Correction: you are Ariv's AI voice agent, not a person. Say so in one short line, then carry on.)",
   "claimed title": "(Correction: you stated a job title Ariv doesn't hold. In one short line, give his real title from your notes, then carry on.)",
@@ -509,6 +510,7 @@ export async function startGemini(info: SessionInfo, prepared: Prepared, h: Voic
       }
       if (sc.inputTranscription?.text) {
         userText += sc.inputTranscription.text;
+        checked((c) => c.heard(userText));
         h.onUserDelta(sc.inputTranscription.text);
         if (activitySinceOutput || lastVoiceAt > lastModelOutput) guard.heard(sc.inputTranscription.text);
       }

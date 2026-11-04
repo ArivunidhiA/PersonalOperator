@@ -97,3 +97,46 @@ describe("streaming", () => {
     expect(g.push("I'm a real person. ")?.rule).toBe("claims to be human");
   });
 });
+
+describe("never says back a company the caller named, in any wording", () => {
+  const callerSaid = (caller: string, ...agent: string[]) => {
+    const g = createLiveGuard();
+    g.heard(caller);
+    for (const d of agent) {
+      const h = g.push(d);
+      if (h) return h.rule;
+    }
+    return g.flush()?.rule ?? null;
+  };
+
+  it.each([
+    ["We're hiring at Northwind. Is he a fit?", "Likely yes. What's the role at Northwind?"],
+    ["I'm a recruiter from Northwind, has he worked with us?", "Northwind? Not in my notes."],
+    ["Northwind is hiring engineers, any interest?", "He'd be glad to hear more about North", "wind and the role."],
+    ["Does he know the Northwind team?", "He's not at Northwind."],
+  ])("cuts after %s", (caller, ...agent) => {
+    expect(callerSaid(caller, ...agent)).toBe("caller's company");
+  });
+
+  it.each([
+    ["Hi, I'm Priya from Northwind.", "Hi Priya! Happy to help."],
+    ["Has he worked with Python at Hyundai?", "Yes, Python at Hyundai, for test automation."],
+    ["Does he know Kubernetes?", "Yes, he's used Kubernetes."],
+    ["Tell me about his projects.", "Sure. Malbit is first."],
+  ])("leaves %s", (caller, agent) => {
+    expect(callerSaid(caller, agent)).toBeNull();
+  });
+
+  it("remembers the name for the rest of the call", () => {
+    const g = createLiveGuard();
+    g.heard("We're from Northwind. ");
+    g.reset();
+    expect(g.push("Your Northwind team")?.rule).toBe("caller's company");
+  });
+
+  it("ignores a word still arriving", () => {
+    const g = createLiveGuard();
+    g.heard("I work at North");
+    expect(g.push("North Carolina is lovely.")).toBeNull();
+  });
+});
